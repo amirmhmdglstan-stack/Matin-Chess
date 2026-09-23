@@ -88,7 +88,7 @@ body{
 .creators{text-align:center;color:var(--gold);font-size:13px;font-weight:700;line-height:1.7}
 .creators small{display:block;color:#8899a7;font-weight:600;font-size:12px}
 .exit-btn{
-  margin:18px auto 0;background:transparent;color:#9ba7b2;border:0;font-family:var(--font-ui);
+  margin:auto auto 18px;background:transparent;color:#9ba7b2;border:0;font-family:var(--font-ui);
   font-size:13px;font-weight:700;cursor:pointer;padding:10px 18px;border-radius:8px;
 }
 .exit-btn:hover{background:#2a2020;color:#ff7777}
@@ -116,6 +116,25 @@ body{
 .card .sub{color:#71808d;font-size:11px;margin-top:4px}
 .footer{margin-top:auto;padding-top:22px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .footer span{font-family:var(--font-mono);font-size:10px;color:#46535f;font-weight:700}
+
+/* ---------- Slide-in drawer (mobile side menu, like the desktop python build) ---------- */
+.menu-fab{
+  display:none;position:fixed;top:calc(var(--sat) + 12px);left:calc(var(--sal) + 12px);z-index:80;
+  width:46px;height:46px;border-radius:13px;border:1px solid #2b3a47;
+  background:rgba(17,24,32,.94);cursor:pointer;padding:0;
+  flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  box-shadow:0 6px 18px rgba(0,0,0,.45);
+}
+.menu-fab span{display:block;width:20px;height:2px;border-radius:2px;background:var(--gold);
+  transition:transform .22s,opacity .18s}
+body.drawer-open .menu-fab span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+body.drawer-open .menu-fab span:nth-child(2){opacity:0}
+body.drawer-open .menu-fab span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.drawer-back{
+  position:fixed;inset:0;z-index:60;background:rgba(3,7,11,.62);
+  opacity:0;pointer-events:none;transition:opacity .26s;
+}
+body.drawer-open .drawer-back{opacity:1;pointer-events:auto}
 
 /* ---------- Page header (levels/academy/training/…) ---------- */
 .page-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:18px 22px 8px;flex-wrap:wrap}
@@ -303,15 +322,21 @@ select,input[type=text]{
    ============================================================ */
 @media (max-width:900px){
   #scr-menu{flex-direction:column}
-  .sidebar{width:100%;min-width:0;flex-direction:column;padding:10px 0 6px}
-  .logo-tile{width:40px;height:40px;font-size:19px;margin:0 0 2px;border-radius:10px}
-  .sidebar .side-top{display:flex;align-items:center;gap:10px;padding:0 14px}
-  .brand{text-align:right;font-size:15px;margin:0;flex:1}
-  .side-cap{display:none}
-  .side-sep,.creators,.exit-btn{display:none}
-  .side-nav{flex-direction:row;overflow-x:auto;padding:8px 10px 4px;gap:6px;-webkit-overflow-scrolling:touch}
-  .nav-item{flex:none;background:#151d27;padding:9px 13px;font-size:12px;border-radius:999px}
-  .content{padding:14px 16px 10px}
+  .menu-fab{display:flex}
+  .sidebar{
+    position:fixed;top:0;bottom:0;left:0;z-index:70;
+    width:min(82vw,320px);min-width:0;
+    background:#111820;padding:calc(var(--sat) + 24px) 0 18px;
+    transform:translateX(-108%);transition:transform .3s cubic-bezier(.22,.85,.3,1);
+    box-shadow:0 0 0 1px #232f3a inset;
+  }
+  body.drawer-open .sidebar{transform:translateX(0);box-shadow:16px 0 48px rgba(0,0,0,.55)}
+  .logo-tile{width:64px;height:64px;font-size:30px;margin:0 auto 8px;border-radius:14px}
+  .sidebar .side-top{display:flex;flex-direction:column;align-items:center;gap:0;padding:0 14px}
+  .brand{text-align:center;font-size:20px;margin:0 0 24px;flex:none}
+  .side-nav{flex-direction:column;overflow-y:auto;padding:0 10px;gap:4px;-webkit-overflow-scrolling:touch}
+  .nav-item{flex:none;width:100%;background:transparent;padding:12px 14px;font-size:14px;border-radius:9px}
+  .content{padding:calc(64px + var(--sat)) 16px 10px}
   .hero{padding:18px}
   .game-body{flex-direction:column;padding:0 10px 6px;gap:8px}
   .board-panel{order:0;padding:8px}
@@ -378,6 +403,8 @@ select,input[type=text]{
       <div class="creators">متین کتویی زاده<small>امیرمحمد گلستان</small></div>
       <button class="exit-btn" id="btnExit">×   خروج</button>
     </aside>
+    <button class="menu-fab" id="btnDrawer" aria-label="باز کردن منو"><span></span><span></span><span></span></button>
+    <div class="drawer-back" id="drawerBack"></div>
     <main class="content">
       <div class="content-top">
         <h1>بازی خوب؛ فکر بهتر!</h1>
@@ -468,7 +495,7 @@ select,input[type=text]{
     <div class="page-body">
       <div class="form-card">
         <div class="form-row"><label>🔊 صدای حرکت</label><span class="switch"><input type="checkbox" id="setSound"><span class="slider"></span></span></div>
-        <div class="form-row"><label>🎵 موسیقی پس‌زمینه</label><span class="switch"><input type="checkbox" id="setMusic"><span class="slider"></span></span></div>
+        <div class="form-row"><label>🎵 موسیقی (فقط در منو)</label><span class="switch"><input type="checkbox" id="setMusic"><span class="slider"></span></span></div>
         <div class="form-row"><label>💡 راهنمای حرکت</label><span class="switch"><input type="checkbox" id="setHints"><span class="slider"></span></span></div>
         <div class="form-row"><label>🎬 سرعت انیمیشن</label>
           <select id="setAnim"><option value="260">سریع (۲۶۰)</option><option value="380" selected>پیشنهادی (۳۸۰)</option><option value="520">متوسط (۵۲۰)</option><option value="700">آرام (۷۰۰)</option><option value="900">سینمایی (۹۰۰)</option></select>
@@ -1234,6 +1261,7 @@ const AudioEng = {
   },
   startMusic(){
     if(!S.music||this.musicOn)return;
+    try{ if($("scr-game").classList.contains("active"))return; }catch(e){}
     this.stopMusic();
     this.musicOn=true;
     const notes=[[523,.18],[659,.18],[784,.18],[659,.18],[587,.18],[698,.18],[880,.25],[698,.18],[523,.18],[659,.18],[784,.18],[1047,.35]];
@@ -1330,6 +1358,9 @@ const SCREENS=["menu","levels","academy","training","themes","settings","save","
 function go(name){
   SCREENS.forEach(s=>$("scr-"+s).classList.toggle("active",s===name));
   if(name==="game")requestAnimationFrame(layoutBoard);
+  // موسیقی فقط خارج از صفحهٔ بازی پخش می‌شود؛ داخل بازی فقط صدای مهره‌ها
+  if(name==="game"){ AudioEng.stopMusic(); }
+  else if(S.music){ AudioEng.startMusic(); }
 }
 
 // ---------- Menu ----------
@@ -1354,7 +1385,7 @@ function buildMenu(){
   const cards=$("quickCards"); cards.innerHTML="";
   const data=[
     ["♜","20","سطح‌های هوش مصنوعی","نردبان چالش",()=>go("levels")],
-    ["♟♟","۲ نفر","بازی دونفره","روی یک گوشی",()=>twoPlayerSetup()],
+    ["♟♟","بازی دونفره","","روی یک گوشی",()=>twoPlayerSetup()],
     ["🎓","۱۰ درس","آکادمی","آموزش مرحله‌ای",()=>go("academy")]
   ];
   data.forEach(([ico,val,title,sub,cmd])=>{
@@ -2085,7 +2116,6 @@ function startGame(level,side,timeMode,twoPlayer){
   go("game");
   requestAnimationFrame(()=>{ layoutBoard(); renderBoard(true); });
   AudioEng.play("start");
-  if(S.music)AudioEng.startMusic();
   clearTimeout(R.clockTimer); R.lastTick=Date.now(); tickClock();
   if(!R.twoPlayer&&R.player==="b")setTimeout(aiMove,1400);
 }
@@ -2523,6 +2553,7 @@ function init(){
   bindGameButtons();
   initWorker();
   document.addEventListener("pointerdown",function firstTouch(){ AudioEng.ensure();
+    if(S.music)AudioEng.startMusic();
     document.removeEventListener("pointerdown",firstTouch); });
   // session autosave (every 8s, mirrors desktop autosave_tick)
   setInterval(()=>{
@@ -2539,6 +2570,11 @@ function init(){
       go(t);
     });
   });
+  // drawer (منوی کناری کشویی موبایل)
+  $("btnDrawer").onclick=()=>{ AudioEng.play("button"); document.body.classList.toggle("drawer-open"); };
+  $("drawerBack").onclick=()=>document.body.classList.remove("drawer-open");
+  $("sideNav").addEventListener("click",()=>document.body.classList.remove("drawer-open"));
+  $("btnExit").addEventListener("click",()=>document.body.classList.remove("drawer-open"));
   $("btnExit").onclick=()=>{
     ask("خروج","از بازی خارج می‌شوی؟",[
       ["انصراف",null,""],
