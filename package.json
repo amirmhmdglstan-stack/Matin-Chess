@@ -1,0 +1,19 @@
+{
+  "name": "matin-chess",
+  "version": "1.0.0",
+  "description": "MATIN CHESS — responsive chess game (Android edition). Creators: Matin Katooei-zadeh & AmirMohammad Golestan",
+  "private": true,
+  "scripts": {
+    "cap:add": "cap add android",
+    "cap:sync": "cap sync android",
+    "assets": "capacitor-assets generate --android --assetPath assets --iconBackgroundColor '#0b0f14' --iconBackgroundColorDark '#0b0f14' --splashBackgroundColor '#0b0f14' --splashBackgroundColorDark '#0b0f14'"
+  },
+  "dependencies": {
+    "@capacitor/android": "6.2.1",
+    "@capacitor/core": "6.2.1"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "3.0.5",
+    "@capacitor/cli": "6.2.1"
+  }
+}

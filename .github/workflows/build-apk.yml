@@ -1,0 +1,112 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-apk:
+    name: Build signed APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Copy web assets into Android project
+        run: npx cap sync android
+
+      - name: Create signing keystore
+        run: |
+          keytool -genkeypair -v \
+            -keystore "$GITHUB_WORKSPACE/matin-chess.keystore" \
+            -alias matinchess \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass matinchess123 -keypass matinchess123 \
+            -dname "CN=Matin Chess, OU=Game, O=MatinChess, L=Tehran, ST=Tehran, C=IR"
+
+      - name: Build signed release APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/matin-chess.keystore \
+            -Pandroid.injected.signing.store.password=matinchess123 \
+            -Pandroid.injected.signing.key.alias=matinchess \
+            -Pandroid.injected.signing.key.password=matinchess123 \
+            --no-daemon --stacktrace
+
+      - name: Rename APK
+        run: |
+          mkdir -p dist
+          cp android/app/build/outputs/apk/release/app-release.apk \
+             "dist/MATIN-CHESS-${GITHUB_REF_NAME}-android.apk"
+          ls -la dist
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MATIN-CHESS-android-apk
+          path: dist/*.apk
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-apk
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: MATIN-CHESS-android-apk
+          path: dist
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.apk
+          body: |
+            ## MATIN CHESS — نسخه اندروید / Android Edition
+
+            بازی شطرنج MATIN CHESS برای اندروید، ساخته‌شده از نسخهٔ پایتون با ظاهر و امکانات کامل.
+
+            **سازندگان / Creators:** متین کتویی زاده • امیرمحمد گلستان
+            (Matin Katooei-zadeh & AmirMohammad Golestan)
+
+            ### نصب / Install
+            1. فایل `MATIN-CHESS-${{ github.ref_name }}-android.apk` را دانلود کنید.
+            2. در گوشی اجازهٔ «نصب از منابع ناشناس» را بدهید.
+            3. فایل را باز کرده و بازی را نصب کنید. نصب بدون نیاز به اینترنت است.
+
+            ### Features
+            - موتور هوش مصنوعی ۲۰ سطحی (alpha-beta + quiescence)
+            - بازی دونفره روی یک گوشی + ساعت مسابقه (∞/10/5/3 دقیقه)
+            - آکادمی ۱۰ درسی + ۱۰ تمرین مات در یک حرکت
+            - ۱۲ طرح صفحه، ۴ سبک مهره، ۱۰ تم رابط، رنگ دستی خانه‌ها
+            - ذخیره/بارگذاری JSON و MCGX، خروجی PGN
+            - طراحی واکنش‌گرا برای تقریباً همهٔ رزولوشن‌های موبایل
+
+            Fully offline • Signed release APK • minSdk 23 (Android 6+) • targetSdk 34

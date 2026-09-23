@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MATIN CHESS</string>
+    <string name="title_activity_main">MATIN CHESS</string>
+    <string name="package_name">com.matinchess.game</string>
+    <string name="custom_url_scheme">com.matinchess.game</string>
+</resources>
