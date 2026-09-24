@@ -317,6 +317,59 @@ select,input[type=text]{
 }
 .toast.show{opacity:1}
 
+/* ---------- Bot Hub (مرکز ربات‌ها) ---------- */
+.bot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:12px}
+.bot-card{
+  position:relative;overflow:hidden;cursor:pointer;border-radius:16px;padding:15px 15px 13px;
+  background:linear-gradient(165deg,var(--panel2) 0%,#0c1218 100%);
+  border:1px solid var(--line3);
+  transition:transform .12s,border-color .15s,box-shadow .25s;
+  display:flex;flex-direction:column;gap:9px;text-align:right;
+}
+.bot-card::before{content:"";position:absolute;top:-45%;left:-18%;width:200px;height:160px;
+  background:radial-gradient(closest-side,var(--glow,rgba(242,198,109,.3)),transparent 72%);
+  pointer-events:none}
+.bot-card:hover{border-color:var(--c1);transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,.4)}
+.bot-card:active{transform:scale(.98)}
+.bot-top{display:flex;align-items:center;gap:12px;min-width:0}
+.bot-top>div{min-width:0}
+.bot-ico{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+  font-size:26px;background:linear-gradient(135deg,var(--c1),var(--c2));color:#0b0f14;
+  box-shadow:0 6px 18px var(--glow);flex:none;font-family:var(--font-piece)}
+.bot-latin{font-family:var(--font-mono);font-size:11.5px;font-weight:800;letter-spacing:.14em;color:var(--c1);direction:ltr;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bot-fa{font-size:16px;font-weight:800;margin-top:2px}
+.bot-tag{color:#93a2af;font-size:11.5px;line-height:1.8}
+.bot-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:2px}
+.bot-badge{font-size:10.5px;font-weight:800;border-radius:999px;padding:5px 11px;border:1px solid var(--line3);color:#9aa8b5;background:#0e151d;white-space:nowrap}
+.bot-badge.ok{color:#0b0f14;background:linear-gradient(135deg,var(--gold),#d9a441);border-color:transparent}
+.bot-lvls{font-family:var(--font-mono);font-size:10px;color:#697786;font-weight:700;white-space:nowrap}
+/* level menu inside modal */
+.bot-head{display:flex;align-items:center;gap:12px;justify-content:center}
+.bot-head .bot-ico{width:46px;height:46px;font-size:23px}
+.bot-desc{color:#93a2af;font-size:12px;line-height:2;text-align:center}
+.sect-lbl{color:var(--accent);font-size:12px;font-weight:800;margin:4px 0 0}
+.blvl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.blvl-grid.cols5{grid-template-columns:repeat(5,1fr)}
+.blvl{background:#0e151d;border:1px solid var(--line3);color:var(--fg);border-radius:11px;
+  padding:12px 6px;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-ui);
+  transition:background .15s,transform .06s,border-color .15s;text-align:center}
+.blvl:hover{background:var(--btn-bg);border-color:var(--c1,#f2c66d);color:#fff}
+.blvl:active{transform:scale(.95)}
+.blvl small{display:block;font-size:9px;color:var(--dim);font-weight:700;margin-top:3px}
+.blvl.offl{background:linear-gradient(135deg,var(--c1),var(--c2));color:#0b0f14;border:none;
+  padding:15px 8px;font-size:14px}
+.blvl.offl:hover{filter:brightness(1.12);color:#0b0f14}
+.blvl.offl small{color:rgba(0,0,0,.6)}
+/* download progress */
+.dl-bar{height:10px;border-radius:999px;background:#0e151d;border:1px solid var(--line3);overflow:hidden}
+.dl-fill{height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,var(--c1),var(--c2));transition:width .18s}
+.dl-status{font-size:11px;color:#9aa8b5;font-family:var(--font-mono);text-align:center;min-height:16px}
+/* update modal */
+.up-notes{background:#17212a;border:1px solid #33424e;border-radius:10px;padding:12px 14px;
+  font-size:12px;line-height:2;white-space:pre-wrap;max-height:32dvh;overflow-y:auto;color:#dfe7ee;text-align:left;direction:ltr}
+a.btn{text-decoration:none}
+a.btn:active{transform:scale(.97)}
+
 /* ============================================================
    RESPONSIVE — phones & small tablets
    ============================================================ */
@@ -356,6 +409,10 @@ select,input[type=text]{
   .page-body{padding:8px 12px 16px}
   .level-grid{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
   .lvl{font-size:13px;padding:13px 6px}
+  .bot-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:9px}
+  .bot-card{padding:13px}
+  .bot-ico{width:44px;height:44px;font-size:22px}
+  .blvl-grid{grid-template-columns:repeat(4,1fr)}
   .grid-cards{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
   .theme-grid{grid-template-columns:repeat(auto-fill,minmax(122px,1fr))}
   .board-frame{padding:13px}
@@ -372,6 +429,9 @@ select,input[type=text]{
   .rail-info{max-width:100%}
   .rail-captured{max-width:100%}
   .level-grid{grid-template-columns:repeat(3,1fr)}
+  .bot-grid{grid-template-columns:1fr 1fr}
+  .blvl-grid{grid-template-columns:repeat(3,1fr)}
+  .blvl-grid.cols5{grid-template-columns:repeat(3,1fr)}
 }
 @media (min-width:901px){
   .sidebar .side-top{display:flex;flex-direction:column;align-items:center}
@@ -417,15 +477,26 @@ select,input[type=text]{
           <div class="hero-title">حرکت بعدی شما<br>از اینجا شروع می‌شود.</div>
           <div class="hero-sub">قوانین کامل شطرنج • هوش مصنوعی مرحله‌ای • صفحهٔ سینمایی</div>
         </div>
-        <button class="btn big" data-go="levels">شروع شطرنج  ←</button>
+        <button class="btn big" data-go="bots">شروع شطرنج  ←</button>
       </div>
       <div class="gold-cap">دسترسی سریع</div>
       <div class="cards" id="quickCards"></div>
       <footer class="footer">
-        <span>MATIN CHESS • نسخهٔ اندروید</span>
+        <span>MATIN CHESS • نسخهٔ اندروید <span id="verSpan"></span></span>
         <span id="themeFooter">تم / GALAXY</span>
       </footer>
     </main>
+  </section>
+
+  <!-- ============ BOT HUB (مرکز ربات‌ها) ============ -->
+  <section id="scr-bots" class="screen">
+    <div class="page-head">
+      <button class="btn white small" data-go="menu">←  منوی اصلی</button>
+      <div class="page-title">🤖 مرکز ربات‌ها</div>
+    </div>
+    <div class="page-sub" style="text-align:left;padding:0 24px">۵ موتور شطرنج • همهٔ سطح‌ها باز • ربات‌های دانلودی در حافظهٔ خود بازی نصب می‌شوند</div>
+    <div class="hr" style="margin:8px 22px 4px"></div>
+    <div class="page-body"><div class="bot-grid" id="botGrid"></div></div>
   </section>
 
   <!-- ============ LEVEL SELECT ============ -->
@@ -494,9 +565,9 @@ select,input[type=text]{
     <div class="hr" style="margin:8px 22px 4px"></div>
     <div class="page-body">
       <div class="form-card">
-        <div class="form-row"><label>🔊 صدای حرکت</label><span class="switch"><input type="checkbox" id="setSound"><span class="slider"></span></span></div>
-        <div class="form-row"><label>🎵 موسیقی (فقط در منو)</label><span class="switch"><input type="checkbox" id="setMusic"><span class="slider"></span></span></div>
-        <div class="form-row"><label>💡 راهنمای حرکت</label><span class="switch"><input type="checkbox" id="setHints"><span class="slider"></span></span></div>
+        <div class="form-row"><label>🔊 صدای حرکت</label><label class="switch"><input type="checkbox" id="setSound"><span class="slider"></span></label></div>
+        <div class="form-row"><label>🎵 موسیقی (فقط در منو)</label><label class="switch"><input type="checkbox" id="setMusic"><span class="slider"></span></label></div>
+        <div class="form-row"><label>💡 راهنمای حرکت</label><label class="switch"><input type="checkbox" id="setHints"><span class="slider"></span></label></div>
         <div class="form-row"><label>🎬 سرعت انیمیشن</label>
           <select id="setAnim"><option value="260">سریع (۲۶۰)</option><option value="380" selected>پیشنهادی (۳۸۰)</option><option value="520">متوسط (۵۲۰)</option><option value="700">آرام (۷۰۰)</option><option value="900">سینمایی (۹۰۰)</option></select>
         </div>
@@ -662,7 +733,8 @@ class ChessGame {
     return null;
   }
   attacked(r,c,by){
-    const pawn=by==="w"?"P":"p", dr=by==="w"?-1:1;
+    // FIX (web/android): جهت حملهٔ پیاده در نسخهٔ دسکتاپ برعکس بود و کیشِ پیاده تشخیص داده نمی‌شد
+    const pawn=by==="w"?"P":"p", dr=by==="w"?1:-1;
     for(const dc of [-1,1]){
       const rr=r+dr,cc=c+dc;
       if(this.inside(rr,cc)&&this.board[rr][cc]===pawn)return true;
@@ -1195,6 +1267,7 @@ function saveState(){
 // game-independent runtime
 const R = {
   g:null, player:"w", twoPlayer:false, gameMode:"هوش مصنوعی", level:1, timeMode:"∞",
+  botId:"matin", botLatin:"MATIN BOT",
   clock:{w:null,b:null}, clockTimer:null, lastTick:Date.now(),
   aiThinking:false, aiWorker:null, aiPending:null, aiAttempt:0, aiRetries:0,
   gameOver:false, gameGen:0,
@@ -1281,6 +1354,7 @@ const AudioEng = {
     gn.gain.exponentialRampToValueAtTime(0.0001,t+dur);
     o.connect(gn); gn.connect(ctx.destination);
     o.start(t); o.stop(t+dur+0.05);
+    (this.musNodes=this.musNodes||[]).push(o); // برای توقف فوری
   },
   startMusic(){
     if(!S.music||this.musicOn)return;
@@ -1299,6 +1373,11 @@ const AudioEng = {
   stopMusic(){
     this.musicOn=false;
     if(this.musicTimer){ clearTimeout(this.musicTimer); this.musicTimer=null; }
+    // قطع فوری نت‌های زمان‌بندی‌شده؛ سوییچ خاموش‌کردن موسیقی بی‌درنگ اثر می‌کند
+    if(this.musNodes&&this.musNodes.length){
+      this.musNodes.forEach(n=>{ try{n.stop(0);}catch(e){} });
+      this.musNodes=[];
+    }
   }
 };
 
@@ -1379,10 +1458,11 @@ function info(title,msg,cb){
 }
 
 // ---------- Router ----------
-const SCREENS=["menu","levels","academy","training","themes","settings","save","game"];
+const SCREENS=["menu","bots","levels","academy","training","themes","settings","save","game"];
 function go(name){
   SCREENS.forEach(s=>$("scr-"+s).classList.toggle("active",s===name));
   if(name==="levels")buildLevels(); // همیشه تازه‌سازی: سطح‌های تازه باز‌شده دیده شوند
+  if(name==="bots")buildBots();
   if(name==="game")requestAnimationFrame(layoutBoard);
   // موسیقی فقط خارج از صفحهٔ بازی پخش می‌شود؛ داخل بازی فقط صدای مهره‌ها
   if(name==="game"){ AudioEng.stopMusic(); }
@@ -1391,7 +1471,7 @@ function go(name){
 
 // ---------- Menu ----------
 const NAV_ITEMS=[
-  ["♟","بازی با هوش مصنوعی",()=>go("levels")],
+  ["♟","بازی با هوش مصنوعی",()=>go("bots")],
   ["♟♟","بازی دونفره",()=>twoPlayerSetup()],
   ["🎓","آکادمی آموزش",()=>go("academy")],
   ["🎯","تمرین یک‌حرکتی",()=>go("training")],
@@ -1399,6 +1479,7 @@ const NAV_ITEMS=[
   ["▣","آمار",showStats],
   ["↥","ذخیره / بارگذاری",()=>go("save")],
   ["⚙","تنظیمات",()=>go("settings")],
+  ["⟳","بررسی بروزرسانی",checkUpdates],
   ["?","راهنما",showHelp],
   ["ⓘ","درباره",showAbout]
 ];
@@ -1410,7 +1491,7 @@ function buildMenu(){
   });
   const cards=$("quickCards"); cards.innerHTML="";
   const data=[
-    ["♜","20","سطح‌های هوش مصنوعی","نردبان چالش",()=>go("levels")],
+    ["🤖","۵ موتور","مرکز ربات‌ها","همه باز • دانلودی",()=>go("bots")],
     ["♟♟","بازی دونفره","","روی یک گوشی",()=>twoPlayerSetup()],
     ["🎓","۱۰ درس","آکادمی","آموزش مرحله‌ای",()=>go("academy")]
   ];
@@ -1423,17 +1504,486 @@ function buildMenu(){
 
 // ---------- Levels ----------
 function buildLevels(){
+  // همهٔ سطح‌ها از ابتدا باز هستند (درخواست کاربر: همگی باز باشند)
   const grid=$("levelGrid"); grid.innerHTML="";
   for(let i=1;i<=20;i++){
-    const locked=i>S.unlocked;
-    const b=el("button","lvl"+(locked?" locked":""),
-      (locked?'<span class="lock">🔒 </span>':'♟ ')+`مرحله ${i}`);
-    if(locked){ b.disabled=true; }
-    else b.onclick=()=>setupGame(i);
+    const b=el("button","lvl",'♟ '+`مرحله ${i}`);
+    b.onclick=()=>setupGame(i);
     grid.appendChild(b);
   }
 }
 
+// ---------- Bot Hub (مرکز ربات‌ها) ----------
+const APP_VERSION="1.3.0";
+const REPO_OWNER="amirmhmdglstan-stack", REPO_NAME="Matin-Chess";
+const REPO_API=`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`;
+const BOT_RAW=`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/bots/`;
+function faNum(x){ return String(x).replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]); }
+const BOTS=[
+  {id:"matin",latin:"MATIN BOT",fa:"ماتین بات",
+   tag:"ربات اصلی و رسمی MATIN CHESS با ۲۰ سطح؛ از تازه‌کار تا استاد.",
+   icon:"♚",c1:"#f2c66d",c2:"#b8860b",glow:"rgba(242,198,109,.35)",
+   builtin:true,lvls:"۲۰ سطح"},
+  {id:"veltrix",latin:"VELTRIX",fa:"ولتریکس",
+   tag:"ربات قدرتمند اختصاصی پروژهٔ Veltrix؛ ۸ سطح عددی و ۳ سطح رسمی.",
+   icon:"⚡",c1:"#a78bfa",c2:"#5b21b6",glow:"rgba(167,139,250,.35)",
+   files:[{u:BOT_RAW+"veltrix.js",n:"veltrix.js",
+           fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/veltrix.js"}],
+   size:"۱۸ کیلوبایت",lvls:"۱۱ سطح"},
+  {id:"stockfish",latin:"STOCKFISH",fa:"استاک‌فیش",
+   tag:"قدرتمندترین و شناخته‌شده‌ترین ربات شطرنج دنیا؛ ۲۰ سطح مهارت.",
+   icon:"🐟",c1:"#67e8f9",c2:"#0e7490",glow:"rgba(103,232,249,.3)",
+   files:[{u:"https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js",n:"stockfish.js",patch:true},
+          {u:"https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.wasm",n:"stockfish.wasm"}],
+   size:"۲.۱ مگابایت",lvls:"۲۰ سطح"},
+  {id:"lozza",latin:"LOZZA",fa:"لوزا",
+   tag:"موتور متن‌باز و سریع با ارزیابی عصبی؛ ۱۰ سطح عمق.",
+   icon:"🦎",c1:"#86efac",c2:"#15803d",glow:"rgba(134,239,172,.3)",
+   files:[{u:"https://raw.githubusercontent.com/op12no2/lozza/master/lozza.js",n:"lozza.js",
+           fb:"https://cdn.jsdelivr.net/gh/op12no2/lozza@master/lozza.js"}],
+   size:"۶۴۰ کیلوبایت",lvls:"۱۰ سطح"},
+  {id:"garbochess",latin:"GARBOCHESS",fa:"گاربوچس",
+   tag:"موتور کلاسیک متن‌باز با سبک تاکتیکی؛ ۸ سطح زمانی.",
+   icon:"♞",c1:"#fdba74",c2:"#c2410c",glow:"rgba(253,186,116,.3)",
+   files:[{u:"https://raw.githubusercontent.com/glinscott/Garbochess-JS/master/js/garbochess.js",n:"garbochess.js",
+           fb:"https://cdn.jsdelivr.net/gh/glinscott/Garbochess-JS@master/js/garbochess.js"}],
+   size:"۸۰ کیلوبایت",lvls:"۸ سطح"}
+];
+// فایل‌های ربات‌های دانلودی در «پوشهٔ خود بازی» (حافظهٔ داخلی برنامه/IndexedDB) ذخیره می‌شوند؛ نه در Downloads
+const BotStore={
+  db:null,
+  open(){
+    return new Promise(res=>{
+      if(this.db)return res(this.db);
+      try{
+        const rq=indexedDB.open("matin-bots",1);
+        rq.onupgradeneeded=()=>{ try{ rq.result.createObjectStore("files"); }catch(e){} };
+        rq.onsuccess=()=>{ this.db=rq.result; res(this.db); };
+        rq.onerror=()=>res(null);
+      }catch(e){ res(null); }
+    });
+  },
+  put(key,val){
+    return this.open().then(db=>new Promise((res,rej)=>{
+      if(!db)return rej(new Error("nodb"));
+      const tx=db.transaction("files","readwrite");
+      tx.objectStore("files").put(val,key);
+      tx.oncomplete=res; tx.onerror=()=>rej(tx.error);
+    }));
+  },
+  get(key){
+    return this.open().then(db=>new Promise((res,rej)=>{
+      if(!db)return rej(new Error("nodb"));
+      const rq=db.transaction("files","readonly").objectStore("files").get(key);
+      rq.onsuccess=()=>res(rq.result||null); rq.onerror=()=>rej(rq.error);
+    }));
+  },
+  keys(){
+    return this.open().then(db=>new Promise((res,rej)=>{
+      if(!db)return rej(new Error("nodb"));
+      const rq=db.transaction("files","readonly").objectStore("files").getAllKeys();
+      rq.onsuccess=()=>res(rq.result||[]); rq.onerror=()=>rej(rq.error);
+    }));
+  },
+  del(key){
+    return this.open().then(db=>new Promise((res,rej)=>{
+      if(!db)return rej(new Error("nodb"));
+      const tx=db.transaction("files","readwrite");
+      tx.objectStore("files").delete(key);
+      tx.oncomplete=res; tx.onerror=()=>rej(tx.error);
+    }));
+  }
+};
+let _botKeys=null;
+function botKeys(force){
+  if(_botKeys&&!force)return Promise.resolve(_botKeys);
+  return BotStore.keys().then(k=>(_botKeys=k)).catch(()=>(_botKeys=[]));
+}
+function botInstalled(id){
+  const b=BOTS.find(x=>x.id===id);
+  if(!b)return Promise.resolve(false);
+  if(b.builtin)return Promise.resolve(true);
+  return botKeys().then(ks=>b.files.every(f=>ks.includes(id+"/"+f.n)));
+}
+function fetchWithProgress(url,onPct){
+  return fetch(url,{cache:"no-store"}).then(res=>{
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    const total=+res.headers.get("content-length")||0;
+    if(!res.body||!res.body.getReader)return res.arrayBuffer().then(b=>{onPct(100);return b;});
+    const reader=res.body.getReader();
+    const chunks=[]; let got=0;
+    const pump=()=>reader.read().then(({done,value})=>{
+      if(done)return undefined;
+      chunks.push(value); got+=value.length;
+      if(total)onPct(Math.min(99,Math.round(got/total*100)));
+      return pump();
+    });
+    return pump().then(()=>{
+      const parts=chunks, len=parts.reduce((a,c)=>a+c.length,0);
+      const out=new Uint8Array(len); let off=0;
+      for(const c of parts){ out.set(c,off); off+=c.length; }
+      onPct(100);
+      return out.buffer;
+    });
+  });
+}
+function downloadBot(b,onStatus,onPct){
+  return botKeys(true).then(()=>{
+    let done=0;
+    const per=b.files.length;
+    const runOne=(f)=>{
+      const url=f.u;
+      onStatus(`دانلود ${f.n} … (${done+1}/${per})`);
+      const fetchOne=(u)=>fetchWithProgress(u,p=>{
+        onPct(Math.min(100,Math.round((done+p/per))));
+      });
+      return fetchOne(url).catch(err=>{
+        if(f.fb){ onStatus(`اتصال اصلی ناموفق؛mirror ${f.n} …`); return fetchOne(f.fb); }
+        throw err;
+      }).then(buf=>{
+        let data=buf;
+        // patch کوچک برای بارگیری wasm از حافظهٔ بازی در Stockfish
+        if(f.patch){
+          let txt=new TextDecoder().decode(buf);
+          txt=txt.replace('locateFile:function(file){return file}',
+                          'locateFile:function(file){return self.BOT_WASM_URL||file}');
+          data=new TextEncoder().encode(txt).buffer;
+        }
+        return BotStore.put(b.id+"/"+f.n,{n:f.n,data,size:data.byteLength,ts:Date.now()})
+          .then(()=>{ done++; onPct(Math.round(done/per*100)); });
+      });
+    };
+    let chain=Promise.resolve();
+    b.files.forEach(f=>{ chain=chain.then(()=>runOne(f)); });
+    return chain.then(()=>{ _botKeys=null; return botKeys(true); });
+  });
+}
+function buildBots(){
+  const grid=$("botGrid"); if(!grid)return;
+  grid.innerHTML="";
+  BOTS.forEach(b=>{
+    const c=el("div","bot-card");
+    c.style.setProperty("--c1",b.c1); c.style.setProperty("--c2",b.c2);
+    c.style.setProperty("--glow",b.glow);
+    c.innerHTML=`
+      <div class="bot-top">
+        <div class="bot-ico">${b.icon}</div>
+        <div><div class="bot-latin">${b.latin}</div><div class="bot-fa">${b.fa}</div></div>
+      </div>
+      <div class="bot-tag">${b.tag}</div>
+      <div class="bot-foot">
+        <span class="bot-badge" data-badge>${b.builtin?"✓ داخلی":"…"}</span>
+        <span class="bot-lvls">${b.lvls}</span>
+      </div>`;
+    c.onclick=()=>{ AudioEng.play("button"); openBotModal(b); };
+    grid.appendChild(c);
+    if(!b.builtin){
+      botInstalled(b.id).then(ok=>{
+        const badge=c.querySelector("[data-badge]");
+        if(badge)badge.outerHTML=ok
+          ?'<span class="bot-badge ok">✓ نصب‌شده</span>'
+          :`<span class="bot-badge">⬇ دانلود • ${b.size}</span>`;
+      });
+    }
+  });
+}
+function botLevels(b){
+  if(b.id==="veltrix")return{
+    numeric:Array.from({length:8},(_,i)=>({num:i+1})),
+    official:[{num:101,fa:"نوا",latin:"NOVA"},{num:102,fa:"پرایم",latin:"PRIME"},{num:103,fa:"ماکس",latin:"MAX"}]
+  };
+  const n={matin:20,stockfish:20,lozza:10,garbochess:8}[b.id]||20;
+  return{numeric:Array.from({length:n},(_,i)=>({num:i+1})),official:null};
+}
+function botLevelLabel(b,lv){
+  if(b.id==="veltrix"&&lv>=101){
+    const o=botLevels(b).official.find(x=>x.num===lv);
+    return o?`${b.fa} ${o.fa}`:"";
+  }
+  return b.fa+" — سطح "+faNum(lv);
+}
+function openBotModal(b){
+  const head=(sub)=>`
+    <div class="bot-head">
+      <div class="bot-ico" style="--c1:${b.c1};--c2:${b.c2};--glow:${b.glow};background:linear-gradient(135deg,${b.c1},${b.c2})">${b.icon}</div>
+      <div style="text-align:right"><div class="bot-latin" style="--c1:${b.c1};color:${b.c1}">${b.latin}</div>
+      <div class="bot-fa">${b.fa}</div></div>
+    </div>
+    <div class="bot-desc">${sub}</div>`;
+  const box=openModal(head(b.tag)+`<div id="botBody"></div>`);
+  const body=box.querySelector("#botBody");
+  const showLevels=()=>{
+    const L=botLevels(b);
+    let h="";
+    if(L.official){
+      h+=`<div class="sect-lbl">سطح‌های عددی</div>
+          <div class="blvl-grid cols5" style="--c1:${b.c1};--c2:${b.c2}">${
+            L.numeric.map(x=>`<button class="blvl" data-lv="${x.num}">${faNum(x.num)}</button>`).join("")}</div>
+          <div class="sect-lbl">سطح‌های رسمی</div>
+          <div class="blvl-grid" style="--c1:${b.c1};--c2:${b.c2}">${
+            L.official.map(x=>`<button class="blvl offl" data-lv="${x.num}">${x.fa}<small>${x.latin}</small></button>`).join("")}</div>`;
+    }else{
+      h+=`<div class="sect-lbl">سطح‌ها (همه باز)</div>
+          <div class="blvl-grid cols5" style="--c1:${b.c1};--c2:${b.c2}">${
+            L.numeric.map(x=>`<button class="blvl" data-lv="${x.num}">${faNum(x.num)}</button>`).join("")}</div>`;
+    }
+    if(!b.builtin)h+=`<div class="row2" style="margin-top:4px"><button class="btn ghost" id="botUninstall">🗑 حذف ربات نصب‌شده</button></div>`;
+    body.innerHTML=h;
+    body.querySelectorAll(".blvl").forEach(btn=>{
+      btn.onclick=()=>{
+        const lv=+btn.dataset.lv;
+        AudioEng.play("button");
+        if(b.id==="matin")setupGame(lv); // مودال کامل ماتین بات (نوع مسابقه/مهره/زمان)
+        else botGameSetup(b,lv);
+      };
+    });
+    const un=body.querySelector("#botUninstall");
+    if(un)un.onclick=()=>{
+      ask("حذف ربات",`فایل‌های ${b.fa} از حافظهٔ بازی پاک شوند؟`,[
+        ["انصراف",null,""],
+        ["حذف",()=>{
+          Promise.all(b.files.map(f=>BotStore.del(b.id+"/"+f.n)))
+            .catch(()=>{}).finally(()=>{ _botKeys=null; toast("ربات حذف شد"); buildBots(); openBotModal(b); });
+        },"big"]
+      ]);
+    };
+  };
+  const showDownload=()=>{
+    body.innerHTML=`
+      <div class="bot-desc">این ربات به‌صورت پیش‌فرض نصب نیست. با یک ضربه دانلود می‌شود و فایل آن
+      داخل حافظهٔ خود بازی ذخیره می‌شود (نه پوشهٔ Downloads) و از دفعات بعد بدون اینترنت کار می‌کند.</div>
+      <div class="dl-bar"><div class="dl-fill" id="dlFill" style="--c1:${b.c1};--c2:${b.c2}"></div></div>
+      <div class="dl-status" id="dlStatus">آمادهٔ دانلود • حجم ${b.size}</div>
+      <div class="row2">
+        <button class="btn big" id="dlStart">⬇ دانلود و نصب</button>
+        <button class="btn" id="dlCancel">انصراف</button>
+      </div>`;
+    body.querySelector("#dlCancel").onclick=closeModal;
+    body.querySelector("#dlStart").onclick=()=>{
+      const fill=body.querySelector("#dlFill"), st=body.querySelector("#dlStatus");
+      const btn=body.querySelector("#dlStart");
+      btn.disabled=true;
+      st.textContent="در حال اتصال…";
+      downloadBot(b,
+        s=>{ st.textContent=s; },
+        p=>{ fill.style.width=p+"%"; st.textContent=`دانلود… ${p}%`; })
+      .then(()=>{ AudioEng.play("promote"); toast(b.fa+" نصب شد ✓"); showLevels(); })
+      .catch(err=>{
+        btn.disabled=false;
+        fill.style.width="0%";
+        st.textContent="دانلود ناموفق؛ اینترنت را بررسی کن و دوباره تلاش کن.";
+        console.warn("download failed",err);
+      });
+    };
+  };
+  if(b.builtin)showLevels();
+  else botInstalled(b.id).then(ok=>{ if(ok)showLevels(); else showDownload(); });
+}
+function botGameSetup(b,lv){
+  const box=openModal(`
+    <h2>${b.icon} ${botLevelLabel(b,lv)}</h2>
+    <div class="opt-group"><div class="opt-cap">مهره شما</div>
+      <label class="radio sel"><input type="radio" name="bSide" value="سفید" checked> سفید</label>
+      <label class="radio"><input type="radio" name="bSide" value="سیاه"> سیاه</label>
+    </div>
+    <div class="opt-group"><div class="opt-cap">زمان</div>
+      <label class="radio sel"><input type="radio" name="bTime" value="∞" checked> بی‌نهایت ∞</label>
+      <label class="radio"><input type="radio" name="bTime" value="10 دقیقه"> ۱۰ دقیقه</label>
+      <label class="radio"><input type="radio" name="bTime" value="5 دقیقه"> ۵ دقیقه</label>
+      <label class="radio"><input type="radio" name="bTime" value="3 دقیقه"> ۳ دقیقه</label>
+    </div>
+    <div class="row2">
+      <button class="btn big" id="bsStart">شروع مسابقه</button>
+      <button class="btn" id="bsCancel">انصراف</button>
+    </div>`);
+  const syncSel=()=>box.querySelectorAll(".radio").forEach(l=>{
+    l.classList.toggle("sel",l.querySelector("input").checked);
+  });
+  box.querySelectorAll(".radio input").forEach(inp=>inp.onchange=syncSel);
+  box.querySelector("#bsCancel").onclick=closeModal;
+  box.querySelector("#bsStart").onclick=()=>{
+    const side=box.querySelector("[name=bSide]:checked").value;
+    const tm=box.querySelector("[name=bTime]:checked").value;
+    closeModal();
+    startGame(lv,side,tm,false,b.id);
+  };
+}
+// ---------- پل موتورهای خارجی (FEN/UCI) ----------
+function stateToFEN(st){
+  const rows=[];
+  for(let r=0;r<8;r++){
+    let s="",e=0;
+    for(let c=0;c<8;c++){
+      const p=st.board[r][c];
+      if(p===".")e++; else{ if(e){s+=e;e=0;} s+=p; }
+    }
+    if(e)s+=e;
+    rows.push(s);
+  }
+  const cs=(st.castle.K?"K":"")+(st.castle.Q?"Q":"")+(st.castle.k?"k":"")+(st.castle.q?"q":"");
+  const ep=st.ep?FILES[st.ep[1]]+(8-st.ep[0]):"-";
+  return rows.join("/")+" "+st.turn+" "+(cs||"-")+" "+ep+" "+(st.halfmove||0)+" "+(st.fullmove||1);
+}
+function uciToMove(g,u){
+  if(!u||u==="(none)")return null;
+  u=u.trim();
+  const c1=FILES.indexOf(u[0]), r1=8-+u[1], c2=FILES.indexOf(u[2]), r2=8-+u[3];
+  const promo=u[4];
+  if(c1<0||c2<0)return null;
+  for(const m of g.legal(g.turn)){
+    if(m[0]===r1&&m[1]===c1&&m[2]===r2&&m[3]===c2){
+      if(promo){ if(m.length>5&&m[5]&&m[5].toUpperCase()===promo.toUpperCase())return m; }
+      else return m;
+    }
+  }
+  return null;
+}
+/* پارامتر سطح هر ربات → دستور go */
+function botLevelParams(id,lv){
+  if(id==="stockfish")return{type:"uci",
+    setopt:[["Skill Level",String(Math.round((lv-1)*20/19))]],
+    go:"go movetime "+(100+lv*40)};
+  if(id==="lozza")return{type:"uci",setopt:[],go:"go depth "+lv};
+  if(id==="garbochess")return{type:"garbo",
+    ms:[80,150,260,420,650,950,1400,2100][Math.max(0,Math.min(7,lv-1))]};
+  if(id==="veltrix"){
+    if(lv>=101){ // رسمی: نوا/پرایم/ماکس
+      const o={101:[10,600],102:[12,1300],103:[14,2400]}[lv]||[10,600];
+      return{type:"uci",setopt:[["Weakness","0"]],go:`go depth ${o[0]} movetime ${o[1]}`};
+    }
+    const wk=[110,70,40,20,0,0,0,0][Math.max(0,Math.min(7,lv-1))]||0;
+    return{type:"uci",setopt:[["Weakness",String(wk)]],
+      go:`go depth ${lv} movetime ${300+lv*120}`};
+  }
+  return{type:"uci",setopt:[],go:"go movetime 500"};
+}
+function uciResolve(w,fen,params,timeoutMs){
+  return new Promise(resolve=>{
+    let settled=false;
+    const t=setTimeout(()=>{ if(!settled){ settled=true; try{w.terminate();}catch(e){} resolve(null); } },timeoutMs||14000);
+    let stage=0;
+    w.onmessage=e=>{
+      const line=String(e.data).trim();
+      if(stage===0&&line==="uciok"){
+        stage=1;
+        w.postMessage("ucinewgame"); // لوزا بدون این دستور جست‌وجو نمی‌کند
+        (params.setopt||[]).forEach(o=>w.postMessage("setoption name "+o[0]+" value "+o[1]));
+        w.postMessage("isready");
+      }else if(stage===1&&line==="readyok"){
+        stage=2;
+        w.postMessage("position fen "+fen);
+        w.postMessage(params.go);
+      }else if(line.startsWith("bestmove")){
+        const mv=line.split(/\s+/)[1];
+        clearTimeout(t); settled=true;
+        try{w.terminate();}catch(err){}
+        resolve(mv||null);
+      }
+    };
+    w.onerror=()=>{ if(!settled){ clearTimeout(t); settled=true; try{w.terminate();}catch(e){} resolve(null); } };
+    w.postMessage("uci");
+  });
+}
+function garboResolve(w,fen,ms,timeoutMs){
+  return new Promise(resolve=>{
+    let settled=false, buf="";
+    const t=setTimeout(()=>{ if(!settled){ settled=true; try{w.terminate();}catch(e){} resolve(buf||null); } },timeoutMs||14000);
+    w.onmessage=e=>{
+      const s=String(e.data);
+      if(s.startsWith("message ")||s.startsWith("pv "))return; // پیام‌های میانی
+      const mv=s.trim();
+      if(/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(mv)){
+        clearTimeout(t); settled=true; buf=mv;
+        try{w.terminate();}catch(err){}
+        resolve(mv);
+      }
+    };
+    w.onerror=()=>{ if(!settled){ clearTimeout(t); settled=true; try{w.terminate();}catch(e){} resolve(null); } };
+    // توجه: گاربوچس بعد از «position » فقط FEN می‌خواهد (بدون کلمهٔ fen)
+    w.postMessage("position "+fen);
+    w.postMessage("search "+ms);
+  });
+}
+function runBotMove(botId,state,level){
+  const b=BOTS.find(x=>x.id===botId);
+  if(!b||b.builtin)return Promise.resolve(null);
+  return botInstalled(b.id).then(ok=>{
+    if(!ok)return null;
+    return Promise.all(b.files.map(f=>BotStore.get(b.id+"/"+f.n))).then(recs=>{
+      if(recs.some(r=>!r))return null;
+      const jsRec=recs.find(r=>r.n.endsWith(".js"));
+      const wasmRec=recs.find(r=>r.n.endsWith(".wasm"));
+      let w;
+      try{
+        if(wasmRec){
+          const wasmUrl=URL.createObjectURL(new Blob([wasmRec.data],{type:"application/wasm"}));
+          const jsUrl=URL.createObjectURL(new Blob([jsRec.data],{type:"application/javascript"}));
+          w=new Worker(URL.createObjectURL(new Blob(
+            ['self.BOT_WASM_URL='+JSON.stringify(wasmUrl)+';importScripts('+JSON.stringify(jsUrl)+');'],
+            {type:"application/javascript"})));
+        }else{
+          w=new Worker(URL.createObjectURL(new Blob([jsRec.data],{type:"application/javascript"})));
+        }
+      }catch(e){ return null; }
+      const params=botLevelParams(b.id,level);
+      const fen=stateToFEN(state);
+      const pr=(params.type==="garbo")
+        ?garboResolve(w,fen,params.ms)
+        :uciResolve(w,fen,params);
+      return pr.then(u=>{
+        if(!u)return null;
+        try{ return uciToMove(ChessGame.deserialize(state),u); }
+        catch(e){ return null; }
+      });
+    });
+  });
+}
+function requestBotMove(state){
+  if(R.botId&&R.botId!=="matin"){
+    return runBotMove(R.botId,state,R.level).then(m=>({move:m,info:null}));
+  }
+  return runAI(state,R.level,null);
+}
+// ---------- بررسی بروزرسانی (GitHub Releases) ----------
+function cmpVer(a,b){
+  const pa=String(a).split(".").map(x=>parseInt(x,10)||0);
+  const pb=String(b).split(".").map(x=>parseInt(x,10)||0);
+  for(let i=0;i<3;i++){
+    if((pa[i]||0)>(pb[i]||0))return 1;
+    if((pa[i]||0)<(pb[i]||0))return -1;
+  }
+  return 0;
+}
+function checkUpdates(){
+  AudioEng.play("button");
+  toast("در حال بررسی بروزرسانی…");
+  fetch(REPO_API,{cache:"no-store"}).then(r=>{
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    return r.json();
+  }).then(rel=>{
+    const latest=String(rel.tag_name||"").replace(/^v/,"");
+    if(!latest)throw new Error("no tag");
+    if(cmpVer(latest,APP_VERSION)>0){
+      const notes=String(rel.body||"").slice(0,1200);
+      const box=openModal(`
+        <h2>🎉 بروزرسانی موجود است</h2>
+        <div class="msg">نسخهٔ جدید <b style="color:var(--gold)">${latest}</b> منتشر شده است
+        (نسخهٔ فعلی شما: ${APP_VERSION})</div>
+        <div class="up-notes">${(notes||"—").replace(/</g,"&lt;")}</div>
+        <div class="row2">
+          <a class="btn big" href="${rel.html_url}" target="_blank" rel="noopener">⬇ دانلود از گیت‌هاب</a>
+          <button class="btn" id="upLater">بعداً</button>
+        </div>`);
+      box.querySelector("#upLater").onclick=closeModal;
+    }else if(cmpVer(latest,APP_VERSION)===0){
+      info("بررسی بروزرسانی","شما آخرین نسخه را دارید ✓\n\nنسخهٔ فعلی: "+APP_VERSION);
+    }else{
+      info("بررسی بروزرسانی","نسخهٔ شما ("+APP_VERSION+") جدیدتر از آخرین ریلیز عمومی است.");
+    }
+  }).catch(()=>{
+    info("بررسی بروزرسانی","اتصال به گیت‌هاب ممکن نشد.\nاتصال اینترنت را بررسی کن و دوباره تلاش کن.");
+  });
+}
 // ---------- Academy ----------
 function buildAcademy(){
   const grid=$("academyGrid"); grid.innerHTML="";
@@ -1979,7 +2529,7 @@ function aiMove(){
     const s2=R.g?R.g.gameState():null;
     if(s2==="play"||s2==="check")setTimeout(aiMove,300);
   },15000);
-  runAI(state,R.level,null).then(res=>{
+  requestBotMove(state).then(res=>{
     if(R.aiAttempt!==attempt||R.gameGen!==gen||R.gameOver)return;
     if(res.info){
       R.aiNodes=res.info.nodes||0; R.aiQnodes=res.info.qnodes||0;
@@ -2060,12 +2610,15 @@ function scoreSides(){
 function updateHud(){
   const g=R.g; if(!g||!$("railInfo"))return;
   const sc=scoreSides();
-  const whoLine=R.twoPlayer?`حالت: ${R.gameMode}\n`:`شما: ${R.player==="w"?"سفید":"سیاه"}\n`;
+  const whoLine=R.twoPlayer?`حالت: ${R.gameMode}\n`
+    :(R.botId&&R.botId!=="matin"?`ربات: ${R.botLatin}\n`:`شما: ${R.player==="w"?"سفید":"سیاه"}\n`);
+  const lvlLine=(R.botId&&R.botId!=="matin")
+    ?`سطح: ${faNum(R.level)}\n`:`مرحله: ${R.level}/20\n`;
   $("railInfo").textContent=
-    `مرحله: ${R.level}/20\n`+whoLine+
+    lvlLine+whoLine+
     `نوبت: ${g.turn==="w"?"سفید":"سیاه"}\n`+
     `حرکت‌ها: ${g.moves.length}   گره‌های AI: ${R.twoPlayer?0:R.aiNodes}\n`+
-    `عمق جست‌وجو: ${R.twoPlayer?0:R.aiDepth}\nقدرت موتور: ${R.level}/20`;
+    `عمق جست‌وجو: ${R.twoPlayer?0:R.aiDepth}\nقدرت موتور: ${R.twoPlayer?"—":(R.botId!=="matin"?R.botLatin+" سطح "+R.level:R.level+"/20")}`;
   const pieces=g.captured.slice(-16).map(p=>UNICODE[p]).join(" ")||"—";
   $("railCaptured").innerHTML=
     `<div>${pieces}</div><div class="capline">امتیاز سفید: ${sc.w} | سیاه: ${sc.b}</div>`;
@@ -2150,14 +2703,17 @@ function twoPlayerSetup(){
     startGame(0,"سفید",tm,true);
   };
 }
-function startGame(level,side,timeMode,twoPlayer){
+function startGame(level,side,timeMode,twoPlayer,botId){
   closeModal(); delete modalRoot.dataset.lock;
   R.gameOver=false; R.gameGen++; R.aiAttempt++; R.aiRetries=0; R.aiThinking=false;
   if(R.aiPending)R.aiPending.clear();
   R.trainingMode=false; R.trainingTarget=null;
   R.level=level; R.player=side==="سفید"?"w":"b";
   R.twoPlayer=!!twoPlayer;
-  R.gameMode=twoPlayer?"دونفره":"هوش مصنوعی";
+  R.botId=(botId&&!twoPlayer)?botId:"matin";
+  const bb=BOTS.find(x=>x.id===R.botId);
+  R.botLatin=bb?bb.latin:"MATIN BOT";
+  R.gameMode=twoPlayer?"دونفره":(R.botId==="matin"?"هوش مصنوعی":R.botLatin);
   R.timeMode=timeMode;
   R.animSpeed=S.anim_speed||380;
   R.aiAnimSpeed=Math.max(1200,Math.min(1550,R.animSpeed+650));
@@ -2180,9 +2736,12 @@ function startGame(level,side,timeMode,twoPlayer){
   if(!R.twoPlayer&&R.player==="b")setTimeout(aiMove,1400);
 }
 function buildGameScreen(){
+  const bbG=BOTS.find(x=>x.id===R.botId);
   $("gameMeta").textContent=R.trainingMode
     ?`/ تمرین ${R.trainingIndex+1}/${TRAINING_LEVELS.length}`
-    :`/ ${R.gameMode} / سطح ${String(R.level).padStart(2,"0")} / ${R.timeMode}`;
+    :(R.botId&&R.botId!=="matin"&&bbG
+      ?`/ ${botLevelLabel(bbG,R.level)} / ${R.timeMode}`
+      :`/ ${R.gameMode} / سطح ${String(R.level).padStart(2,"0")} / ${R.timeMode}`);
   $("btnUndo").style.display=R.trainingMode?"none":"";
   buildBoardDom();
   syncPieces();
@@ -2451,7 +3010,8 @@ function serialAll(){
     custom_light:S.custom_light,custom_dark:S.custom_dark,custom_frame:S.custom_frame,
     custom_hi:S.custom_hi,piece_style:S.piece_style,stats:S.stats,unlocked:S.unlocked,
     anim_speed:S.anim_speed,tournament:S.tournament,move_analysis:R.moveAnalysis,
-    two_player:R.twoPlayer,over:!!R.gameOver,creators:CREATORS,edition:"android-1.2.0"};
+    two_player:R.twoPlayer,bot_id:R.botId||"matin",bot_latin:R.botLatin||"",
+    over:!!R.gameOver,creators:CREATORS,edition:"android-1.3.0"};
 }
 function restoreAll(d){
   closeModal(); delete modalRoot.dataset.lock;
@@ -2474,7 +3034,10 @@ function restoreAll(d){
     S.anim_speed=d.anim_speed||380;
     R.g=ChessGame.deserialize(d.game);
     R.twoPlayer=!!d.two_player;
-    R.gameMode=R.twoPlayer?"دونفره":"هوش مصنوعی";
+    R.botId=(!R.twoPlayer&&d.bot_id&&BOTS.some(x=>x.id===d.bot_id))?d.bot_id:"matin";
+    const bbR=BOTS.find(x=>x.id===R.botId);
+    R.botLatin=bbR?bbR.latin:"MATIN BOT";
+    R.gameMode=R.twoPlayer?"دونفره":(R.botId==="matin"?"هوش مصنوعی":R.botLatin);
     R.moveAnalysis=Array.isArray(d.move_analysis)?d.move_analysis:[];
     R.selected=null;R.hint=null;R.aiThinking=false;R.animating=false;
     R.trainingMode=false;R.trainingTarget=null;
@@ -2619,7 +3182,8 @@ function bindGameButtons(){
 function init(){
   loadState();
   applyUiTheme(); applyBoardColors();
-  buildMenu(); buildLevels(); buildAcademy(); buildTraining();
+  buildMenu(); buildLevels(); buildAcademy(); buildTraining(); buildBots();
+  try{ $("verSpan").textContent=APP_VERSION; }catch(e){}
   buildThemes(); buildCustomColors(); syncSettingsUi(); bindSettings();
   bindGameButtons();
   initWorker();
@@ -2635,6 +3199,7 @@ function init(){
     b.addEventListener("click",()=>{
       AudioEng.play("button");
       const t=b.dataset.go;
+      if(t==="bots")buildBots();
       if(t==="levels")buildLevels();
       if(t==="themes")buildThemes();
       if(t==="settings")syncSettingsUi();
