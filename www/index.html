@@ -87,6 +87,13 @@ body{
 .side-sep{height:1px;background:#26333e;margin:20px 18px}
 .creators{text-align:center;color:var(--gold);font-size:13px;font-weight:700;line-height:1.7}
 .creators small{display:block;color:#8899a7;font-weight:600;font-size:12px}
+.pull-hint{
+  margin:0 10px 6px;text-align:center;font-size:11.5px;font-weight:800;color:var(--gold);
+  background:linear-gradient(135deg,rgba(242,198,109,.14),rgba(242,198,109,.03));
+  border:1px solid rgba(242,198,109,.28);border-radius:20px;padding:6px 10px;
+  animation:pullBounce 1.7s ease-in-out infinite;letter-spacing:.3px;user-select:none
+}
+@keyframes pullBounce{0%,100%{transform:translateY(0);opacity:.8}50%{transform:translateY(-4px);opacity:1}}
 .exit-btn{
   margin:auto auto 18px;background:transparent;color:#9ba7b2;border:0;font-family:var(--font-ui);
   font-size:13px;font-weight:700;cursor:pointer;padding:10px 18px;border-radius:8px;
@@ -459,8 +466,9 @@ a.btn:active{transform:scale(.97)}
       <div class="side-cap">مرکز بازی</div>
       <nav class="side-nav" id="sideNav"></nav>
       <div class="side-sep"></div>
+      <div class="pull-hint">به بالا بکشید⬆️</div>
       <div class="side-cap">سازندگان</div>
-      <div class="creators">متین کتویی زاده<small>امیرمحمد گلستان</small></div>
+      <div class="creators">امیرمحمد گلستان<small>متین کتویی زاده</small></div>
       <button class="exit-btn" id="btnExit">×   خروج</button>
     </aside>
     <button class="menu-fab" id="btnDrawer" aria-label="باز کردن منو"><span></span><span></span><span></span></button>
@@ -1184,7 +1192,7 @@ const THEMES = {
   "Ice":["#0a1118","#183040","#f5fcff","#9be7ff","#29526a"],
   "Sunset":["#170c0a","#30201b","#fff8ef","#ffb36b","#583827"]
 };
-const CREATORS = "متین کتویی زاده • امیرمحمد گلستان";
+const CREATORS = "امیرمحمد گلستان • متین کتویی زاده";
 const TRAINING_LEVELS = [
   {"name":"مات در یک • 01","goal":"هدف: در یک حرکت مات کن","side":"w",
    "board":[".....K.k","Q.......","........","........","........","........","........","........"],
@@ -1316,7 +1324,7 @@ function applyBoardColors(){
 
 // ---------- Audio (WebAudio mirrors of the winsound beeps) ----------
 const AudioEng = {
-  ctx:null, musicOn:false, musicTimer:null,
+  ctx:null, musicOn:false, musicTimer:null, musicBuf:null, musicSrc:null,
   ensure(){
     if(!this.ctx){
       try{ this.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; }
@@ -1344,36 +1352,44 @@ const AudioEng = {
     const seq=[523,659,784,1047,1319];
     seq.forEach((f,i)=>setTimeout(()=>this.tone(f,100),i*125));
   },
-  musicNote(freq,dur,when){
-    const ctx=this.ensure(); if(!ctx)return;
-    const o=ctx.createOscillator(), gn=ctx.createGain();
-    o.type="sine"; o.frequency.value=freq;
-    const t=ctx.currentTime+when;
-    gn.gain.setValueAtTime(0.0001,t);
-    gn.gain.exponentialRampToValueAtTime(0.08,t+0.02);
-    gn.gain.exponentialRampToValueAtTime(0.0001,t+dur);
-    o.connect(gn); gn.connect(ctx.destination);
-    o.start(t); o.stop(t+dur+0.05);
-    (this.musNodes=this.musNodes||[]).push(o); // برای توقف فوری
+  /* آهنگ صفحهٔ اصلی: بازسازی نمونه‌به‌نمونهٔ «آهنگِ آپلودشدهٔ» بازی اصلی
+     (create_music در سورس پایتون: نرخ ۲۲۰۵۰ هرتز، سینوسی،
+     attack 20ms / release 50ms، دامنهٔ 8500/32768، همان نت‌ها و طول‌ها) */
+  buildMusicBuffer(){
+    const rate=22050;
+    const notes=[[523,.18],[659,.18],[784,.18],[659,.18],[587,.18],[698,.18],[880,.25],[698,.18],[523,.18],[659,.18],[784,.18],[1047,.35]];
+    let total=0; for(const [f,d] of notes)total+=Math.round(rate*d);
+    const buf=this.ensure().createBuffer(1,total,rate);
+    const out=buf.getChannelData(0),AMP=8500/32768; let off=0;
+    for(const [freq,dur] of notes){
+      const n=Math.round(rate*dur);
+      for(let i=0;i<n;i++){
+        const env=Math.min(1,i/(rate*.02),(n-i)/(rate*.05));
+        out[off+i]=AMP*env*Math.sin(2*Math.PI*freq*(i/rate));
+      }
+      off+=n;
+    }
+    return buf;
   },
   startMusic(){
     if(!S.music||this.musicOn)return;
     try{ if($("scr-game").classList.contains("active"))return; }catch(e){}
+    const ctx=this.ensure(); if(!ctx)return;
     this.stopMusic();
     this.musicOn=true;
-    const notes=[[523,.18],[659,.18],[784,.18],[659,.18],[587,.18],[698,.18],[880,.25],[698,.18],[523,.18],[659,.18],[784,.18],[1047,.35]];
-    const loop=()=>{
-      if(!this.musicOn)return;
-      let t=0;
-      for(const [f,d] of notes){ this.musicNote(f,d,t); t+=d; }
-      this.musicTimer=setTimeout(loop,t*1000+0.6);
-    };
-    loop();
+    try{
+      if(!this.musicBuf)this.musicBuf=this.buildMusicBuffer();
+      const src=ctx.createBufferSource();
+      src.buffer=this.musicBuf; src.loop=true; // حلقهٔ بی‌درز، مثل WAV اصلی
+      src.connect(ctx.destination); src.start(0);
+      this.musicSrc=src;
+    }catch(e){ this.musicOn=false; }
   },
   stopMusic(){
     this.musicOn=false;
     if(this.musicTimer){ clearTimeout(this.musicTimer); this.musicTimer=null; }
-    // قطع فوری نت‌های زمان‌بندی‌شده؛ سوییچ خاموش‌کردن موسیقی بی‌درنگ اثر می‌کند
+    // قطع فوری؛ سوییچ خاموش‌کردن موسیقی بی‌درنگ اثر می‌کند
+    if(this.musicSrc){ try{this.musicSrc.stop(0);}catch(e){} this.musicSrc=null; }
     if(this.musNodes&&this.musNodes.length){
       this.musNodes.forEach(n=>{ try{n.stop(0);}catch(e){} });
       this.musNodes=[];
@@ -1514,7 +1530,7 @@ function buildLevels(){
 }
 
 // ---------- Bot Hub (مرکز ربات‌ها) ----------
-const APP_VERSION="1.3.0";
+const APP_VERSION="1.4.0";
 const REPO_OWNER="amirmhmdglstan-stack", REPO_NAME="Matin-Chess";
 const REPO_API=`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`;
 const BOT_RAW=`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/bots/`;
@@ -1525,11 +1541,16 @@ const BOTS=[
    icon:"♚",c1:"#f2c66d",c2:"#b8860b",glow:"rgba(242,198,109,.35)",
    builtin:true,lvls:"۲۰ سطح"},
   {id:"veltrix",latin:"VELTRIX",fa:"ولتریکس",
-   tag:"ربات قدرتمند اختصاصی پروژهٔ Veltrix؛ ۸ سطح عددی و ۳ سطح رسمی.",
+   tag:"موتور واقعی و اختصاصی پروژهٔ Veltrix (C++ → WASM) با کتاب شروع اصلی؛ ۳ مدل رسمی و ۸ سطح — دقیقاً مثل پروژهٔ اصلی.",
    icon:"⚡",c1:"#a78bfa",c2:"#5b21b6",glow:"rgba(167,139,250,.35)",
+   entry:"veltrix.js",
    files:[{u:BOT_RAW+"veltrix.js",n:"veltrix.js",
-           fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/veltrix.js"}],
-   size:"۱۸ کیلوبایت",lvls:"۱۱ سطح"},
+           fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/veltrix.js"},
+          {u:BOT_RAW+"veltrix-core.js",n:"veltrix-core.js",
+           fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/veltrix-core.js"},
+          {u:BOT_RAW+"veltrix.wasm",n:"veltrix.wasm",
+           fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/veltrix.wasm"}],
+   size:"۳۶۰ کیلوبایت",lvls:"۳ مدل + ۸ سطح"},
   {id:"stockfish",latin:"STOCKFISH",fa:"استاک‌فیش",
    tag:"قدرتمندترین و شناخته‌شده‌ترین ربات شطرنج دنیا؛ ۲۰ سطح مهارت.",
    icon:"🐟",c1:"#67e8f9",c2:"#0e7490",glow:"rgba(103,232,249,.3)",
@@ -1549,6 +1570,22 @@ const BOTS=[
            fb:"https://cdn.jsdelivr.net/gh/glinscott/Garbochess-JS@master/js/garbochess.js"}],
    size:"۸۰ کیلوبایت",lvls:"۸ سطح"}
 ];
+/* مدل‌ها و سطوح ولتریکس — کپی مو‌به‌مو از gui/models.py پروژهٔ اصلی ولتریکس:
+   High بدون هیچ سقفی؛ Light ≈۶۴هزار گره/۴۰۰ms؛ Fast ≈۴هزار گره/۶۰ms.
+   سطح‌های ۱ تا ۸ هم بودجهٔ گره + سقف زمان دقیقاً همان مقادیر اصلی هستند
+   (سطح ۱ = فست، سطح ۸ = های). قدرت با «go nodes N» کنترل می‌شود، مثل GUI اصلی. */
+const VLTRIX_MODELS=[
+  {num:301,key:"High",fa:"های",  nodes:null,  mt:null,
+   desc:"ولتریکس کامل: بدون هیچ محدودیت مصنوعی — جست‌وجوی کامل، کتاب شروع و ارزیابی فعال؛ قوی‌ترین حالت بازی با ولتریکس."},
+  {num:302,key:"Light",fa:"لایت", nodes:64000, mt:400,
+   desc:"بازی متعادل و آموزشی: حدود ۶۴٬۰۰۰ موقعیت در هر حرکت (تقریباً عمق ۷-۸) و هرگز بیشتر از نیم ثانیه فکر نمی‌کند."},
+  {num:303,key:"Fast",fa:"فست", nodes:4000,  mt:60,
+   desc:"پاسخ تقریباً فوری: حدود ۴٬۰۰۰ موقعیت در هر حرکت (تقریباً عمق ۴-۵)؛ مناسب بازی‌های سریع و شروع‌کارها."}
+];
+const VLTRIX_LEVELS=[null,
+  {nodes:4000,mt:60},{nodes:8000,mt:80},{nodes:16000,mt:120},
+  {nodes:32000,mt:160},{nodes:64000,mt:240},{nodes:128000,mt:400},
+  {nodes:512000,mt:1000},{nodes:null,mt:null}];
 // فایل‌های ربات‌های دانلودی در «پوشهٔ خود بازی» (حافظهٔ داخلی برنامه/IndexedDB) ذخیره می‌شوند؛ نه در Downloads
 const BotStore={
   db:null,
@@ -1690,15 +1727,16 @@ function buildBots(){
 function botLevels(b){
   if(b.id==="veltrix")return{
     numeric:Array.from({length:8},(_,i)=>({num:i+1})),
-    official:[{num:101,fa:"نوا",latin:"NOVA"},{num:102,fa:"پرایم",latin:"PRIME"},{num:103,fa:"ماکس",latin:"MAX"}]
+    official:VLTRIX_MODELS.map(m=>({num:m.num,fa:m.fa,latin:m.key})),
+    offlLabel:"مدل‌های اصلی"
   };
   const n={matin:20,stockfish:20,lozza:10,garbochess:8}[b.id]||20;
   return{numeric:Array.from({length:n},(_,i)=>({num:i+1})),official:null};
 }
 function botLevelLabel(b,lv){
-  if(b.id==="veltrix"&&lv>=101){
-    const o=botLevels(b).official.find(x=>x.num===lv);
-    return o?`${b.fa} ${o.fa}`:"";
+  if(b.id==="veltrix"&&lv>=300){
+    const o=VLTRIX_MODELS.find(x=>x.num===lv);
+    return o?`${b.fa} ${o.fa} (${o.key})`:"";
   }
   return b.fa+" — سطح "+faNum(lv);
 }
@@ -1719,9 +1757,10 @@ function openBotModal(b){
       h+=`<div class="sect-lbl">سطح‌های عددی</div>
           <div class="blvl-grid cols5" style="--c1:${b.c1};--c2:${b.c2}">${
             L.numeric.map(x=>`<button class="blvl" data-lv="${x.num}">${faNum(x.num)}</button>`).join("")}</div>
-          <div class="sect-lbl">سطح‌های رسمی</div>
+          <div class="sect-lbl">${L.offlLabel||"سطح‌های رسمی"}</div>
           <div class="blvl-grid" style="--c1:${b.c1};--c2:${b.c2}">${
-            L.official.map(x=>`<button class="blvl offl" data-lv="${x.num}">${x.fa}<small>${x.latin}</small></button>`).join("")}</div>`;
+            L.official.map(x=>{const md=(typeof VLTRIX_MODELS!=="undefined")&&VLTRIX_MODELS.find(m=>m.num===x.num);
+              return `<button class="blvl offl" data-lv="${x.num}"${md?` title="${md.desc}"`:""}>${x.fa}<small>${x.latin}</small></button>`;}).join("")}</div>`;
     }else{
       h+=`<div class="sect-lbl">سطح‌ها (همه باز)</div>
           <div class="blvl-grid cols5" style="--c1:${b.c1};--c2:${b.c2}">${
@@ -1847,13 +1886,22 @@ function botLevelParams(id,lv){
   if(id==="garbochess")return{type:"garbo",
     ms:[80,150,260,420,650,950,1400,2100][Math.max(0,Math.min(7,lv-1))]};
   if(id==="veltrix"){
-    if(lv>=101){ // رسمی: نوا/پرایم/ماکس
-      const o={101:[10,600],102:[12,1300],103:[14,2400]}[lv]||[10,600];
-      return{type:"uci",setopt:[["Weakness","0"]],go:`go depth ${o[0]} movetime ${o[1]}`};
-    }
-    const wk=[110,70,40,20,0,0,0,0][Math.max(0,Math.min(7,lv-1))]||0;
-    return{type:"uci",setopt:[["Weakness",String(wk)]],
-      go:`go depth ${lv} movetime ${300+lv*120}`};
+    /* دقیقاً مطابق go_kwargs در gui/models.py پروژهٔ اصلی:
+       بودجهٔ گره + سقف زمان؛ High بدون سقف و فقط با ساعت کاربر */
+    let nodes=null,mt=null;
+    if(lv>=300){ const m=VLTRIX_MODELS.find(x=>x.num===lv); if(m){nodes=m.nodes;mt=m.mt;} }
+    else{ const L=VLTRIX_LEVELS[Math.max(1,Math.min(8,lv))]; if(L){nodes=L.nodes;mt=L.mt;} }
+    const timed=R.timeMode&&R.timeMode!=="∞"&&R.clock&&R.clock.w!=null&&R.clock.b!=null;
+    const cw=timed?Math.max(1000,Math.round(R.clock.w*1000)):null;
+    const cb=timed?Math.max(1000,Math.round(R.clock.b*1000)):null;
+    let go="go";
+    if(cw&&cb)go+=` wtime ${cw} btime ${cb}`;
+    if(mt!=null)go+=` movetime ${mt}`;
+    else if(!cw)go+=" movetime 1500"; // High در بازی بی‌نهایت → مووتایم پیش‌فرض
+    if(nodes!=null)go+=` nodes ${nodes}`;
+    return{type:"uci",
+      setopt:[["Hash","32"],["Threads","1"],["UseBook","true"],["UCI_LimitStrength","false"]],
+      go,timeout:20000};
   }
   return{type:"uci",setopt:[],go:"go movetime 500"};
 }
@@ -1911,25 +1959,24 @@ function runBotMove(botId,state,level){
     if(!ok)return null;
     return Promise.all(b.files.map(f=>BotStore.get(b.id+"/"+f.n))).then(recs=>{
       if(recs.some(r=>!r))return null;
-      const jsRec=recs.find(r=>r.n.endsWith(".js"));
-      const wasmRec=recs.find(r=>r.n.endsWith(".wasm"));
       let w;
       try{
-        if(wasmRec){
-          const wasmUrl=URL.createObjectURL(new Blob([wasmRec.data],{type:"application/wasm"}));
-          const jsUrl=URL.createObjectURL(new Blob([jsRec.data],{type:"application/javascript"}));
-          w=new Worker(URL.createObjectURL(new Blob(
-            ['self.BOT_WASM_URL='+JSON.stringify(wasmUrl)+';importScripts('+JSON.stringify(jsUrl)+');'],
-            {type:"application/javascript"})));
-        }else{
-          w=new Worker(URL.createObjectURL(new Blob([jsRec.data],{type:"application/javascript"})));
-        }
+        const urls={};
+        recs.forEach(r=>{ urls[r.n]=URL.createObjectURL(new Blob([r.data],
+          {type:r.n.endsWith(".wasm")?"application/wasm":"application/javascript"})); });
+        const entryName=b.entry||b.files[0].n;
+        let boot="";
+        if(urls["veltrix.wasm"])boot+="self.BOT_WASM_URL="+JSON.stringify(urls["veltrix.wasm"])+";";
+        boot+="self.BOT_FILES="+JSON.stringify(urls)+";";
+        w=new Worker(URL.createObjectURL(new Blob(
+          [boot+'importScripts('+JSON.stringify(urls[entryName])+');'],
+          {type:"application/javascript"})));
       }catch(e){ return null; }
       const params=botLevelParams(b.id,level);
       const fen=stateToFEN(state);
       const pr=(params.type==="garbo")
         ?garboResolve(w,fen,params.ms)
-        :uciResolve(w,fen,params);
+        :uciResolve(w,fen,params,params.timeout);
       return pr.then(u=>{
         if(!u)return null;
         try{ return uciToMove(ChessGame.deserialize(state),u); }
@@ -2167,8 +2214,8 @@ function showAbout(){
     "MATIN CHESS\n"+
     "یک بازی شطرنج با موتور داخلی؛ نسخه اندروید.\n\n"+
     "هوش مصنوعی • قوانین کامل شطرنج • زمان‌سنج • صدا • آمار • ذخیره/بارگذاری\n"+
-    "سازندگان: متین کتویی زاده و امیرمحمد گلستان\n\n"+
-    "طراحی و ساخته‌شده برای متین.");
+    "سازندگان: امیرمحمد گلستان و متین کتویی زاده\n\n"+
+    "طراحی و ساخته‌شده برای دوستداران شطرنج.");
 }
 function dbSummary(){
   try{
@@ -2613,12 +2660,15 @@ function updateHud(){
   const whoLine=R.twoPlayer?`حالت: ${R.gameMode}\n`
     :(R.botId&&R.botId!=="matin"?`ربات: ${R.botLatin}\n`:`شما: ${R.player==="w"?"سفید":"سیاه"}\n`);
   const lvlLine=(R.botId&&R.botId!=="matin")
-    ?`سطح: ${faNum(R.level)}\n`:`مرحله: ${R.level}/20\n`;
+    ?(R.botId==="veltrix"&&R.level>=300
+        ?"مدل: "+((VLTRIX_MODELS.find(m=>m.num===R.level)||{}).key||R.level)+"\n"
+        :`سطح: ${faNum(R.level)}\n`)
+    :`مرحله: ${R.level}/20\n`;
   $("railInfo").textContent=
     lvlLine+whoLine+
     `نوبت: ${g.turn==="w"?"سفید":"سیاه"}\n`+
     `حرکت‌ها: ${g.moves.length}   گره‌های AI: ${R.twoPlayer?0:R.aiNodes}\n`+
-    `عمق جست‌وجو: ${R.twoPlayer?0:R.aiDepth}\nقدرت موتور: ${R.twoPlayer?"—":(R.botId!=="matin"?R.botLatin+" سطح "+R.level:R.level+"/20")}`;
+    `عمق جست‌وجو: ${R.twoPlayer?0:R.aiDepth}\nقدرت موتور: ${R.twoPlayer?"—":(R.botId==="veltrix"&&R.level>=300?"VELTRIX "+((VLTRIX_MODELS.find(m=>m.num===R.level)||{}).key||R.level):(R.botId!=="matin"?R.botLatin+" سطح "+R.level:R.level+"/20"))}`;
   const pieces=g.captured.slice(-16).map(p=>UNICODE[p]).join(" ")||"—";
   $("railCaptured").innerHTML=
     `<div>${pieces}</div><div class="capline">امتیاز سفید: ${sc.w} | سیاه: ${sc.b}</div>`;
