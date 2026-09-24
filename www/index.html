@@ -500,9 +500,9 @@ a.btn:active{transform:scale(.97)}
   <section id="scr-bots" class="screen">
     <div class="page-head">
       <button class="btn white small" data-go="menu">←  منوی اصلی</button>
-      <div class="page-title">🤖 مرکز ربات‌ها</div>
+      <div class="page-title">♟️ بازی با هوش مصنوعی</div>
     </div>
-    <div class="page-sub" style="text-align:left;padding:0 24px">۵ موتور شطرنج • همهٔ سطح‌ها باز • ربات‌های دانلودی در حافظهٔ خود بازی نصب می‌شوند</div>
+    <div class="page-sub" style="text-align:left;padding:0 24px">۵ موتور واقعی شطرنج • همهٔ سطح‌ها باز • فایل رسمی هر ربات یک‌بار دانلود و داخل حافظهٔ خود بازی نصب می‌شود (کاملاً آفلاین)</div>
     <div class="hr" style="margin:8px 22px 4px"></div>
     <div class="page-body"><div class="bot-grid" id="botGrid"></div></div>
   </section>
@@ -1501,7 +1501,7 @@ function buildMenu(){
   });
   const cards=$("quickCards"); cards.innerHTML="";
   const data=[
-    ["🤖","۵ موتور","مرکز ربات‌ها","همه باز • دانلودی",()=>go("bots")],
+    ["🤖","۵ موتور","بازی با هوش مصنوعی","فایل‌های رسمی • همه باز",()=>go("bots")],
     ["♟♟","بازی دونفره","","روی یک گوشی",()=>twoPlayerSetup()],
     ["🎓","۱۰ درس","آکادمی","آموزش مرحله‌ای",()=>go("academy")]
   ];
@@ -1524,7 +1524,7 @@ function buildLevels(){
 }
 
 // ---------- Bot Hub (مرکز ربات‌ها) ----------
-const APP_VERSION="1.4.1";
+const APP_VERSION="1.5.0";
 const REPO_OWNER="amirmhmdglstan-stack", REPO_NAME="Matin-Chess";
 const REPO_API=`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`;
 const BOT_RAW=`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/bots/`;
@@ -1545,12 +1545,14 @@ const BOTS=[
           {u:BOT_RAW+"veltrix.wasm",n:"veltrix.wasm",
            fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/veltrix.wasm"}],
    size:"۳۶۰ کیلوبایت",lvls:"۳ مدل + ۸ سطح"},
-  {id:"stockfish",latin:"STOCKFISH",fa:"استاک‌فیش",
-   tag:"قدرتمندترین و شناخته‌شده‌ترین ربات شطرنج دنیا؛ ۲۰ سطح مهارت.",
+  {id:"stockfish",latin:"STOCKFISH 19",fa:"استاک‌فیش ۱۹",
+   tag:"قدرتمندترین موتور شطرنج دنیا — نسخهٔ رسمی ۱۹ با ارزیابی عصبی NNUE؛ فایل واقعی و رسمی منتشرشدهٔ پروژهٔ استاک‌فیش (حدود ۹۵ مگابایت، یک‌بار دانلود و برای همیشه آفلاین).",
    icon:"🐟",c1:"#67e8f9",c2:"#0e7490",glow:"rgba(103,232,249,.3)",
-   files:[{u:"https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js",n:"stockfish.js",patch:true},
-          {u:"https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.wasm",n:"stockfish.wasm"}],
-   size:"۲.۱ مگابایت",lvls:"۲۰ سطح"},
+   files:[{u:"https://raw.githubusercontent.com/amirmhmdglstan-stack/Matin-Chess/main/bots/stockfish-19-single.js",n:"stockfish-19-single.js",patch:true,
+           fb:"https://github.com/amirmhmdglstan-stack/Matin-Chess/releases/download/v1.5.0/stockfish-19-single.js"},
+          {u:"https://raw.githubusercontent.com/amirmhmdglstan-stack/Matin-Chess/main/bots/stockfish-19-single.wasm",n:"stockfish-19-single.wasm",
+           fb:"https://github.com/amirmhmdglstan-stack/Matin-Chess/releases/download/v1.5.0/stockfish-19-single.wasm"}],
+   size:"۹۵ مگابایت",lvls:"۲۰ سطح"},
   {id:"lozza",latin:"LOZZA",fa:"لوزا",
    tag:"موتور متن‌باز و سریع با ارزیابی عصبی؛ ۱۰ سطح عمق.",
    icon:"🦎",c1:"#86efac",c2:"#15803d",glow:"rgba(134,239,172,.3)",
@@ -1678,6 +1680,10 @@ function downloadBot(b,onStatus,onPct){
           let txt=new TextDecoder().decode(buf);
           txt=txt.replace('locateFile:function(file){return file}',
                           'locateFile:function(file){return self.BOT_WASM_URL||file}');
+          if(f.n.indexOf("stockfish-19")===0){
+            txt=txt.replace('location.origin+location.pathname.replace(/\\.js$/i,".wasm")',
+                            '(self.BOT_WASM_URL||location.origin+location.pathname.replace(/\\.js$/i,".wasm"))');
+          }
           data=new TextEncoder().encode(txt).buffer;
         }
         return BotStore.put(b.id+"/"+f.n,{n:f.n,data,size:data.byteLength,ts:Date.now()})
@@ -1961,6 +1967,7 @@ function runBotMove(botId,state,level){
         const entryName=b.entry||b.files[0].n;
         let boot="";
         if(urls["veltrix.wasm"])boot+="self.BOT_WASM_URL="+JSON.stringify(urls["veltrix.wasm"])+";";
+        else if(urls["stockfish-19-single.wasm"])boot+="self.BOT_WASM_URL="+JSON.stringify(urls["stockfish-19-single.wasm"])+";";
         boot+="self.BOT_FILES="+JSON.stringify(urls)+";";
         w=new Worker(URL.createObjectURL(new Blob(
           [boot+'importScripts('+JSON.stringify(urls[entryName])+');'],
