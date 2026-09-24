@@ -1324,7 +1324,7 @@ function applyBoardColors(){
 
 // ---------- Audio (WebAudio mirrors of the winsound beeps) ----------
 const AudioEng = {
-  ctx:null, musicOn:false, musicTimer:null, musicBuf:null, musicSrc:null,
+  ctx:null, musicOn:false, musicTimer:null, musicEl:null,
   ensure(){
     if(!this.ctx){
       try{ this.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; }
@@ -1352,48 +1352,42 @@ const AudioEng = {
     const seq=[523,659,784,1047,1319];
     seq.forEach((f,i)=>setTimeout(()=>this.tone(f,100),i*125));
   },
-  /* آهنگ صفحهٔ اصلی: بازسازی نمونه‌به‌نمونهٔ «آهنگِ آپلودشدهٔ» بازی اصلی
-     (create_music در سورس پایتون: نرخ ۲۲۰۵۰ هرتز، سینوسی،
-     attack 20ms / release 50ms، دامنهٔ 8500/32768، همان نت‌ها و طول‌ها) */
-  buildMusicBuffer(){
-    const rate=22050;
-    const notes=[[523,.18],[659,.18],[784,.18],[659,.18],[587,.18],[698,.18],[880,.25],[698,.18],[523,.18],[659,.18],[784,.18],[1047,.35]];
-    let total=0; for(const [f,d] of notes)total+=Math.round(rate*d);
-    const buf=this.ensure().createBuffer(1,total,rate);
-    const out=buf.getChannelData(0),AMP=8500/32768; let off=0;
-    for(const [freq,dur] of notes){
-      const n=Math.round(rate*dur);
-      for(let i=0;i<n;i++){
-        const env=Math.min(1,i/(rate*.02),(n-i)/(rate*.05));
-        out[off+i]=AMP*env*Math.sin(2*Math.PI*freq*(i/rate));
-      }
-      off+=n;
-    }
-    return buf;
-  },
+  /* آهنگ صفحهٔ اصلی: فایل واقعی آپلودشدهٔ کاربر (audio/theme.mp3)
+     پخش حلقه‌ای با وقفهٔ ۲/۵ ثانیه بین هر بار پخش (درخواست کاربر) */
   startMusic(){
     if(!S.music||this.musicOn)return;
     try{ if($("scr-game").classList.contains("active"))return; }catch(e){}
-    const ctx=this.ensure(); if(!ctx)return;
     this.stopMusic();
     this.musicOn=true;
     try{
-      if(!this.musicBuf)this.musicBuf=this.buildMusicBuffer();
-      const src=ctx.createBufferSource();
-      src.buffer=this.musicBuf; src.loop=true; // حلقهٔ بی‌درز، مثل WAV اصلی
-      src.connect(ctx.destination); src.start(0);
-      this.musicSrc=src;
+      if(!this.musicEl){
+        const a=new Audio("audio/theme.mp3");
+        a.preload="auto"; a.volume=0.45;
+        this.musicEl=a;
+      }
+      const el=this.musicEl;
+      el.onended=()=>{ // پایان آهنگ → وقفهٔ ۲/۵ ثانیه → پخش دوباره از ابتدا
+        if(this.musicTimer)clearTimeout(this.musicTimer);
+        this.musicTimer=setTimeout(()=>{
+          this.musicTimer=null;
+          if(!this.musicOn||!S.music)return;
+          try{ if($("scr-game").classList.contains("active"))return; }catch(e){}
+          try{
+            el.currentTime=0;
+            const p=el.play();
+            if(p&&p.catch)p.catch(()=>{ this.musicOn=false; });
+          }catch(e){ this.musicOn=false; }
+        },2500);
+      };
+      try{ el.currentTime=0; }catch(e){}
+      const p=el.play();
+      if(p&&p.catch)p.catch(()=>{ this.musicOn=false; });
     }catch(e){ this.musicOn=false; }
   },
   stopMusic(){
     this.musicOn=false;
     if(this.musicTimer){ clearTimeout(this.musicTimer); this.musicTimer=null; }
-    // قطع فوری؛ سوییچ خاموش‌کردن موسیقی بی‌درنگ اثر می‌کند
-    if(this.musicSrc){ try{this.musicSrc.stop(0);}catch(e){} this.musicSrc=null; }
-    if(this.musNodes&&this.musNodes.length){
-      this.musNodes.forEach(n=>{ try{n.stop(0);}catch(e){} });
-      this.musNodes=[];
-    }
+    if(this.musicEl){ try{ this.musicEl.pause(); this.musicEl.currentTime=0; }catch(e){} }
   }
 };
 
@@ -1530,7 +1524,7 @@ function buildLevels(){
 }
 
 // ---------- Bot Hub (مرکز ربات‌ها) ----------
-const APP_VERSION="1.4.0";
+const APP_VERSION="1.4.1";
 const REPO_OWNER="amirmhmdglstan-stack", REPO_NAME="Matin-Chess";
 const REPO_API=`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`;
 const BOT_RAW=`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/bots/`;
