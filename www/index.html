@@ -818,6 +818,27 @@ class ChessGame {
     for(let r=0;r<8;r++)s+=this.board[r].join("");
     return s+this.turn+JSON.stringify(this.castle)+(this.ep?this.ep.join(","):"-");
   }
+  insufficient(){
+    // تساوی با مهرهٔ ناکافی: K-K، K+فیله/اسب-K، K+فیله مقابل K+فیله هم‌رنگ
+    const pieces=[];
+    for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+      const p=this.board[r][c];
+      if(p!==".")pieces.push(p);
+    }
+    if(pieces.length>4)return false;
+    const nonK=pieces.filter(p=>p.toUpperCase()!=="K");
+    if(!nonK.length)return true;
+    if(nonK.length===1&&["B","N"].includes(nonK[0].toUpperCase()))return true;
+    if(nonK.length===2&&nonK.every(p=>p.toUpperCase()==="B")){
+      const sq=[];
+      for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+        const p=this.board[r][c];
+        if(p.toUpperCase()==="B")sq.push((r+c)%2);
+      }
+      if(sq.length===2&&sq[0]===sq[1])return true;
+    }
+    return false;
+  }
   gameState(){
     const lm=this.legal(this.turn);
     if(!lm.length)return this.check(this.turn)?"checkmate":"stalemate";
@@ -828,6 +849,7 @@ class ChessGame {
       if(snap.key===current)repeats++;
     }
     if(repeats>=3)return "draw3";
+    if(this.insufficient())return "drawim";
     return this.check(this.turn)?"check":"play";
   }
 }
@@ -1174,7 +1196,8 @@ function saveState(){
 const R = {
   g:null, player:"w", twoPlayer:false, gameMode:"هوش مصنوعی", level:1, timeMode:"∞",
   clock:{w:null,b:null}, clockTimer:null, lastTick:Date.now(),
-  aiThinking:false, aiWorker:null, aiPending:null,
+  aiThinking:false, aiWorker:null, aiPending:null, aiAttempt:0, aiRetries:0,
+  gameOver:false, gameGen:0,
   selected:null, hint:null, hoverSq:null, animating:false,
   flipped:false, trainingMode:false, trainingIndex:0, trainingTarget:null,
   moveAnalysis:[], dbGameId:null, gameStartedAt:0, animSpeed:380, aiAnimSpeed:1200,
@@ -1294,9 +1317,9 @@ function initWorker(){
     R.aiWorker=new Worker(URL.createObjectURL(blob));
     R.aiWorker.onmessage=(e)=>{
       const d=e.data;
-      if(R.aiPending&&R.aiPending.id===d.id){
-        const resolve=R.aiPending.resolve; R.aiPending=null;
-        resolve(d);
+      if(R.aiPending&&R.aiPending.has(d.id)){
+        const p=R.aiPending.get(d.id); R.aiPending.delete(d.id);
+        p.resolve(d);
       }
     };
     R.aiWorker.onerror=()=>{ R.aiWorker=null; };
@@ -1304,13 +1327,15 @@ function initWorker(){
 }
 function runAI(state,level,timeLimit){
   return new Promise((resolve)=>{
+    const gen=R.gameGen;
     if(R.aiWorker){
+      if(!R.aiPending)R.aiPending=new Map();
       const id=Math.random().toString(36).slice(2);
-      R.aiPending={id,resolve};
+      R.aiPending.set(id,{resolve,gen});
       R.aiWorker.postMessage({cmd:"best",id,state,level,timeLimit});
-      setTimeout(()=>{ // safety net: worker lost
-        if(R.aiPending&&R.aiPending.id===id){
-          R.aiPending=null;
+      setTimeout(()=>{ // safety net: worker lost/slow → resolve on main thread
+        if(R.aiPending&&R.aiPending.has(id)){
+          R.aiPending.delete(id);
           resolve(syncAI(state,level,timeLimit));
         }
       }, Math.max(4000,(timeLimit||1)*4000));
@@ -1357,6 +1382,7 @@ function info(title,msg,cb){
 const SCREENS=["menu","levels","academy","training","themes","settings","save","game"];
 function go(name){
   SCREENS.forEach(s=>$("scr-"+s).classList.toggle("active",s===name));
+  if(name==="levels")buildLevels(); // همیشه تازه‌سازی: سطح‌های تازه باز‌شده دیده شوند
   if(name==="game")requestAnimationFrame(layoutBoard);
   // موسیقی فقط خارج از صفحهٔ بازی پخش می‌شود؛ داخل بازی فقط صدای مهره‌ها
   if(name==="game"){ AudioEng.stopMusic(); }
@@ -1759,7 +1785,7 @@ window.addEventListener("resize",()=>requestAnimationFrame(layoutBoard));
 
 // ---------- Input ----------
 function onSquareTap(vr,vc){
-  if(R.animating||R.aiThinking||!R.g)return;
+  if(R.animating||R.aiThinking||R.gameOver||!R.g)return;
   const [r,c]=disp2log(vr,vc);
   if(R.trainingMode){ tapTraining(r,c); return; }
   if(!R.twoPlayer&&R.g.turn!==R.player)return;
@@ -1808,7 +1834,9 @@ function showPromoPicker(side){
 // ---------- Making moves ----------
 function makeMove(m,byAI){
   const g=R.g;
+  if(R.gameOver)return;
   if(R.animating)return;
+  const gen=R.gameGen;
   const start=[m[0],m[1]], end=[m[2],m[3]];
   const special=m[4];
   const mover=g.turn;
@@ -1827,17 +1855,29 @@ function makeMove(m,byAI){
   if(movingBefore.toUpperCase()==="P"&&promoted.toUpperCase()==="Q")AudioEng.play("promote");
   AudioEng.tone(g.check(g.turn)?1050:(cap?430:720),70);
   animateMove(start,end,cap,special,movingBefore,promoted,moverEl,byAI).then(()=>{
-    updateHud();
+    if(R.gameGen!==gen)return;
+    try{ updateHud(); }catch(e){}
     if(R.trainingMode){
-      const st=g.gameState();
-      if(st==="checkmate")trainingSuccess();
+      try{
+        const st=g.gameState();
+        if(st==="checkmate")trainingSuccess();
+        else if(st==="stalemate"){
+          toast("پات! این حرکت مات نیست؛ دوباره امتحان کن.");
+          g.undo(); R.selected=null; renderBoard(true); updateHud();
+        }
+      }catch(e){}
       return;
     }
-    computeGrade(start,end,mover,beforeEval);
-    const st=g.gameState();
-    if(st==="checkmate")finish(mover);
-    else if(st==="stalemate"||st==="draw50"||st==="draw3")finish("draw");
-    else if(!R.twoPlayer&&g.turn!==R.player)setTimeout(aiMove,1300);
+    try{ computeGrade(start,end,mover,beforeEval); }catch(e){}
+    try{
+      const st=g.gameState();
+      if(st==="checkmate")finish(mover);
+      else if(st==="stalemate"||st==="draw50"||st==="draw3"||st==="drawim")finish("draw");
+      else if(!R.twoPlayer&&g.turn!==R.player)setTimeout(aiMove,1300);
+    }catch(e){
+      // هرگز بازی قفل نمی‌شود: در بدترین حالت حرکت هوش مصنوعی دوباره زمان‌بندی می‌شود
+      if(!R.twoPlayer&&g.turn!==R.player&&!R.gameOver)setTimeout(aiMove,1300);
+    }
   });
   updateHud();
 }
@@ -1885,7 +1925,7 @@ function animateMove(start,end,cap,special,moverGlyph,promotedGlyph,moverEl,byAI
         }
       }
       if(!moverEl){
-        setTimeout(()=>{ R.animating=false; renderBoard(true); resolve(); },60);
+        setTimeout(()=>{ R.animating=false; try{renderBoard(true);}catch(e){} resolve(); },60);
         return;
       }
       R.pieceEls[end.join(",")]=moverEl;
@@ -1897,53 +1937,70 @@ function animateMove(start,end,cap,special,moverGlyph,promotedGlyph,moverEl,byAI
       requestAnimationFrame(()=>{ setPiecePos(moverEl,vr2,vc2); });
       const rookDur=Math.max(200,Math.round(dur*0.55));
       setTimeout(()=>{
-        moverEl.classList.remove("lift");
-        spawnRing(end,cap);
+        try{ moverEl.classList.remove("lift"); spawnRing(end,cap); }catch(e){}
         if(rookAnim){
           setTimeout(()=>{
-            const [rvr,rvc]=log2disp(rookAnim.to[0],rookAnim.to[1]);
-            rookAnim.el.style.transitionDuration=rookDur+"ms";
-            rookAnim.el.classList.add("lift");
-            requestAnimationFrame(()=>setPiecePos(rookAnim.el,rvr,rvc));
-            setTimeout(()=>{
-              rookAnim.el.classList.remove("lift");
-              R.animating=false; renderBoard(true); resolve();
-            },rookDur+40);
+            try{
+              const [rvr,rvc]=log2disp(rookAnim.to[0],rookAnim.to[1]);
+              rookAnim.el.style.transitionDuration=rookDur+"ms";
+              rookAnim.el.classList.add("lift");
+              requestAnimationFrame(()=>setPiecePos(rookAnim.el,rvr,rvc));
+              setTimeout(()=>{
+                try{ rookAnim.el.classList.remove("lift"); }catch(e){}
+                R.animating=false; try{ renderBoard(true); }catch(e){} resolve();
+              },rookDur+40);
+            }catch(e){ R.animating=false; resolve(); }
           },50);
         }else{
-          R.animating=false; renderBoard(true); resolve();
+          R.animating=false; try{ renderBoard(true); }catch(e){} resolve();
         }
       },dur+40);
     }catch(err){
-      R.animating=false; renderBoard(true); resolve();
+      R.animating=false; try{ renderBoard(true); }catch(e){} resolve();
     }
   });
 }
 
 // ---------- AI ----------
 function aiMove(){
-  if(R.aiThinking||!R.g)return;
+  if(R.aiThinking||R.gameOver||!R.g)return;
   const st=R.g.gameState();
   if(st!=="play"&&st!=="check")return;
+  const gen=R.gameGen, attempt=++R.aiAttempt;
   R.aiThinking=true;
+  R.aiRetries=0;
   setRailStatus("🧠 هوش مصنوعی در حال فکر کردن...");
   const state=R.g.serialize();
   const t0=Date.now();
+  // ضامن امانت: اگر به هر دلیلی پاسخ هوش مصنوعی گم شد، بازی قفل نمی‌شود
+  const failsafe=setTimeout(()=>{
+    if(R.aiAttempt!==attempt||R.gameGen!==gen||R.gameOver)return;
+    R.aiThinking=false;
+    const s2=R.g?R.g.gameState():null;
+    if(s2==="play"||s2==="check")setTimeout(aiMove,300);
+  },15000);
   runAI(state,R.level,null).then(res=>{
+    if(R.aiAttempt!==attempt||R.gameGen!==gen||R.gameOver)return;
     if(res.info){
       R.aiNodes=res.info.nodes||0; R.aiQnodes=res.info.qnodes||0;
       R.aiDepth=res.info.depth||0; R.aiLastTime=res.info.time||0;
     }
     const wait=Math.max(0,450-(Date.now()-t0));
     setTimeout(()=>{
+      clearTimeout(failsafe);
+      if(R.aiAttempt!==attempt||R.gameGen!==gen||R.gameOver)return;
       R.aiThinking=false;
+      const s2=R.g?R.g.gameState():null;
       if(R.g&&res.move)makeMove(res.move,true);
-      else if(R.g)updateHud();
+      else if(R.g&&(s2==="play"||s2==="check")&&++R.aiRetries<=3)setTimeout(aiMove,900);
+      else if(R.g){ updateHud(); toast("خطا در پردازش حرکت هوش مصنوعی؛ دوباره تلاش کن."); }
     },wait);
+  }).catch(()=>{
+    if(R.aiAttempt===attempt)R.aiThinking=false;
   });
 }
 function hintMove(){
-  if(R.aiThinking||R.animating||!R.g)return;
+  if(R.aiThinking||R.animating||R.gameOver||!R.g)return;
   if(!R.twoPlayer&&R.g.turn!==R.player)return;
   if(!S.hints){ toast("راهنمای حرکت در تنظیمات خاموش است"); return; }
   const conf=ChessAI.LEVELS[Math.max(1,Math.min(20,R.level))]||[1,.3,0];
@@ -1959,7 +2016,7 @@ function hintMove(){
   });
 }
 function undo(){
-  if(R.aiThinking||R.animating||!R.g)return;
+  if(R.aiThinking||R.animating||R.gameOver||!R.g)return;
   if(R.trainingMode){ toast("در حالت تمرین واگردانی نداریم"); return; }
   if(!R.g.history.length){ toast("حرکتی برای واگردانی نیست"); return; }
   R.g.undo();
@@ -2021,7 +2078,8 @@ function updateHud(){
   }
   const st=g.gameState();
   setRailStatus({play:"نوبت بازی.",check:"⚠ کیش!",checkmate:"♛ کیش‌ومات!",
-    stalemate:"مساوی!","draw50":"مساوی با قانون ۵۰ حرکت","draw3":"مساوی با تکرار سه‌باره"}[st]||"");
+    stalemate:"مساوی!","draw50":"مساوی با قانون ۵۰ حرکت","draw3":"مساوی با تکرار سه‌باره",
+    "drawim":"مساوی! مهرهٔ کافی برای مات نیست"}[st]||"");
 }
 
 // ---------- Game setup ----------
@@ -2094,6 +2152,8 @@ function twoPlayerSetup(){
 }
 function startGame(level,side,timeMode,twoPlayer){
   closeModal(); delete modalRoot.dataset.lock;
+  R.gameOver=false; R.gameGen++; R.aiAttempt++; R.aiRetries=0; R.aiThinking=false;
+  if(R.aiPending)R.aiPending.clear();
   R.trainingMode=false; R.trainingTarget=null;
   R.level=level; R.player=side==="سفید"?"w":"b";
   R.twoPlayer=!!twoPlayer;
@@ -2160,8 +2220,11 @@ function dbFinishGame(result,moves,captures,duration){
 
 // ---------- Finish flow ----------
 function finish(winner){
+  if(R.gameOver)return; // از پایان‌دهی دوباره (مسابقه/ساعت/واگردانی) جلوگیری می‌کند
+  R.gameOver=true;
   R.aiThinking=false;
   clearTimeout(R.clockTimer);
+  R.aiAttempt++; // هر پاسخ در راهِ هوش مصنوعی باطل می‌شود
   const g=R.g; if(!g)return;
   const wasCheckmate=(winner!=="draw"&&winner!=="timeout")&&g.gameState()==="checkmate";
   let msg="";
@@ -2308,6 +2371,8 @@ function showChampionship(){
 // ---------- Training ----------
 function startTraining(index){
   closeModal(); delete modalRoot.dataset.lock;
+  R.gameOver=false; R.gameGen++; R.aiAttempt++; R.aiRetries=0; R.aiThinking=false;
+  if(R.aiPending)R.aiPending.clear();
   const pz=TRAINING_LEVELS[index];
   R.trainingMode=true; R.twoPlayer=false; R.gameMode="تمرین"; R.trainingIndex=index;
   R.g=new ChessGame();
@@ -2386,10 +2451,12 @@ function serialAll(){
     custom_light:S.custom_light,custom_dark:S.custom_dark,custom_frame:S.custom_frame,
     custom_hi:S.custom_hi,piece_style:S.piece_style,stats:S.stats,unlocked:S.unlocked,
     anim_speed:S.anim_speed,tournament:S.tournament,move_analysis:R.moveAnalysis,
-    two_player:R.twoPlayer,creators:CREATORS,edition:"android-1.0.0"};
+    two_player:R.twoPlayer,over:!!R.gameOver,creators:CREATORS,edition:"android-1.2.0"};
 }
 function restoreAll(d){
   closeModal(); delete modalRoot.dataset.lock;
+  R.gameOver=false; R.gameGen++; R.aiAttempt++; R.aiRetries=0; R.aiThinking=false;
+  if(R.aiPending)R.aiPending.clear();
   try{
     R.level=d.level||1; R.player=d.player||"w";
     R.timeMode=d.time_mode||"∞";
@@ -2538,7 +2605,11 @@ function bindGameButtons(){
     AudioEng.play("button");
     toast("💾 بازی در فضای امن ذخیره شد.");
   };
-  $("btnGameMenu").onclick=()=>{ clearTimeout(R.clockTimer); go("menu"); };
+  $("btnGameMenu").onclick=()=>{
+    // لغوی تمیز هوش مصنوعی هنگام خروج از بازی؛ هیچ حرکتی بعد از این اعمال نمی‌شود
+    R.gameGen++; R.aiAttempt++; R.aiThinking=false;
+    clearTimeout(R.clockTimer); go("menu");
+  };
   $("btnSaveJson").onclick=saveJson;
   $("btnSaveMCGX").onclick=saveMCGX;
   $("btnLoadJson").onclick=loadJsonFile;
@@ -2557,7 +2628,7 @@ function init(){
     document.removeEventListener("pointerdown",firstTouch); });
   // session autosave (every 8s, mirrors desktop autosave_tick)
   setInterval(()=>{
-    try{ if(R.g&&R.g.moves.length)localStorage.setItem("mcg_session",JSON.stringify(serialAll())); }
+    try{ if(R.g&&R.g.moves.length&&!R.gameOver)localStorage.setItem("mcg_session",JSON.stringify(serialAll())); }
     catch(e){}
   },8000);
   document.querySelectorAll("[data-go]").forEach(b=>{
@@ -2574,8 +2645,8 @@ function init(){
   $("btnDrawer").onclick=()=>{ AudioEng.play("button"); document.body.classList.toggle("drawer-open"); };
   $("drawerBack").onclick=()=>document.body.classList.remove("drawer-open");
   $("sideNav").addEventListener("click",()=>document.body.classList.remove("drawer-open"));
-  $("btnExit").addEventListener("click",()=>document.body.classList.remove("drawer-open"));
   $("btnExit").onclick=()=>{
+    document.body.classList.remove("drawer-open");
     ask("خروج","از بازی خارج می‌شوی؟",[
       ["انصراف",null,""],
       ["خروج",()=>{
@@ -2586,6 +2657,16 @@ function init(){
       },"big"]
     ]);
   };
+  // پیشنهاد ادامهٔ بازی نیمه‌کاره (اتوسیو هر ۸ ثانیه ذخیره می‌شود)
+  try{
+    const sess=JSON.parse(localStorage.getItem("mcg_session")||"null");
+    if(sess&&sess.game&&sess.game.board&&Array.isArray(sess.game.moves)&&sess.game.moves.length>=2&&!sess.two_player&&!sess.over){
+      ask("ادامهٔ بازی","یک بازی نیمه‌کاره پیدا شد؛ ادامه می‌دهی؟",[
+        ["منوی اصلی",null,""],
+        ["ادامهٔ بازی ✓",()=>restoreAll(sess),"big"]
+      ]);
+    }
+  }catch(e){}
   go("menu");
 }
 document.addEventListener("DOMContentLoaded",init);

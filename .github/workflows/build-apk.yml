@@ -38,24 +38,40 @@ jobs:
       - name: Copy web assets into Android project
         run: npx cap sync android
 
-      - name: Create signing keystore
+      - name: Restore stable signing keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          keytool -genkeypair -v \
-            -keystore "$GITHUB_WORKSPACE/matin-chess.keystore" \
-            -alias matinchess \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass matinchess123 -keypass matinchess123 \
-            -dname "CN=Matin Chess, OU=Game, O=MatinChess, L=Tehran, ST=Tehran, C=IR"
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "KEYSTORE_BASE64 missing — generating fallback keystore (unstable!)"
+            keytool -genkeypair -v \
+              -keystore "$GITHUB_WORKSPACE/matin-chess.keystore" \
+              -alias matinchess \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass matinchess123 -keypass matinchess123 \
+              -dname "CN=Matin Chess, OU=Game, O=MatinChess, L=Tehran, ST=Tehran, C=IR"
+          else
+            echo "$KEYSTORE_BASE64" | base64 -d > "$GITHUB_WORKSPACE/matin-chess.keystore"
+            keytool -list -keystore "$GITHUB_WORKSPACE/matin-chess.keystore" \
+              -storepass "${KEYSTORE_PASSWORD:-matinchess123}" | head -5
+          fi
 
       - name: Build signed release APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleRelease \
             -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/matin-chess.keystore \
-            -Pandroid.injected.signing.store.password=matinchess123 \
-            -Pandroid.injected.signing.key.alias=matinchess \
-            -Pandroid.injected.signing.key.password=matinchess123 \
+            -Pandroid.injected.signing.store.password=${KEYSTORE_PASSWORD:-matinchess123} \
+            -Pandroid.injected.signing.key.alias=${KEY_ALIAS:-matinchess} \
+            -Pandroid.injected.signing.key.password=${KEY_PASSWORD:-matinchess123} \
             --no-daemon --stacktrace
 
       - name: Rename APK
