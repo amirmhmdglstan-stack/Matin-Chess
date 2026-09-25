@@ -520,7 +520,7 @@ a.btn:active{transform:scale(.97)}
       <button class="btn white small" data-go="menu">←  منوی اصلی</button>
       <div class="page-title">♟️ بازی با هوش مصنوعی</div>
     </div>
-    <div class="page-sub" style="text-align:left;padding:0 24px">۸ موتور واقعی شطرنج از سازندگان رسمی • همهٔ سطح‌ها باز • فایل رسمی هر ربات یک‌بار دانلود و داخل حافظهٔ خود بازی نصب می‌شود (کاملاً آفلاین)</div>
+    <div class="page-sub" style="text-align:left;padding:0 24px">۱۷ موتور واقعی شطرنج از سازندگان رسمی — همهٔ نسخه‌ها به‌ترتیب • همهٔ سطح‌ها باز • فایل رسمی هر ربات یک‌بار دانلود و داخل حافظهٔ خود بازی نصب می‌شود (کاملاً آفلاین)</div>
     <div class="hr" style="margin:8px 22px 4px"></div>
     <div class="page-body">
       <div style="padding:0 22px 10px"><button class="btn" style="width:100%" id="btnGoWatch">👁 تماشای دو ربات در برابر هم — مشاهده بازی هوش مصنوعی</button></div>
@@ -1553,7 +1553,7 @@ function buildMenu(){
   });
   const cards=$("quickCards"); cards.innerHTML="";
   const data=[
-    ["🤖","۸ موتور","بازی با هوش مصنوعی","فایل‌های رسمی • همه باز",()=>go("bots")],
+    ["🤖","۱۷ موتور","بازی با هوش مصنوعی","نسخه‌های رسمی • همه باز",()=>go("bots")],
     ["👁","تماشای ربات‌ها","مشاهده بازی هوش مصنوعی","دو موتور مقابل هم",()=>{buildWatch();go("watch");}],
     ["♟♟","بازی دونفره","","روی یک گوشی",()=>twoPlayerSetup()],
     ["🎓","۱۰ درس","آکادمی","آموزش مرحله‌ای",()=>go("academy")]
@@ -2156,9 +2156,12 @@ function botLevelParams(id,lv,ver){
     return{type:"uci",setopt:[],
       go:"go movetime "+(60+d.n*45)};
   }
-  if(id==="berserk")return{type:"uci",
-    setopt:[["Hash","16"],["Threads","1"],["MultiPV","1"]],
-    go:"go movetime "+(80+lv*45)};
+  if(id==="berserk"){
+    const n=lv>=100?lv%100:lv; // کد ترکیبی نسخه‌دار: 1305 → سطح ۵
+    return{type:"uci",
+      setopt:[["Hash","16"],["Threads","1"],["MultiPV","1"]],
+      go:"go movetime "+(80+n*45)};
+  }
   if(id==="fairy")return{type:"uci",
     setopt:[["Hash","16"],["Threads","1"],["UCI_Variant","chess"]],
     go:"go movetime "+(80+lv*45)};
@@ -2428,10 +2431,11 @@ function fillWatchSelects(){
       botInstalled(b.id).then(ok=>{
         if(!ok)return;
         if(b.versions){
-          b.versions.forEach(v=>{
-            botInstalled(b.id,v.v).then(vok=>{ if(vok)add(b.id,v.v,b.latin+" "+faNum(v.v)+" — "+b.fa); });
-          });
-        }else add(b.id,null,b.latin+" — "+b.fa);
+          // هر نسخهٔ نصب‌شده یک گزینهٔ مستقل — همهٔ بررسی‌ها قبل از ساخت لیست کامل می‌شوند
+          return Promise.all(b.versions.map(v=>
+            botInstalled(b.id,v.v).then(vok=>{ if(vok)add(b.id,v.v,b.latin+" "+faNum(v.v)+" — "+b.fa); })));
+        }
+        add(b.id,null,b.latin+" — "+b.fa);
       })
     );
     return Promise.all(jobs).then(()=>opts);
@@ -2458,19 +2462,17 @@ function parseWatchVal(v){ const i=v.indexOf("|"); return{botId:v.slice(0,i),ver
 function fillWatchLevels(){
   const pw=$("wBotSel"), pb=$("bBotSel");
   if(!pw||!pb)return;
-  const fill=(sel)=>{
-    const pv=parseWatchVal(sel.value||"matin|");
+  const fill=(lvlSel,botSel)=>{
+    const pv=parseWatchVal(botSel.value||"matin|");
     const b=BOTS.find(x=>x.id===pv.botId);
     if(!b)return;
     const C=watchLvlChoices(b,pv.ver);
     let opts="";
     opts+=C.numeric.map(n=>`<option value="${n}">${b.id==="veltrix"&&n===8?"۸ (فست)":"سطح "+faNum(n)}</option>`).join("");
     if(C.official)opts+=C.official.map(m=>`<option value="${m.num}">★ ${m.fa} (${m.latin})</option>`).join("");
-    sel.innerHTML=opts;
-    const cur=sel.dataset.lvl;
-    if(cur&&opts.indexOf(`value="${cur}"`)>=0)sel.value=cur;
+    lvlSel.innerHTML=opts;
   };
-  fill($("wLvlSel")); fill($("bLvlSel"));
+  fill($("wLvlSel"),pw); fill($("bLvlSel"),pb);
 }
 function buildWatch(){
   fillWatchSelects();
