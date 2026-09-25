@@ -1,15 +1,13 @@
 /*!
- * Berserk 14 — REAL C engine compiled to WebAssembly + worker glue
- * for MATIN CHESS Android. This is the exact upstream release 14
- * (github.com/jhonnold/Berserk) compiled with Emscripten; the OFFICIAL
- * release network berserk-9b84c340af7e.nn is embedded in the wasm.
- *
+ * Berserk — REAL C engine compiled to WebAssembly + worker glue for MATIN
+ * CHESS Android. Official upstream sources compiled with Emscripten; each
+ * version embeds its OFFICIAL release network byte-exact.
  * Upstream (GPL-3.0): https://github.com/jhonnold/Berserk
- * Copyright (C) 2024 Jay Honnold — GPL-3.0
- * See berserk-NOTICE.md for the build recipe and local build-config patches.
+ * Copyright (C) Jay Honnold — GPL-3.0. See berserk-NOTICE.md.
  */
 (function () {
 "use strict";
+/* books/veltrix.bin — the original Veltrix Polyglot opening book, embedded */
 var queue = [], ready = false;
 var mod = {
   print: function (t) { postMessage(String(t)); },
@@ -32,5 +30,5 @@ self.onmessage = function (e) {
   if (ready) mod.ccall("berserk_wasm_cmd", null, ["string"], [c]);
   else queue.push(c);
 };
-importScripts(self.BOT_FILES[self.BOT_CORE||"berserk-core.js"]);
+importScripts(self.BOT_FILES[self.BOT_CORE || self.BOT_ENTRY || "berserk-14-core.js"]);
 })();
