@@ -1960,11 +1960,14 @@ function uciToMove(g,u){
 }
 /* پارامتر سطح هر ربات → دستور go */
 function botLevelParams(id,lv){
-  if(id==="stockfish"||id==="stockfish17"||id==="stockfish16")return{type:"uci",
-    setopt:[["Skill Level",String(Math.round((lv-1)*20/19))],["Threads","1"],["Hash","32"]],
+  if(id==="stockfish")return{type:"uci",
+    setopt:[["Skill Level",String(Math.round((lv-1)*20/19))]],
+    go:"go movetime "+(100+lv*40)};
+  if(id==="stockfish17"||id==="stockfish16")return{type:"uci",
+    setopt:[["Skill Level",String(Math.round((lv-1)*20/19))]],
     go:"go movetime "+(100+lv*40)};
   if(id==="stockfish10")return{type:"uci",
-    setopt:[["Threads","1"],["Hash","16"]],
+    setopt:[], // ساخت niklasf: Threads/Hash را تغییر نده — spawn thread باعث مرگ wasm می‌شود
     go:"go movetime "+(60+lv*45)};
   if(id==="berserk")return{type:"uci",
     setopt:[["Hash","16"],["Threads","1"],["MultiPV","1"]],
@@ -2097,10 +2100,21 @@ function createEngineSession(b,level){
         }
         if(sess.stage===0&&line==="uciok"){
           sess.stage=1;
-          try{w.postMessage("ucinewgame");}catch(e){}
-          (params.setopt||[]).forEach(o=>{ try{w.postMessage("setoption name "+o[0]+" value "+o[1]);}catch(e){} });
-          try{w.postMessage("isready");}catch(e){}
+          const sendInit=()=>{
+            try{w.postMessage("ucinewgame");}catch(e){}
+            (params.setopt||[]).forEach(o=>{ try{w.postMessage("setoption name "+o[0]+" value "+o[1]);}catch(e){} });
+            try{w.postMessage("isready");}catch(e){}
+          };
+          sendInit();
+          // بعضی موتورها در لحظهٔ uciok هنوز دستور نمی‌پذیرند؛ isready را تکرار کن
+          let tries=0;
+          sess.initRetry=setInterval(()=>{
+            if(sess.stage!==1||tries++>10){ clearInterval(sess.initRetry); return; }
+            try{w.postMessage("isready");}catch(e){}
+          },1200);
         }else if(sess.stage===1&&line==="readyok"){
+          if(sess.initRetry){ clearInterval(sess.initRetry); sess.initRetry=null; }
+          if(sess.initKill){ clearTimeout(sess.initKill); sess.initKill=null; }
           sess.stage=2;
           if(sess.readyResolve){ sess.readyResolve(); sess.readyResolve=null; }
         }else if(sess.pending&&line.startsWith("bestmove")){
@@ -2110,14 +2124,26 @@ function createEngineSession(b,level){
         }
       };
       w.onerror=()=>{
+        if(sess.initRetry){ clearInterval(sess.initRetry); sess.initRetry=null; }
+        if(sess.initKill){ clearTimeout(sess.initKill); sess.initKill=null; }
         if(sess.pending){ const p=sess.pending; sess.pending=null; clearTimeout(p.timer); p.resolve(null); }
         sess.alive=false;
+        if(sess.stage<2&&sess.readyResolve){ sess.readyResolve(); sess.readyResolve=null; }
       };
       sess.ready=new Promise(res=>{ sess.readyResolve=()=>{ sess.stage=2; res(); };
         if(params.type==="garbo")res();
         else try{w.postMessage("uci");}catch(e){ sess.readyResolve(); } });
+      // ضامن امانت: اگر موتور تا ۲۵ ثانیه handshake را کامل نکرد، جلسه را ببند
+      sess.initKill=setTimeout(()=>{
+        if(sess.stage<2){
+          sess.alive=false;
+          try{w.terminate();}catch(e){}
+          if(sess.readyResolve){ sess.readyResolve(); sess.readyResolve=null; }
+        }
+      },25000);
       sess.think=(fen,timeoutMs)=>{
         return sess.ready.then(()=>new Promise(resolve=>{
+          if(!sess.alive){ resolve(null); return; }
           if(sess.pending){ resolve(null); return; }
           const t=setTimeout(()=>{
             // موتور پاسخ نداد → جلسه دور ریخته می‌شود؛ حرکت بعدی جلسهٔ تازه می‌سازد
@@ -2272,11 +2298,15 @@ function spectateLoop(){
     setTimeout(()=>{
       if(R.gameGen!==gen||R.gameOver||!R.spectate||!R.g)return;
       if(mv){
+        R.specFails=0;
         makeMove(mv,true);
         updateHud();
         if(!R.gameOver)setTimeout(spectateLoop,250);
+      }else if(++R.specFails<=2){
+        // یک‌بار دیگر تلاش کن (جلسهٔ تازه ساخته می‌شود)
+        setTimeout(spectateLoop,1600);
       }else{
-        spectateStop("خطا در حرکت موتور؛ تماشا متوقف شد.");
+        spectateStop("ارتباط با موتور برقرار نشد؛ تماشا متوقف شد.");
       }
     },wait);
   }).catch(()=>{ if(R.gameGen===gen&&R.spectate)spectateStop("ارتباط با موتور قطع شد؛ تماشا متوقف شد."); });
