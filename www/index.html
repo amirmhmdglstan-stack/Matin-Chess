@@ -1600,7 +1600,7 @@ const BOTS=[
              fb:"https://github.com/amirmhmdglstan-stack/Matin-Chess/releases/download/v1.5.0/stockfish-19-single.js"},
             {u:"https://raw.githubusercontent.com/amirmhmdglstan-stack/Matin-Chess/main/bots/stockfish-19-single.wasm",n:"stockfish-19-single.wasm",
              fb:"https://github.com/amirmhmdglstan-stack/Matin-Chess/releases/download/v1.5.0/stockfish-19-single.wasm"}]},
-    {v:"16",code:1600,fa:"۱۶ — مدرن با NNUE",size:"۴۱ مگابایت",
+    {v:"16",code:1600,fa:"۱۶ — مدرن با NNUE",size:"۴۱ مگابایت",core:"sf16-core.js",
      files:[{u:BOT_RAW+"sf16.js",n:"sf16.js",
              fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/sf16.js"},
             {u:BOT_RAW+"sf16-core.js",n:"sf16-core.js",
@@ -1629,21 +1629,21 @@ const BOTS=[
    tag:"موتور معروف Jay Honnold — نسخه‌های ۱۴ و ۱۳ و ۱۲ به ترتیب در همین منو، هرکدام با شبکهٔ عصبی رسمیِ خود نسخه؛ سورس رسمی هر نسخه با Emscripten کامپایل شده — پشتوانهٔ واقعی، نه شبیه‌سازی. نسخه‌های قدیمی‌تر به‌مرور اضافه می‌شوند.",
    icon:"🐻",c1:"#fca5a5",c2:"#991b1b",glow:"rgba(252,165,165,.3)",
    ladder:[
-    {v:"14",code:1400,fa:"۱۴ — NNUE (شبکهٔ رسمی berserk-9b84c340af7e)",size:"۲۵ مگابایت",
+    {v:"14",code:1400,fa:"۱۴ — NNUE (شبکهٔ رسمی berserk-9b84c340af7e)",size:"۲۵ مگابایت",core:"berserk-14-core.js",
      files:[{u:BOT_RAW+"berserk.js",n:"berserk.js",
              fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/berserk.js"},
             {u:BOT_RAW+"berserk-14-core.js",n:"berserk-14-core.js",
              fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/berserk-14-core.js"},
             {u:BOT_RAW+"berserk-14-core.wasm",n:"berserk-14-core.wasm",
              fb:"https://github.com/amirmhmdglstan-stack/Matin-Chess/releases/download/v1.7.0/berserk-14-core.wasm"}]},
-    {v:"13",code:1300,fa:"۱۳ — NNUE (شبکهٔ رسمی berserk-d43206fe90e4)",size:"۲۵ مگابایت",
+    {v:"13",code:1300,fa:"۱۳ — NNUE (شبکهٔ رسمی berserk-d43206fe90e4)",size:"۲۵ مگابایت",core:"berserk-13-core.js",
      files:[{u:BOT_RAW+"berserk.js",n:"berserk.js",
              fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/berserk.js"},
             {u:BOT_RAW+"berserk-13-core.js",n:"berserk-13-core.js",
              fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/berserk-13-core.js"},
             {u:BOT_RAW+"berserk-13-core.wasm",n:"berserk-13-core.wasm",
              fb:"https://github.com/amirmhmdglstan-stack/Matin-Chess/releases/download/v1.7.0/berserk-13-core.wasm"}]},
-    {v:"12",code:1200,fa:"۱۲ — NNUE (شبکهٔ رسمی berserk-fb675dad41b4)",size:"۲۵ مگابایت",
+    {v:"12",code:1200,fa:"۱۲ — NNUE (شبکهٔ رسمی berserk-fb675dad41b4)",size:"۲۵ مگابایت",core:"berserk-12-core.js",
      files:[{u:BOT_RAW+"berserk.js",n:"berserk.js",
              fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/berserk.js"},
             {u:BOT_RAW+"berserk-12-core.js",n:"berserk-12-core.js",
@@ -1654,7 +1654,7 @@ const BOTS=[
   {id:"fairy",latin:"FAIRY-STOCKFISH",fa:"فری-استاک‌فیش",
    tag:"ساختهٔ Fabian Fichter؛ برادر چند-واریانتی استاک‌فیش — سورس رسمی با دستورالعمل رسمی WASM خودِ پروژه کامپایل شده؛ علاوه بر شطرنج، صدها واریانت می‌داند.",
    icon:"🧚",c1:"#c4b5fd",c2:"#6d28d9",glow:"rgba(196,181,253,.3)",
-   ladder:[{v:"14.0.1+",code:500,fa:"نسخهٔ ۱۴٫۰٫۱+ (سورس رسمی)",size:"۱٫۳ مگابایت",
+   ladder:[{v:"14.0.1+",code:500,fa:"نسخهٔ ۱۴٫۰٫۱+ (سورس رسمی)",size:"۱٫۳ مگابایت",core:"fairy-core.js",
      files:[{u:BOT_RAW+"fairy.js",n:"fairy.js",
              fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/fairy.js"},
             {u:BOT_RAW+"fairy-core.js",n:"fairy-core.js",
@@ -1739,7 +1739,13 @@ function botFilesFor(b,code){
 }
 function botEntryFor(b,code){
   const r=botRelFor(b,code);
-  return r?(r.entry||r.files[0].n):(b.entry||b.files[0].n);
+  if(r)return r.entry||r.files[0].n;
+  return b.entry||b.files[0].n;
+}
+function botCoreFor(b,code){
+  const r=botRelFor(b,code);
+  if(r)return r.core||r.entry||r.files[0].n;
+  return b.core||b.entry||b.files[0].n;
 }
 function botInstalled(id,code){
   const b=BOTS.find(x=>x.id===id);
@@ -2168,6 +2174,7 @@ function createEngineSession(b,level,scope){
       if(wasmName)boot+="self.BOT_WASM_URL="+JSON.stringify(urls[wasmName])+";";
       boot+="self.BOT_FILES="+JSON.stringify(urls)+";";
       boot+="self.BOT_ENTRY="+JSON.stringify(entryName)+";";
+      boot+="self.BOT_CORE="+JSON.stringify(botCoreFor(b,level))+";";
       let w;
       try{
         w=new Worker(URL.createObjectURL(new Blob(
@@ -2358,6 +2365,7 @@ function spectateStart(wId,wLv,bId,bLv,delay){
   R.gameOver=false; R.gameGen++; R.aiAttempt++; R.aiRetries=0; R.aiThinking=false;
   if(R.aiPending)R.aiPending.clear();
   R.spectate=true; R.trainingMode=false; R.trainingTarget=null;
+  R.specFails=0;
   R.specW={botId:wId,level:wLv}; R.specB={botId:bId,level:bLv}; R.specDelay=delay||700;
   R.level=wLv; R.player="w"; R.twoPlayer=false;
   R.botId=(wId==="matin")?"matin":"matin"; // HUD از مسیر سفارشی تماشا استفاده می‌کند

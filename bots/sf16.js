@@ -1,16 +1,13 @@
 /*!
- * Stockfish 16 — REAL C++ engine compiled to WebAssembly + worker glue
- * for MATIN CHESS Android. This is the exact upstream source
- * (github.com/official-stockfish/Stockfish tag sf_16) compiled with
- * Emscripten; the OFFICIAL network nn-5af11540bbfe.nnue (from the official
- * npm package) is embedded byte-exact in the wasm.
- *
- * Upstream (GPL-3.0): https://github.com/official-stockfish/Stockfish
- * Copyright (C) Stockfish developers — GPL-3.0
- * See ../scripts/build_sf16_wasm.sh + sf16_patch.py for the build recipe.
+ * Stockfish 16 — REAL C++ engine compiled to WebAssembly + worker glue for
+ * MATIN CHESS Android. Official upstream source (tag sf_16) compiled with
+ * Emscripten; the OFFICIAL nn-5af11540bbfe.nnue (official npm package) is
+ * embedded byte-exact. Upstream (GPL-3.0):
+ * https://github.com/official-stockfish/Stockfish — see sf16 build script.
  */
 (function () {
 "use strict";
+/* books/veltrix.bin — the original Veltrix Polyglot opening book, embedded */
 var queue = [], ready = false;
 var mod = {
   print: function (t) { postMessage(String(t)); },
@@ -33,5 +30,5 @@ self.onmessage = function (e) {
   if (ready) mod.ccall("sf16_wasm_cmd", null, ["string"], [c]);
   else queue.push(c);
 };
-importScripts(self.BOT_FILES[self.BOT_ENTRY || "sf16-core.js"]);
+importScripts(self.BOT_FILES[self.BOT_CORE || self.BOT_ENTRY || "sf16-core.js"]);
 })();
