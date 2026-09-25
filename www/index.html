@@ -513,7 +513,7 @@ a.btn:active{transform:scale(.97)}
       <button class="btn white small" data-go="menu">←  منوی اصلی</button>
       <div class="page-title">♟️ بازی با هوش مصنوعی</div>
     </div>
-    <div class="page-sub" style="text-align:left;padding:0 24px">۸ موتور واقعی شطرنج از سازندگان رسمی • همهٔ سطح‌ها باز • فایل رسمی هر ربات یک‌بار دانلود و داخل حافظهٔ خود بازی نصب می‌شود (کاملاً آفلاین)</div>
+    <div class="page-sub" style="text-align:left;padding:0 24px">۷ ربات و ۸ موتور واقعی شطرنج • همهٔ نسخه‌ها داخل منوی خودِ هر ربات به ترتیب • فایل رسمی هر نسخه جداگانه یا همه‌باهم دانلود می‌شود (کاملاً آفلاین)</div>
     <div class="hr" style="margin:8px 22px 4px"></div>
     <div class="page-body">
       <div style="padding:0 22px 10px"><button class="btn" style="width:100%" id="btnGoWatch">👁 تماشای دو ربات در برابر هم — مشاهده بازی هوش مصنوعی</button></div>
@@ -1546,7 +1546,7 @@ function buildMenu(){
   });
   const cards=$("quickCards"); cards.innerHTML="";
   const data=[
-    ["🤖","۸ موتور","بازی با هوش مصنوعی","فایل‌های رسمی • همه باز",()=>go("bots")],
+    ["🤖","۸ موتور","بازی با هوش مصنوعی","همهٔ نسخه‌ها در منوی هر ربات",()=>go("bots")],
     ["👁","تماشای ربات‌ها","مشاهده بازی هوش مصنوعی","دو موتور مقابل هم",()=>{buildWatch();go("watch");}],
     ["♟♟","بازی دونفره","","روی یک گوشی",()=>twoPlayerSetup()],
     ["🎓","۱۰ درس","آکادمی","آموزش مرحله‌ای",()=>go("academy")]
@@ -1570,7 +1570,7 @@ function buildLevels(){
 }
 
 // ---------- Bot Hub (مرکز ربات‌ها) ----------
-const APP_VERSION="1.6.0";
+const APP_VERSION="1.7.0";
 const REPO_OWNER="amirmhmdglstan-stack", REPO_NAME="Matin-Chess";
 const REPO_API=`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`;
 const BOT_RAW=`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/bots/`;
@@ -1591,57 +1591,76 @@ const BOTS=[
           {u:BOT_RAW+"veltrix.wasm",n:"veltrix.wasm",
            fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/veltrix.wasm"}],
    size:"۳۶۰ کیلوبایت",lvls:"۳ مدل + ۸ سطح"},
-  {id:"stockfish",latin:"STOCKFISH 19",fa:"استاک‌فیش ۱۹",
-   tag:"قدرتمندترین موتور شطرنج دنیا — نسخهٔ رسمی ۱۹ با ارزیابی عصبی NNUE؛ فایل واقعی و رسمی منتشرشدهٔ پروژهٔ استاک‌فیش (حدود ۹۵ مگابایت، یک‌بار دانلود و برای همیشه آفلاین).",
+  {id:"stockfish",latin:"STOCKFISH",fa:"استاک‌فیش",
+   tag:"قدرتمندترین موتور شطرنج دنیا — همهٔ نسخه‌ها در منوی همین ربات به ترتیب؛ هر نسخه فایل رسمی خودش را دارد و جداگانه یا همه‌باهم دانلود می‌شود؛ بعد از نصب برای همیشه آفلاین.",
    icon:"🐟",c1:"#67e8f9",c2:"#0e7490",glow:"rgba(103,232,249,.3)",
-   files:[{u:"https://raw.githubusercontent.com/amirmhmdglstan-stack/Matin-Chess/main/bots/stockfish-19-single.js",n:"stockfish-19-single.js",patch:true,
-           fb:"https://github.com/amirmhmdglstan-stack/Matin-Chess/releases/download/v1.5.0/stockfish-19-single.js"},
-          {u:"https://raw.githubusercontent.com/amirmhmdglstan-stack/Matin-Chess/main/bots/stockfish-19-single.wasm",n:"stockfish-19-single.wasm",
-           fb:"https://github.com/amirmhmdglstan-stack/Matin-Chess/releases/download/v1.5.0/stockfish-19-single.wasm"}],
-   size:"۹۵ مگابایت",lvls:"۲۰ سطح"},
+   ladder:[
+    {v:"19",code:1900,fa:"۱۹ — مدرن با NNUE",size:"۹۵ مگابایت",
+     files:[{u:"https://raw.githubusercontent.com/amirmhmdglstan-stack/Matin-Chess/main/bots/stockfish-19-single.js",n:"stockfish-19-single.js",patch:true,
+             fb:"https://github.com/amirmhmdglstan-stack/Matin-Chess/releases/download/v1.5.0/stockfish-19-single.js"},
+            {u:"https://raw.githubusercontent.com/amirmhmdglstan-stack/Matin-Chess/main/bots/stockfish-19-single.wasm",n:"stockfish-19-single.wasm",
+             fb:"https://github.com/amirmhmdglstan-stack/Matin-Chess/releases/download/v1.5.0/stockfish-19-single.wasm"}]},
+    {v:"16",code:1600,fa:"۱۶ — مدرن با NNUE",size:"۴۱ مگابایت",
+     files:[{u:BOT_RAW+"sf16.js",n:"sf16.js",
+             fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/sf16.js"},
+            {u:BOT_RAW+"sf16-core.js",n:"sf16-core.js",
+             fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/sf16-core.js"},
+            {u:BOT_RAW+"sf16-core.wasm",n:"sf16-core.wasm",
+             fb:"https://github.com/amirmhmdglstan-stack/Matin-Chess/releases/download/v1.7.0/sf16-core.wasm"}]},
+    {v:"10",code:1000,fa:"۱۰ — کلاسیک (سبک و سریع)",size:"۶۵۰ کیلوبایت",
+     files:[{u:BOT_RAW+"stockfish.wasm.js",n:"stockfish.wasm.js",patch:true,
+             fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/stockfish.wasm.js"},
+            {u:BOT_RAW+"stockfish.wasm",n:"stockfish.wasm",
+             fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/stockfish.wasm"}]}
+   ]},
   {id:"lozza",latin:"LOZZA",fa:"لوزا",
-   tag:"موتور متن‌باز و سریع با ارزیابی عصبی؛ ۱۰ سطح عمق.",
+   tag:"موتور متن‌باز و سریع با ارزیابی عصبی — فایل رسمی سازنده؛ ۱۰ سطح عمق.",
    icon:"🦎",c1:"#86efac",c2:"#15803d",glow:"rgba(134,239,172,.3)",
-   files:[{u:"https://raw.githubusercontent.com/op12no2/lozza/master/lozza.js",n:"lozza.js",
-           fb:"https://cdn.jsdelivr.net/gh/op12no2/lozza@master/lozza.js"}],
-   size:"۶۴۰ کیلوبایت",lvls:"۱۰ سطح"},
+   ladder:[{v:"main",code:800,fa:"نسخهٔ اصلی سازنده",size:"۶۴۰ کیلوبایت",
+     files:[{u:"https://raw.githubusercontent.com/op12no2/lozza/master/lozza.js",n:"lozza.js",
+             fb:"https://cdn.jsdelivr.net/gh/op12no2/lozza@master/lozza.js"}]}]},
   {id:"garbochess",latin:"GARBOCHESS",fa:"گاربوچس",
-   tag:"موتور کلاسیک متن‌باز با سبک تاکتیکی؛ ۸ سطح زمانی.",
+   tag:"موتور کلاسیک متن‌باز با سبک تاکتیکی — فایل رسمی سازنده؛ ۸ سطح زمانی.",
    icon:"♞",c1:"#fdba74",c2:"#c2410c",glow:"rgba(253,186,116,.3)",
-   files:[{u:"https://raw.githubusercontent.com/glinscott/Garbochess-JS/master/js/garbochess.js",n:"garbochess.js",
-           fb:"https://cdn.jsdelivr.net/gh/glinscott/Garbochess-JS@master/js/garbochess.js"}],
-   size:"۸۰ کیلوبایت",lvls:"۸ سطح"},
-  {id:"berserk",latin:"BERSERK 14",fa:"برسرک ۱۴",
-   tag:"موتور معروف متن‌باز Jay Honnold — نسخهٔ واقعی ۱۴ با ارزیابی عصبی NNUE؛ سورس رسمی پروژه برای اندروید کامپایل شده و شبکهٔ رسمیِ منتشرشدهٔ سازنده (berserk-9b84c340af7e.nn) داخل فایل تعبیه شده است.",
+   ladder:[{v:"main",code:900,fa:"نسخهٔ اصلی سازنده",size:"۸۰ کیلوبایت",
+     files:[{u:"https://raw.githubusercontent.com/glinscott/Garbochess-JS/master/js/garbochess.js",n:"garbochess.js",
+             fb:"https://cdn.jsdelivr.net/gh/glinscott/Garbochess-JS@master/js/garbochess.js"}]}]},
+  {id:"berserk",latin:"BERSERK",fa:"برسرک",
+   tag:"موتور معروف Jay Honnold — نسخه‌های ۱۴ و ۱۳ و ۱۲ به ترتیب در همین منو، هرکدام با شبکهٔ عصبی رسمیِ خود نسخه؛ سورس رسمی هر نسخه با Emscripten کامپایل شده — پشتوانهٔ واقعی، نه شبیه‌سازی. نسخه‌های قدیمی‌تر به‌مرور اضافه می‌شوند.",
    icon:"🐻",c1:"#fca5a5",c2:"#991b1b",glow:"rgba(252,165,165,.3)",
-   entry:"berserk.js",
-   files:[{u:BOT_RAW+"berserk.js",n:"berserk.js",
-           fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/berserk.js"},
-          {u:BOT_RAW+"berserk-core.js",n:"berserk-core.js",
-           fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/berserk-core.js"},
-          {u:BOT_RAW+"berserk-core.wasm",n:"berserk-core.wasm",
-           fb:"https://github.com/amirmhmdglstan-stack/Matin-Chess/releases/download/v1.6.0/berserk-core.wasm"}],
-   size:"۲۵ مگابایت",lvls:"۲۰ سطح"},
+   ladder:[
+    {v:"14",code:1400,fa:"۱۴ — NNUE (شبکهٔ رسمی berserk-9b84c340af7e)",size:"۲۵ مگابایت",
+     files:[{u:BOT_RAW+"berserk.js",n:"berserk.js",
+             fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/berserk.js"},
+            {u:BOT_RAW+"berserk-14-core.js",n:"berserk-14-core.js",
+             fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/berserk-14-core.js"},
+            {u:BOT_RAW+"berserk-14-core.wasm",n:"berserk-14-core.wasm",
+             fb:"https://github.com/amirmhmdglstan-stack/Matin-Chess/releases/download/v1.7.0/berserk-14-core.wasm"}]},
+    {v:"13",code:1300,fa:"۱۳ — NNUE (شبکهٔ رسمی berserk-d43206fe90e4)",size:"۲۵ مگابایت",
+     files:[{u:BOT_RAW+"berserk.js",n:"berserk.js",
+             fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/berserk.js"},
+            {u:BOT_RAW+"berserk-13-core.js",n:"berserk-13-core.js",
+             fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/berserk-13-core.js"},
+            {u:BOT_RAW+"berserk-13-core.wasm",n:"berserk-13-core.wasm",
+             fb:"https://github.com/amirmhmdglstan-stack/Matin-Chess/releases/download/v1.7.0/berserk-13-core.wasm"}]},
+    {v:"12",code:1200,fa:"۱۲ — NNUE (شبکهٔ رسمی berserk-fb675dad41b4)",size:"۲۵ مگابایت",
+     files:[{u:BOT_RAW+"berserk.js",n:"berserk.js",
+             fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/berserk.js"},
+            {u:BOT_RAW+"berserk-12-core.js",n:"berserk-12-core.js",
+             fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/berserk-12-core.js"},
+            {u:BOT_RAW+"berserk-12-core.wasm",n:"berserk-12-core.wasm",
+             fb:"https://github.com/amirmhmdglstan-stack/Matin-Chess/releases/download/v1.7.0/berserk-12-core.wasm"}]}
+   ]},
   {id:"fairy",latin:"FAIRY-STOCKFISH",fa:"فری-استاک‌فیش",
-   tag:"ساختهٔ Fabian Fichter؛ برادر چند-واریانتی استاک‌فیش — سورس رسمی با دستورالعمل رسمی WASM خودِ پروژه کامپایل شده؛ علاوه بر شطرنج، صدها واریانت شطرنج می‌داند.",
+   tag:"ساختهٔ Fabian Fichter؛ برادر چند-واریانتی استاک‌فیش — سورس رسمی با دستورالعمل رسمی WASM خودِ پروژه کامپایل شده؛ علاوه بر شطرنج، صدها واریانت می‌داند.",
    icon:"🧚",c1:"#c4b5fd",c2:"#6d28d9",glow:"rgba(196,181,253,.3)",
-   entry:"fairy.js",
-   files:[{u:BOT_RAW+"fairy.js",n:"fairy.js",
-           fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/fairy.js"},
-          {u:BOT_RAW+"fairy-core.js",n:"fairy-core.js",
-           fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/fairy-core.js"},
-          {u:BOT_RAW+"fairy-core.wasm",n:"fairy-core.wasm",
-           fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/fairy-core.wasm"}],
-   size:"۱٫۳ مگابایت",lvls:"۲۰ سطح"},
-  {id:"stockfish10",latin:"STOCKFISH 10",fa:"استاک‌فیش ۱۰",
-   tag:"نسخهٔ کلاسیک و محبوب ۲۰۱۸ استاک‌فیش — ساخت رسمی WASM نیکلاس فیکه‌س؛ خیلی سبک و سریع؛ ۱۰ سطح.",
-   icon:"🐟",c1:"#7dd3fc",c2:"#0369a1",glow:"rgba(125,211,252,.3)",
-   entry:"stockfish.wasm.js",
-   files:[{u:BOT_RAW+"stockfish.wasm.js",n:"stockfish.wasm.js",patch:true,
-           fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/stockfish.wasm.js"},
-          {u:BOT_RAW+"stockfish.wasm",n:"stockfish.wasm",
-           fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/stockfish.wasm"}],
-   size:"۶۵۰ کیلوبایت",lvls:"۱۰ سطح"}
+   ladder:[{v:"14.0.1+",code:500,fa:"نسخهٔ ۱۴٫۰٫۱+ (سورس رسمی)",size:"۱٫۳ مگابایت",
+     files:[{u:BOT_RAW+"fairy.js",n:"fairy.js",
+             fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/fairy.js"},
+            {u:BOT_RAW+"fairy-core.js",n:"fairy-core.js",
+             fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/fairy-core.js"},
+            {u:BOT_RAW+"fairy-core.wasm",n:"fairy-core.wasm",
+             fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/fairy-core.wasm"}]}]}
 ];
 /* مدل‌ها و سطوح ولتریکس — کپی مو‌به‌مو از gui/models.py پروژهٔ اصلی ولتریکس:
    High بدون هیچ سقفی؛ Light ≈۶۴هزار گره/۴۰۰ms؛ Fast ≈۴هزار گره/۶۰ms.
@@ -1709,10 +1728,27 @@ function botKeys(force){
   if(_botKeys&&!force)return Promise.resolve(_botKeys);
   return BotStore.keys().then(k=>(_botKeys=k)).catch(()=>(_botKeys=[]));
 }
-function botInstalled(id){
+/* فایل‌های یک ربات در یک «سطح/نسخه»: ربات‌های نردبانی (استاک‌فیش/برسرک و…) فایل‌هایشان به نسخه وابسته است */
+function botRelFor(b,code){
+  if(b.ladder)return b.ladder.find(x=>x.code===code)||b.ladder[0];
+  return null;
+}
+function botFilesFor(b,code){
+  const r=botRelFor(b,code);
+  return r?r.files:b.files;
+}
+function botEntryFor(b,code){
+  const r=botRelFor(b,code);
+  return r?(r.entry||r.files[0].n):(b.entry||b.files[0].n);
+}
+function botInstalled(id,code){
   const b=BOTS.find(x=>x.id===id);
   if(!b)return Promise.resolve(false);
   if(b.builtin)return Promise.resolve(true);
+  if(b.ladder){
+    if(code)return botKeys().then(ks=>botFilesFor(b,code).every(f=>ks.includes(id+"/"+f.n)));
+    return botKeys().then(ks=>b.ladder.some(r=>r.files.every(f=>ks.includes(id+"/"+f.n))));
+  }
   return botKeys().then(ks=>b.files.every(f=>ks.includes(id+"/"+f.n)));
 }
 function fetchWithProgress(url,onPct){
@@ -1737,10 +1773,11 @@ function fetchWithProgress(url,onPct){
     });
   });
 }
-function downloadBot(b,onStatus,onPct){
+function downloadBot(b,onStatus,onPct,code){
+  const files=botFilesFor(b,code);
   return botKeys(true).then(()=>{
     let done=0;
-    const per=b.files.length;
+    const per=files.length;
     const runOne=(f)=>{
       const url=f.u;
       onStatus(`دانلود ${f.n} … (${done+1}/${per})`);
@@ -1770,7 +1807,7 @@ function downloadBot(b,onStatus,onPct){
       });
     };
     let chain=Promise.resolve();
-    b.files.forEach(f=>{ chain=chain.then(()=>runOne(f)); });
+    files.forEach(f=>{ chain=chain.then(()=>runOne(f)); });
     return chain.then(()=>{ _botKeys=null; return botKeys(true); });
   });
 }
@@ -1800,7 +1837,7 @@ function buildBots(){
         const badge=c.querySelector("[data-badge]");
         if(badge)badge.outerHTML=ok
           ?'<span class="bot-badge ok">✓ نصب‌شده</span>'
-          :`<span class="bot-badge">⬇ دانلود • ${b.size}</span>`;
+          :`<span class="bot-badge">⬇ دانلود • ${b.ladder?(b.ladder.length+" نسخه"):b.size}</span>`;
       });
     }
   });
@@ -1811,14 +1848,24 @@ function botLevels(b){
     official:VLTRIX_MODELS.map(m=>({num:m.num,fa:m.fa,latin:m.key})),
     offlLabel:"مدل‌های اصلی"
   };
-  const n={matin:20,stockfish:20,stockfish17:20,stockfish16:20,berserk:20,fairy:20,lozza:10,stockfish10:10,garbochess:8}[b.id]||20;
+  const n={matin:20,lozza:10,garbochess:8}[b.id]||20;
   return{numeric:Array.from({length:n},(_,i)=>({num:i+1})),official:null};
+}
+/* برچسب کوتاه سطح — نردبانی‌ها کد نسخه دارند (مثل ۱۹۰۰ = استاک‌فیش ۱۹) */
+function botLevelShort(id,lv){
+  const b=BOTS.find(x=>x.id===id);
+  if(b&&b.ladder){
+    const r=botRelFor(b,lv);
+    return r?("نسخهٔ "+r.v):faNum(lv);
+  }
+  return "سطح "+faNum(lv);
 }
 function botLevelLabel(b,lv){
   if(b.id==="veltrix"&&lv>=300){
     const o=VLTRIX_MODELS.find(x=>x.num===lv);
     return o?`${b.fa} ${o.fa} (${o.key})`:"";
   }
+  if(b.ladder)return b.fa+" — نسخهٔ "+(botRelFor(b,lv)||{v:"?"}).v;
   return b.fa+" — سطح "+faNum(lv);
 }
 function openBotModal(b){
@@ -1862,10 +1909,52 @@ function openBotModal(b){
       ask("حذف ربات",`فایل‌های ${b.fa} از حافظهٔ بازی پاک شوند؟`,[
         ["انصراف",null,""],
         ["حذف",()=>{
-          Promise.all(b.files.map(f=>BotStore.del(b.id+"/"+f.n)))
+          Promise.all((b.versions?b.versions.reduce((a,v)=>a.concat(v.files),[]):b.files).map(f=>BotStore.del(b.id+"/"+f.n)))
             .catch(()=>{}).finally(()=>{ _botKeys=null; toast("ربات حذف شد"); buildBots(); openBotModal(b); });
         },"big"]
       ]);
+    };
+  };
+  /* ربات‌های نردبانی (استاک‌فیش/برسرک/فری و…): منو = همهٔ نسخه‌ها به ترتیب؛
+     هر نسخه جداگانه یا همه‌باهم دانلود می‌شود و بعد از نصب مستقیم بازی می‌شود */
+  const showLadder=()=>{
+    let h=`<div class="bot-desc">همهٔ نسخه‌ها به ترتیب در همین منوست؛ هر نسخه فایل رسمی خودش را دارد و جداگانه یا همه‌باهم دانلود می‌شود (پشتوانهٔ واقعی: فایل رسمی سازنده یا کامپایل سورس رسمی + شبکهٔ رسمی).</div>
+      <div class="row2"><button class="btn" id="dlAll">⬇ دانلود همهٔ نسخه‌ها</button></div>`;
+    b.ladder.forEach(r=>{ h+=`<div class="sect-lbl">${b.fa} ${r.fa}</div><div id="rel${r.code}"></div>`; });
+    body.innerHTML=h;
+    const renderRow=(r)=>{
+      const holder=body.querySelector("#rel"+r.code);
+      if(!holder)return;
+      botInstalled(b.id,r.code).then(ok=>{
+        if(!holder)return;
+        if(ok){
+          holder.innerHTML=`<div class="row2"><button class="btn big" data-play="${r.code}">▶ بازی با ${b.fa} ${r.fa}</button></div>`;
+          const pb=holder.querySelector("[data-play]");
+          pb.onclick=()=>{ AudioEng.play("button"); botGameSetup(b,r.code); };
+        }else{
+          holder.innerHTML=`<div class="row2"><button class="btn" data-dlv="${r.code}">⬇ دانلود ${r.fa} (${r.size})</button></div>
+            <div class="dl-bar"><div class="dl-fill" id="dlFill${r.code}" style="--c1:${b.c1};--c2:${b.c2}"></div></div>
+            <div class="dl-status" id="dlStatus${r.code}">آمادهٔ دانلود • حجم ${r.size}</div>`;
+          holder.querySelector("[data-dlv]").onclick=()=>{
+            const fill=holder.querySelector("#dlFill"+r.code), st=holder.querySelector("#dlStatus"+r.code);
+            st.textContent="در حال اتصال…";
+            downloadBot(b,
+              s=>{ st.textContent=s; },
+              p=>{ fill.style.width=p+"%"; st.textContent=`دانلود… ${p}%`; }, r.code)
+            .then(()=>{ AudioEng.play("promote"); toast(b.fa+" "+r.fa+" نصب شد ✓"); renderRow(r); buildBots(); })
+            .catch(()=>{ st.textContent="دانلود ناموفق؛ اینترنت را بررسی کن و دوباره تلاش کن."; });
+          };
+        }
+      });
+    };
+    b.ladder.forEach(renderRow);
+    const da=body.querySelector("#dlAll");
+    if(da)da.onclick=()=>{
+      da.disabled=true; da.textContent="در حال دانلود همه…";
+      let chain=Promise.resolve();
+      b.ladder.forEach(r=>{ chain=chain.then(()=>botInstalled(b.id,r.code).then(ok=>ok?null:downloadBot(b,()=>{},()=>{},r.code))); });
+      chain.then(()=>{ AudioEng.play("promote"); toast("همهٔ نسخه‌های "+b.fa+" نصب شد ✓"); openBotModal(b); buildBots(); })
+        .catch(()=>{ toast("یکی از دانلودها ناموفق بود؛ دوباره تلاش کن."); da.disabled=false; da.textContent="⬇ دانلود همهٔ نسخه‌ها"; });
     };
   };
   const showDownload=()=>{
@@ -1897,6 +1986,7 @@ function openBotModal(b){
     };
   };
   if(b.builtin)showLevels();
+  else if(b.ladder)showLadder();
   else botInstalled(b.id).then(ok=>{ if(ok)showLevels(); else showDownload(); });
 }
 function botGameSetup(b,lv){
@@ -1960,24 +2050,19 @@ function uciToMove(g,u){
 }
 /* پارامتر سطح هر ربات → دستور go */
 function botLevelParams(id,lv){
-  if(id==="stockfish")return{type:"uci",
-    setopt:[["Skill Level",String(Math.round((lv-1)*20/19))]],
-    go:"go movetime "+(100+lv*40)};
-  if(id==="stockfish17"||id==="stockfish16")return{type:"uci",
-    setopt:[["Skill Level",String(Math.round((lv-1)*20/19))]],
-    go:"go movetime "+(100+lv*40)};
-  if(id==="stockfish10")return{type:"uci",
-    setopt:[], // ساخت niklasf: Threads/Hash را تغییر نده — spawn thread باعث مرگ wasm می‌شود
-    go:"go movetime "+(60+lv*45)};
-  if(id==="berserk")return{type:"uci",
-    setopt:[["Hash","16"],["Threads","1"],["MultiPV","1"]],
-    go:"go movetime "+(80+lv*45)};
+  if(id==="stockfish"){ // نردبای نسخه‌ها — هر نسخه با قدرت کامل خودش
+    const r=botRelFor(BOTS.find(x=>x.id==="stockfish"),lv)||{v:"10"};
+    const setopt=(r.v==="10")?[]:[]; // ساخت niklasf و ساخته‌های خودمان: دست نزن (spawn thread)
+    return{type:"uci",setopt,go:"go movetime 1100",timeout:16000};
+  }
+  if(id==="berserk"){ // نردبای نسخه‌ها
+    return{type:"uci",setopt:[["Hash","16"],["Threads","1"]],go:"go movetime 900",timeout:16000};
+  }
   if(id==="fairy")return{type:"uci",
     setopt:[["Hash","16"],["Threads","1"],["UCI_Variant","chess"]],
-    go:"go movetime "+(80+lv*45)};
-  if(id==="lozza")return{type:"uci",setopt:[],go:"go depth "+lv};
-  if(id==="garbochess")return{type:"garbo",
-    ms:[80,150,260,420,650,950,1400,2100][Math.max(0,Math.min(7,lv-1))]};
+    go:"go movetime 900",timeout:16000};
+  if(id==="lozza")return{type:"uci",setopt:[],go:"go depth 10"}; // کد نسخه — عمق ثابت رسمی
+  if(id==="garbochess")return{type:"garbo",ms:650}; // کد نسخه — زمان ثابت
   if(id==="veltrix"){
     /* دقیقاً مطابق go_kwargs در gui/models.py پروژهٔ اصلی:
        بودجهٔ گره + سقف زمان؛ High بدون سقف و فقط با ساعت کاربر */
@@ -2067,19 +2152,22 @@ function destroySession(s){
   try{ if(s.urls)Object.values(s.urls).forEach(u=>URL.revokeObjectURL(u)); }catch(e){}
   try{ s.w.terminate(); }catch(e){}
 }
-function createEngineSession(b,level){
-  return botInstalled(b.id).then(ok=>{
+function createEngineSession(b,level,scope){
+  const k0=EngPool.key(b.id,level)+(scope?"#"+scope:"");
+  return botInstalled(b.id,level).then(ok=>{
     if(!ok)return null;
-    return Promise.all(b.files.map(f=>BotStore.get(b.id+"/"+f.n))).then(recs=>{
+    const files=botFilesFor(b,level);
+    return Promise.all(files.map(f=>BotStore.get(b.id+"/"+f.n))).then(recs=>{
       if(recs.some(r=>!r))return null;
       const urls={};
       recs.forEach(r=>{ urls[r.n]=URL.createObjectURL(new Blob([r.data],
         {type:r.n.endsWith(".wasm")?"application/wasm":"application/javascript"})); });
-      const entryName=b.entry||b.files[0].n;
+      const entryName=botEntryFor(b,level);
       let boot="";
       const wasmName=Object.keys(urls).find(n=>n.endsWith(".wasm"));
       if(wasmName)boot+="self.BOT_WASM_URL="+JSON.stringify(urls[wasmName])+";";
       boot+="self.BOT_FILES="+JSON.stringify(urls)+";";
+      boot+="self.BOT_ENTRY="+JSON.stringify(entryName)+";";
       let w;
       try{
         w=new Worker(URL.createObjectURL(new Blob(
@@ -2148,8 +2236,7 @@ function createEngineSession(b,level){
           const t=setTimeout(()=>{
             // موتور پاسخ نداد → جلسه دور ریخته می‌شود؛ حرکت بعدی جلسهٔ تازه می‌سازد
             destroySession(sess);
-            const k=EngPool.key(b.id,level);
-            if(EngPool.m[k]===sess)delete EngPool.m[k];
+            if(EngPool.m[k0]===sess)delete EngPool.m[k0];
             resolve(null);
           },timeoutMs||params.timeout||14000);
           sess.pending={resolve,timer:t};
@@ -2165,12 +2252,12 @@ function createEngineSession(b,level){
     });
   });
 }
-function runBotMove(botId,state,level){
+function runBotMove(botId,state,level,scope){
   const b=BOTS.find(x=>x.id===botId);
   if(!b||b.builtin)return Promise.resolve(null);
-  const key=EngPool.key(botId,level);
+  const key=EngPool.key(botId,level)+(scope?"#"+scope:"");
   let s=EngPool.m[key]&&EngPool.m[key].alive?EngPool.m[key]:null;
-  const ensure=s?Promise.resolve(s):createEngineSession(b,level).then(ns=>{
+  const ensure=s?Promise.resolve(s):createEngineSession(b,level,scope).then(ns=>{
     if(ns){ ns.t=Date.now(); EngPool.m[key]=ns; EngPool.evict(); }
     return ns;
   });
@@ -2192,9 +2279,18 @@ function requestBotMove(state){
 }
 // ---------- مشاهده بازی هوش مصنوعی (ربات مقابل ربات) ----------
 function watchLvlChoices(b){
-  if(b.id==="veltrix")return Array.from({length:8},(_,i)=>i+1);
-  const n={matin:20,lozza:10,garbochess:8,stockfish10:10}[b.id]||20;
+  if(b.id==="veltrix")return [301,302,303,1,2,3,4,5,6,7,8]; // مدل‌های رسمی + سطوح عددی
+  if(b.ladder)return b.ladder.map(r=>r.code);
+  const n={matin:20}[b.id]||20;
   return Array.from({length:n},(_,i)=>i+1);
+}
+function watchLvlLabel(b,lv){
+  if(b.id==="veltrix"){
+    if(lv>=300){ const m=VLTRIX_MODELS.find(x=>x.num===lv); return m?(m.fa+" (“"+m.key+"”)"):("مدل "+lv); }
+    return "سطح "+faNum(lv);
+  }
+  if(b.ladder){ const r=botRelFor(b,lv); return r?("نسخهٔ "+r.v):faNum(lv); }
+  return "سطح "+faNum(lv);
 }
 function fillWatchSelects(){
   const wSel=$("wBotSel"), bSel=$("bBotSel");
@@ -2223,9 +2319,10 @@ function fillWatchLevels(){
   const bw=BOTS.find(x=>x.id===pw.value), bb=BOTS.find(x=>x.id===pb.value);
   const fill=(sel,b)=>{
     if(!b)return;
-    const cur=+sel.value||Math.floor(watchLvlChoices(b).length/2);
-    sel.innerHTML=watchLvlChoices(b).map(n=>`<option value="${n}">${n===8&&b.id==="veltrix"?"۸ (فست)":"سطح "+faNum(n)}</option>`).join("");
-    if(watchLvlChoices(b).some(n=>n===cur))sel.value=String(cur);
+    const choices=watchLvlChoices(b);
+    const cur=+sel.value||choices[Math.floor(choices.length/2)];
+    sel.innerHTML=choices.map(n=>`<option value="${n}">${watchLvlLabel(b,n)}</option>`).join("");
+    if(choices.some(n=>n===cur))sel.value=String(cur);
   };
   fill($("wLvlSel"),bw); fill($("bLvlSel"),bb);
 }
@@ -2248,9 +2345,9 @@ function buildWatch(){
         // همان ربات دو بار: دو جلسهٔ جدا — مجاز ولی برای موتورهای سنگین هشدار
         toast("دو نسخه از "+bw.fa+" اجرا می‌شود؛ برای موتورهای سنگین ممکن است کند باشد.");
       }
-      Promise.all([botInstalled(wId),botInstalled(bId)]).then(([okW,okB])=>{
-        if(!okW){ toast("فایل "+bw.fa+" نصب نیست؛ اول در بخش «بازی با هوش مصنوعی» دانلودش کن."); return; }
-        if(!okB){ toast("فایل "+bb.fa+" نصب نیست؛ اول در بخش «بازی با هوش مصنوعی» دانلودش کن."); return; }
+      Promise.all([botInstalled(wId,wLv),botInstalled(bId,bLv)]).then(([okW,okB])=>{
+        if(!okW){ toast("فایل "+(bw?bw.fa:"")+" برای این سطح/نسخه نصب نیست؛ اول در بخش «بازی با هوش مصنوعی» دانلودش کن."); return; }
+        if(!okB){ toast("فایل "+(bb?bb.fa:"")+" برای این سطح/نسخه نصب نیست؛ اول در بخش «بازی با هوش مصنوعی» دانلودش کن."); return; }
         spectateStart(wId,wLv,bId,bLv,delay);
       });
     };
@@ -2280,6 +2377,15 @@ function spectateStart(wId,wLv,bId,bLv,delay){
   clearTimeout(R.clockTimer); R.lastTick=Date.now(); tickClock();
   setTimeout(spectateLoop,900);
 }
+/* حرکت موتور فقط با ضمانت قانونی‌بودن روی صفحه اعمال می‌شود */
+function isLegalMove(g,m){
+  if(!m)return false;
+  return g.legal(g.turn).some(x=>x[0]===m[0]&&x[1]===m[1]&&x[2]===m[2]&&x[3]===m[3]&&(x[5]||"")===(m[5]||""));
+}
+function waitForBoardIdle(cb){
+  if(!R.animating)return cb();
+  const t=setInterval(()=>{ if(!R.animating){ clearInterval(t); cb(); } },70);
+}
 function spectateLoop(){
   if(!R.spectate||R.gameOver||!R.g)return;
   const gen=R.gameGen;
@@ -2291,22 +2397,31 @@ function spectateLoop(){
   const t0=Date.now();
   const req=(cfg.botId==="matin")
     ?runAI(state,cfg.level,null).then(res=>res?res.move:null)
-    :runBotMove(cfg.botId,state,cfg.level);
+    :runBotMove(cfg.botId,state,cfg.level,side); // جلسهٔ جدا برای هر طرف
   req.then(mv=>{
     if(R.gameGen!==gen||R.gameOver||!R.spectate||!R.g)return;
     const wait=Math.max(200,(R.specDelay||700)-(Date.now()-t0));
     setTimeout(()=>{
       if(R.gameGen!==gen||R.gameOver||!R.spectate||!R.g)return;
-      if(mv){
-        R.specFails=0;
-        makeMove(mv,true);
-        updateHud();
-        if(!R.gameOver)setTimeout(spectateLoop,250);
+      if(mv&&isLegalMove(R.g,mv)){
+        waitForBoardIdle(()=>{
+          if(R.gameGen!==gen||R.gameOver||!R.spectate||!R.g)return;
+          const applied=makeMove(mv,true); // ضمانت قانونی بودن داخل makeMove هم هست
+          updateHud();
+          if(applied){
+            R.specFails=0;
+            if(!R.gameOver)setTimeout(spectateLoop,300);
+          }else if(++R.specFails<=2){
+            setTimeout(spectateLoop,1600);
+          }else{
+            spectateStop("ارتباط با موتور برقرار نشد؛ تماشا متوقف شد.");
+          }
+        });
       }else if(++R.specFails<=2){
         // یک‌بار دیگر تلاش کن (جلسهٔ تازه ساخته می‌شود)
         setTimeout(spectateLoop,1600);
       }else{
-        spectateStop("ارتباط با موتور برقرار نشد؛ تماشا متوقف شد.");
+        spectateStop(mv?"موتور حرکت غیرقانونی فرستاد؛ تماشا متوقف شد.":"ارتباط با موتور برقرار نشد؛ تماشا متوقف شد.");
       }
     },wait);
   }).catch(()=>{ if(R.gameGen===gen&&R.spectate)spectateStop("ارتباط با موتور قطع شد؛ تماشا متوقف شد."); });
@@ -2803,8 +2918,13 @@ function showPromoPicker(side){
 // ---------- Making moves ----------
 function makeMove(m,byAI){
   const g=R.g;
-  if(R.gameOver)return;
-  if(R.animating)return;
+  if(R.gameOver)return false;
+  if(R.animating)return false;
+  if(byAI&&!isLegalMove(g,m)){
+    // حرکت موتور هرگز اگر غیرقانونی باشد روی صفحه نمی‌نشیند
+    console.warn("blocked illegal bot move",m);
+    return false;
+  }
   const gen=R.gameGen;
   const start=[m[0],m[1]], end=[m[2],m[3]];
   const special=m[4];
@@ -2849,6 +2969,7 @@ function makeMove(m,byAI){
     }
   });
   updateHud();
+  return true;
 }
 function computeGrade(start,end,mover,beforeEval){
   setTimeout(()=>{
@@ -3039,16 +3160,16 @@ function updateHud(){
   }
   const whoLine=R.twoPlayer?`حالت: ${R.gameMode}\n`
     :(R.botId&&R.botId!=="matin"?`ربات: ${R.botLatin}\n`:`شما: ${R.player==="w"?"سفید":"سیاه"}\n`);
-  const lvlLine=(R.botId&&R.botId!=="matin")
+  const lvlLine2=(R.botId&&R.botId!=="matin")
     ?(R.botId==="veltrix"&&R.level>=300
         ?"مدل: "+((VLTRIX_MODELS.find(m=>m.num===R.level)||{}).key||R.level)+"\n"
-        :`سطح: ${faNum(R.level)}\n`)
+        :botLevelShort(R.botId,R.level)+"\n")
     :`مرحله: ${R.level}/20\n`;
   $("railInfo").textContent=
-    lvlLine+whoLine+
+    lvlLine2+whoLine+
     `نوبت: ${g.turn==="w"?"سفید":"سیاه"}\n`+
     `حرکت‌ها: ${g.moves.length}   گره‌های AI: ${R.twoPlayer?0:R.aiNodes}\n`+
-    `عمق جست‌وجو: ${R.twoPlayer?0:R.aiDepth}\nقدرت موتور: ${R.twoPlayer?"—":(R.botId==="veltrix"&&R.level>=300?"VELTRIX "+((VLTRIX_MODELS.find(m=>m.num===R.level)||{}).key||R.level):(R.botId!=="matin"?R.botLatin+" سطح "+R.level:R.level+"/20"))}`;
+    `عمق جست‌وجو: ${R.twoPlayer?0:R.aiDepth}\nقدرت موتور: ${R.twoPlayer?"—":(R.botId==="veltrix"&&R.level>=300?"VELTRIX "+((VLTRIX_MODELS.find(m=>m.num===R.level)||{}).key||R.level):(R.botId!=="matin"?R.botLatin+" — "+botLevelShort(R.botId,R.level):R.level+"/20"))}`;
   const pieces=g.captured.slice(-16).map(p=>UNICODE[p]).join(" ")||"—";
   $("railCaptured").innerHTML=
     `<div>${pieces}</div><div class="capline">امتیاز سفید: ${sc.w} | سیاه: ${sc.b}</div>`;
@@ -3495,6 +3616,7 @@ function restoreAll(d){
     R.g=ChessGame.deserialize(d.game);
     R.twoPlayer=!!d.two_player;
     R.botId=(!R.twoPlayer&&d.bot_id&&BOTS.some(x=>x.id===d.bot_id))?d.bot_id:"matin";
+    if(R.botId==="stockfish"&&d.bot_id==="stockfish10"){ R.level=1000; } // مهاجرت نسخهٔ قدیمی
     const bbR=BOTS.find(x=>x.id===R.botId);
     R.botLatin=bbR?bbR.latin:"MATIN BOT";
     R.gameMode=R.twoPlayer?"دونفره":(R.botId==="matin"?"هوش مصنوعی":R.botLatin);

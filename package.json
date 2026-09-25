@@ -1,6 +1,6 @@
 {
   "name": "matin-chess",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "MATIN CHESS — responsive chess game (Android edition). Creators: Matin Katooei-zadeh & AmirMohammad Golestan",
   "private": true,
   "scripts": {

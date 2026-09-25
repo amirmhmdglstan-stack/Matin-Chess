@@ -33,5 +33,5 @@ self.onmessage = function (e) {
   if (ready) mod.ccall("fairy_wasm_cmd", null, ["string"], [c]);
   else queue.push(c);
 };
-importScripts(self.BOT_FILES["fairy-core.js"]);
+importScripts(self.BOT_FILES[self.BOT_ENTRY||"fairy-core.js"]);
 })();

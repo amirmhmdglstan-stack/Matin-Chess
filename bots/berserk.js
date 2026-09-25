@@ -32,5 +32,5 @@ self.onmessage = function (e) {
   if (ready) mod.ccall("berserk_wasm_cmd", null, ["string"], [c]);
   else queue.push(c);
 };
-importScripts(self.BOT_FILES["berserk-core.js"]);
+importScripts(self.BOT_FILES[self.BOT_ENTRY||"berserk-core.js"]);
 })();
