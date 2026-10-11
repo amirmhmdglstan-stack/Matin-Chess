@@ -1,0 +1,110 @@
+name: Build Windows EXE (Electron)
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-electron:
+    name: Build Electron Windows EXE (portable + setup)
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: windows
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: windows/package-lock.json
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Sanity check (app files present)
+        shell: pwsh
+        run: |
+          foreach ($f in @("main.js","preload.js","app/index.html",
+                           "app/audio/theme.mp3","app/audio/move-self.mp3",
+                           "app/audio/capture.mp3","build/icon.ico")) {
+            if (-not (Test-Path $f)) { Write-Error "missing $f"; exit 1 }
+          }
+          Write-Host "app files OK"
+
+      - name: Build EXEs (electron-builder)
+        run: npx electron-builder --win portable nsis --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - name: Collect artifacts
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path ../dist-out | Out-Null
+          Get-ChildItem dist -Filter *.exe | ForEach-Object {
+            Copy-Item $_.FullName ("../dist-out/" + $_.Name)
+            Write-Host ("artifact: " + $_.Name + "  " + $_.Length + " bytes")
+          }
+          if (-not (Get-ChildItem ../dist-out -Filter *.exe)) {
+            Write-Error "no exe produced"; exit 1
+          }
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MATIN-CHESS-windows-electron
+          path: dist-out/*.exe
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-electron
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download EXE artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: MATIN-CHESS-windows-electron
+          path: dist
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.exe
+          body: |
+            ## MATIN CHESS — نسخهٔ ویندوز (Windows Desktop Edition) 🪟
+
+            همان بازی اندروید، همان ظاهر و متن‌ها، همان موتورها — این‌بار به‌صورت برنامهٔ واقعی ویندوز.
+
+            **سازندگان / Creators:** امیرمحمد گلستان • متین کتویی زاده
+            (AmirMohammad Golestan & Matin Katooei-zadeh)
+
+            ### دانلود / Download
+            | فایل | توضیح |
+            |---|---|
+            | `MATIN-CHESS-v${{ github.ref_name }}-windows-portable.exe` | تک‌فایل — بدون نصب، فقط اجرا کن |
+            | `MATIN-CHESS-v${{ github.ref_name }}-windows-setup.exe` | نصب‌کنندهٔ کامل (میان‌بر دسکتاپ + منوی استارت) |
+
+            ### امکانات این نسخه
+            - ظاهر و متن‌های دکمه‌ها **دقیقاً همان نسخهٔ اندروید**
+            - آهنگ صفحهٔ اصلی (`theme.mp3`) فقط در منوی اصلی، با وقفهٔ ۳ ثانیه — هرگز داخل بازی
+            - صدای واقعی حرکت (`move-self.mp3`) و گرفتن مهره (`capture.mp3`) برای همهٔ حرکت‌ها — بازیکن یا ربات
+            - ۷ خانوادهٔ ربات: متین (۲۰ سطح، از پیش نصب)، ولتریکس (۳ مدل رسمی + ۸ سطح)، استاک‌فیش ۶ تا ۱۹، برسرک ۱۲/۱۳/۱۴، لوزا، گاربوچس، فری-استاک‌فیش
+            - **همهٔ ربات‌ها داخل خود برنامه از سورس رسمی سازنده دانلود می‌شوند** (هیچ موتوری از قبل نصب نیست، جز متین)
+            - تماشای ربات در برابر ربات، آکادمی ۱۰ درسی، ۱۰ تمرین مات، ذخیره/بارگذاری، خروجی PGN
+            - طراحی صفحهٔ شطرنج از پروژهٔ Veltrix (۸ تم رنگی)
+
+            Windows 10/11 64-bit • Built with Electron + GitHub Actions

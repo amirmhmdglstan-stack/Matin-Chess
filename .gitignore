@@ -17,3 +17,8 @@ android/app/src/main/assets/public/
 .DS_Store
 Thumbs.db
 *.log
+
+# Electron windows app
+windows/node_modules/
+windows/dist/
+windows/dist-out/

@@ -1,9 +1,10 @@
-name: Build Windows EXE
+name: Build Windows EXE (legacy Python)
+
+# Legacy: the classic Python/PyInstaller desktop edition.
+# The CURRENT Windows app is the Electron edition -> build-windows.yml
+# (manual only, so v* tags publish only the Electron EXEs)
 
 on:
-  push:
-    branches: [ main, master ]
-    tags: [ 'v*' ]
   workflow_dispatch:
 
 permissions:
