@@ -1,67 +1,54 @@
-# MATIN CHESS — Windows Desktop Edition (v3.0.0)
+# MATIN CHESS — Windows Desktop Edition (Tauri)
 
-The **exact Android app** (same look, same Persian texts, same engines, same
-sounds) running on Windows as a real desktop application — built with
-**Electron**, packaged by **electron-builder**.
+The real Windows app — the **exact same web app as the Android build** (`app/` ==
+`www/`), served inside the system **WebView2** by a tiny native **Tauri 2** shell.
+
+## Why Tauri (v3.1.0+)
+
+| | Electron (v3.0.0) | Tauri (v3.1.0) |
+|---|---|---|
+| Portable EXE | ~73 MB | **~5 MB** |
+| Setup EXE | ~73 MB | **~3-4 MB** |
+| Zipped setup | — | **~3 MB** |
+| Chromium bundled | yes (~70 MB) | no (uses WebView2, preinstalled on Win10/11) |
+
+Same content, same look, same engines, same texts — just a much smaller exe
+(user request: *reduce the size, not the content*).
+
+## Layout
 
 ```
 windows/
-├── main.js        Electron main process (private matin:// protocol, window)
-├── preload.js     Safe bridge: window.MatinDesktop.close/minimize/maximize
-├── app/           ← the Android web app itself
-│   ├── index.html   (same source as www/, adapted: real piece sounds,
-│   │                 3-second menu-music gap, Windows exit bridge)
-│   └── audio/       theme.mp3 (menu music) + move-self.mp3 + capture.mp3
-├── build/         icon.ico / icon.png
-└── package.json   electron-builder config (portable .exe + NSIS setup)
+  app/            the Android web app, unchanged (HTML + audio)
+  src-tauri/      the native shell (Rust)
+    src/main.rs     window commands + CORS-free streaming downloader
+    tauri.conf.json window/bundle config (NSIS, currentUser)
+    icons/          app icons (exe resource + installer)
+  package.json    only devDependency: @tauri-apps/cli
 ```
 
-## Run from source
+## Build
 
-```bash
-cd windows
+```
 npm install
-npm start
+npx tauri build
 ```
 
-Requires Node.js 18+ (Electron is the only dev dependency).
+Outputs:
 
-## Build the Windows EXE yourself
+- `src-tauri/target/release/matin-chess.exe` — standalone portable EXE
+- `src-tauri/target/release/bundle/nsis/*-setup.exe` — NSIS installer
+  (LZMA solid compression, desktop shortcut, start menu, WebView2 bootstrap)
 
-```bash
-npm run dist
-```
+CI renames them to `MATIN-CHESS-vX.Y.Z-windows-{portable,setup}.exe` and zips
+the setup with 7-Zip max compression (`.github/workflows/build-windows.yml`).
 
-Produces in `windows/dist/`:
+## Native commands (invoke from the web app)
 
-| File | What it is |
-|---|---|
-| `MATIN-CHESS-v3.0.0-windows-portable.exe` | single-file portable — no install, just run |
-| `MATIN-CHESS-v3.0.0-windows-setup.exe` | classic installer (start-menu + desktop shortcuts) |
+- `win_close` / `win_min` / `win_max` — the exit button bridge
+  (`window.MatinDesktop` is defined by the inline script when `window.__TAURI__` exists)
+- `download_stream {url}` — last-resort engine download when both web mirrors
+  fail (no CORS, streams `dl-chunk`/`dl-done`/`dl-error` events for the progress bar)
 
-## How it matches the Android app
-
-- **Look & texts** — the renderer is the Android `www/index.html` itself:
-  same dark dashboard + gold theme, same buttons, same Persian wording.
-- **Background music** — `theme.mp3` loops **only on the main menu** with a
-  **3-second gap**, never inside a game (exactly like Android, gap widened
-  on request).
-- **Real piece sounds** — every move by anyone (you, the bot, or two bots in
-  spectate mode) plays `move-self.mp3`; every capture plays `capture.mp3`.
-- **Real engines, nothing preinstalled** — besides the built-in MATIN BOT,
-  every engine (Veltrix, Stockfish 6→19, Berserk 12/13/14, Lozza,
-  Garbochess, Fairy-Stockfish) is downloaded **inside the app** from its
-  official source and stored in the app's own IndexedDB storage, exactly
-  like the Android downloader.
-- **Board design** — identical Veltrix board rendering with 8 color themes.
-
-## Bot storage
-
-Downloaded engine files live in Chromium IndexedDB under
-`%APPDATA%\MATIN CHESS\` — one download stays installed forever, fully
-offline afterwards.
-
-## GitHub Actions
-
-`.github/workflows/build-windows.yml` builds both EXE files on every `v*`
-tag and publishes them to a GitHub Release automatically.
+Bot engines themselves are **not bundled** — they are downloaded in-app from the
+creators' official sources and stored in IndexedDB, exactly like the Android app.

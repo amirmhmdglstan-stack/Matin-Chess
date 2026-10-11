@@ -2,7 +2,7 @@
   "appId": "com.matinchess.game",
   "appName": "MATIN CHESS",
   "webDir": "www",
-  "version": "1.7.0",
+  "version": "3.1.0",
   "android": {
     "allowMixedContent": false
   },

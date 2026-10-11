@@ -378,6 +378,22 @@ select,input[type=text]{
 .ver-status{font-size:11px;color:#9aa8b5;font-family:var(--font-mono);white-space:nowrap}
 .dl-bar.slim{height:6px;margin-top:6px}
 .ver-lvls{margin-top:6px}
+/* انتخاب نسخه (ربات ← نسخه/مدل ← سطح) */
+.verpick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+.verpick.solo{grid-template-columns:1fr}
+.verpick .vcard{background:#0e151d;border:1px solid var(--line3);border-radius:14px;padding:12px 8px 10px;
+  text-align:center;cursor:pointer;transition:transform .12s,border-color .15s,background .15s;overflow:hidden}
+.verpick .vcard:hover{border-color:var(--c1,#f2c66d);background:#111a24}
+.verpick .vcard:active{transform:scale(.96)}
+.verpick .vcard.done{border-color:rgba(242,198,109,.45)}
+.verpick .vnum{font-size:24px;font-weight:900;line-height:1.15;color:var(--c1,#fff)}
+.verpick .vname{font-size:11.5px;font-weight:800;color:var(--fg);margin-top:3px}
+.verpick .vsub{font-size:10px;color:var(--dim);margin-top:4px;font-family:var(--font-mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.verpick .vstat{margin-top:7px;font-size:10px;font-weight:800;border-radius:999px;padding:3px 9px;display:inline-block;
+  border:1px solid var(--line3);color:#9aa8b5;white-space:nowrap;max-width:100%}
+.verpick .vstat.ok{color:#0b0f14;background:linear-gradient(135deg,var(--gold),#d9a441);border-color:transparent}
+.verpick .vdesc{font-size:10.5px;color:#9aa8b5;line-height:1.7;margin-top:7px;text-align:right}
+@media(max-width:760px){.verpick{grid-template-columns:repeat(2,1fr)}}
 /* update modal */
 .up-notes{background:#17212a;border:1px solid #33424e;border-radius:10px;padding:12px 14px;
   font-size:12px;line-height:2;white-space:pre-wrap;max-height:32dvh;overflow-y:auto;color:#dfe7ee;text-align:left;direction:ltr}
@@ -471,6 +487,20 @@ a.btn:active{transform:scale(.97)}
 </style>
 </head>
 <body>
+<script>
+/* پل دسکتاپ ویندوز (Tauri) — همان API که الکترون از preload می‌داد.
+   در اندروید/مرورگر window.__TAURI__ وجود ندارد و این بلوک بی‌اثر است. */
+try{
+  if(window.__TAURI__){
+    window.MatinDesktop={
+      platform:"win32",
+      close:function(){ try{window.__TAURI__.core.invoke("win_close");}catch(e){} },
+      minimize:function(){ try{window.__TAURI__.core.invoke("win_min");}catch(e){} },
+      maximize:function(){ try{window.__TAURI__.core.invoke("win_max");}catch(e){} }
+    };
+  }
+}catch(e){}
+</script>
 <div id="app">
 
   <!-- ============ MENU / DASHBOARD ============ -->
@@ -1399,12 +1429,31 @@ const AudioEng = {
     const [f,ms]=PIECE_SOUNDS[kind]||[700,60];
     setTimeout(()=>this.tone(f,ms),0);
   },
+  /* صداهای واقعی مهره‌ها (فایل‌های mp3 کاربر) — درخواست کاربر:
+     هر حرکت مهره (بازیکن یا ربات) → move-self.mp3
+     هر گرفتن مهره (بازیکن یا ربات) → capture.mp3 */
+  sfxFiles:null,
+  playFile(name){ // "move-self" | "capture"
+    if(!S.sound)return;
+    try{
+      if(!this.sfxFiles)this.sfxFiles={};
+      let a=this.sfxFiles[name];
+      if(!a){
+        a=new Audio("audio/"+name+".mp3");
+        a.preload="auto"; a.volume=0.9;
+        this.sfxFiles[name]=a;
+      }
+      a.currentTime=0;
+      const p=a.play();
+      if(p&&p.catch)p.catch(()=>{});
+    }catch(e){}
+  },
   victory(){
     const seq=[523,659,784,1047,1319];
     seq.forEach((f,i)=>setTimeout(()=>this.tone(f,100),i*125));
   },
   /* آهنگ صفحهٔ اصلی: فایل واقعی آپلودشدهٔ کاربر (audio/theme.mp3)
-     پخش حلقه‌ای با وقفهٔ ۲/۵ ثانیه بین هر بار پخش (درخواست کاربر) */
+     پخش حلقه‌ای با وقفهٔ ۳ ثانیه بین هر بار پخش (درخواست کاربر) */
   startMusic(){
     if(!S.music||this.musicOn)return;
     try{ if($("scr-game").classList.contains("active"))return; }catch(e){}
@@ -1417,7 +1466,7 @@ const AudioEng = {
         this.musicEl=a;
       }
       const el=this.musicEl;
-      el.onended=()=>{ // پایان آهنگ → وقفهٔ ۲/۵ ثانیه → پخش دوباره از ابتدا
+      el.onended=()=>{ // پایان آهنگ → وقفهٔ ۳ ثانیه → پخش دوباره از ابتدا
         if(this.musicTimer)clearTimeout(this.musicTimer);
         this.musicTimer=setTimeout(()=>{
           this.musicTimer=null;
@@ -1428,7 +1477,7 @@ const AudioEng = {
             const p=el.play();
             if(p&&p.catch)p.catch(()=>{ this.musicOn=false; });
           }catch(e){ this.musicOn=false; }
-        },2500);
+        },3000);
       };
       try{ el.currentTime=0; }catch(e){}
       const p=el.play();
@@ -1577,7 +1626,7 @@ function buildLevels(){
 }
 
 // ---------- Bot Hub (مرکز ربات‌ها) ----------
-const APP_VERSION="1.7.0";
+const APP_VERSION="3.1.0";
 const REPO_OWNER="amirmhmdglstan-stack", REPO_NAME="Matin-Chess";
 const REPO_API=`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`;
 const BOT_RAW=`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/bots/`;
@@ -1588,7 +1637,7 @@ const BOTS=[
    icon:"♚",c1:"#f2c66d",c2:"#b8860b",glow:"rgba(242,198,109,.35)",
    builtin:true,lvls:"۲۰ سطح"},
   {id:"veltrix",latin:"VELTRIX",fa:"ولتریکس",
-   tag:"موتور واقعی و اختصاصی پروژهٔ Veltrix (C++ → WASM) با کتاب شروع اصلی؛ ۳ مدل رسمی و ۸ سطح — دقیقاً مثل پروژهٔ اصلی.",
+   tag:"موتور واقعی و اختصاصی پروژهٔ Veltrix (C++ → WASM) با کتاب شروع اصلی؛ سه مدل رسمی فست/لایت/های — هر مدل ۱۰ سطح سختی.",
    icon:"⚡",c1:"#a78bfa",c2:"#5b21b6",glow:"rgba(167,139,250,.35)",
    entry:"veltrix.js",
    files:[{u:BOT_RAW+"veltrix.js",n:"veltrix.js",
@@ -1597,9 +1646,9 @@ const BOTS=[
            fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/veltrix-core.js"},
           {u:BOT_RAW+"veltrix.wasm",n:"veltrix.wasm",
            fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/veltrix.wasm"}],
-   size:"۳۶۰ کیلوبایت",lvls:"۳ مدل + ۸ سطح"},
+   size:"۳۶۰ کیلوبایت",lvls:"۳ مدل × ۱۰ سطح"},
   {id:"stockfish",latin:"STOCKFISH",fa:"استاک‌فیش",
-   tag:"قدرتمندترین موتور شطرنج دنیا — یک دکمه، همهٔ نسخه‌ها: از ۶ تا ۱۹ به‌ترتیب. هر نسخه ساختهٔ رسمی و واقعی پروژهٔ استاک‌فیش است و می‌توانی تک‌تک یا همه را با هم دانلود کنی.",
+   tag:"قدرتمندترین موتور شطرنج دنیا — اول نسخه را انتخاب کن، بعد سطح؛ از ۶ تا ۱۹. هر نسخه ساختهٔ رسمی و واقعی پروژهٔ استاک‌فیش است و می‌توانی تک‌تک یا همه را با هم دانلود کنی.",
    icon:"🐟",c1:"#67e8f9",c2:"#0e7490",glow:"rgba(103,232,249,.3)",
    versions:[
     {v:6,fa:"نسخهٔ ۶ — کلاسیک نخستین (۲۰۱۵)",entry:"sf6.js",lvls:20,size:"۳٫۳ مگابایت",
@@ -1648,11 +1697,13 @@ const BOTS=[
    ],
    size:"۹ نسخه",lvls:"۶ تا ۱۹ + سطوح"},
   {id:"lozza",latin:"LOZZA",fa:"لوزا",
-   tag:"موتور متن‌باز و سریع با ارزیابی عصبی؛ ۱۰ سطح عمق.",
+   tag:"موتور متن‌باز و سریع با ارزیابی عصبی — نسخهٔ ۹ رسمی سازنده (فایل منتشرشدهٔ رسمی پروژه با شبکهٔ تعبیه‌شده)؛ ۱۰ سطح عمق فکر.",
    icon:"🦎",c1:"#86efac",c2:"#15803d",glow:"rgba(134,239,172,.3)",
-   files:[{u:"https://raw.githubusercontent.com/op12no2/lozza/master/lozza.js",n:"lozza.js",
-           fb:"https://cdn.jsdelivr.net/gh/op12no2/lozza@master/lozza.js"}],
-   size:"۶۴۰ کیلوبایت",lvls:"۱۰ سطح"},
+   /* فایل رسمی lozza 9.0 از بخش Assets انتشار رسمی سازنده (به‌همراه NNUE تعبیه‌شده).
+      مستر مخزن سازنده نسخهٔ dev بدون شبکه است و در مرورگر می‌شکند — هرگز مستر را عوض نکن. */
+   files:[{u:"https://github.com/op12no2/lozza/releases/download/9.0/lozza.js",n:"lozza.js",direct:true,
+           fb:"https://cdn.jsdelivr.net/gh/amirmhmdglstan-stack/Matin-Chess@main/bots/lozza-9.js"}],
+   size:"۶۵۰ کیلوبایت",lvls:"۱۰ سطح"},
   {id:"garbochess",latin:"GARBOCHESS",fa:"گاربوچس",
    tag:"موتور کلاسیک متن‌باز با سبک تاکتیکی؛ ۸ سطح زمانی.",
    icon:"♞",c1:"#fdba74",c2:"#c2410c",glow:"rgba(253,186,116,.3)",
@@ -1699,22 +1750,31 @@ const BOTS=[
    size:"۱٫۳ مگابایت",lvls:"۲۰ سطح"},
 
 ];
-/* مدل‌ها و سطوح ولتریکس — کپی مو‌به‌مو از gui/models.py پروژهٔ اصلی ولتریکس:
-   High بدون هیچ سقفی؛ Light ≈۶۴هزار گره/۴۰۰ms؛ Fast ≈۴هزار گره/۶۰ms.
-   سطح‌های ۱ تا ۸ هم بودجهٔ گره + سقف زمان دقیقاً همان مقادیر اصلی هستند
-   (سطح ۱ = فست، سطح ۸ = های). قدرت با «go nodes N» کنترل می‌شود، مثل GUI اصلی. */
-const VLTRIX_MODELS=[
-  {num:301,key:"High",fa:"های",  nodes:null,  mt:null,
-   desc:"ولتریکس کامل: بدون هیچ محدودیت مصنوعی — جست‌وجوی کامل، کتاب شروع و ارزیابی فعال؛ قوی‌ترین حالت بازی با ولتریکس."},
-  {num:302,key:"Light",fa:"لایت", nodes:64000, mt:400,
-   desc:"بازی متعادل و آموزشی: حدود ۶۴٬۰۰۰ موقعیت در هر حرکت (تقریباً عمق ۷-۸) و هرگز بیشتر از نیم ثانیه فکر نمی‌کند."},
-  {num:303,key:"Fast",fa:"فست", nodes:4000,  mt:60,
-   desc:"پاسخ تقریباً فوری: حدود ۴٬۰۰۰ موقعیت در هر حرکت (تقریباً عمق ۴-۵)؛ مناسب بازی‌های سریع و شروع‌کارها."}
+/* مدل‌ها و سطوح ولتریکس — جریان جدید (درخواست کاربر): ربات ← مدل ← سطح.
+   سه مدل رسمی همان پیکربندی‌های gui/models.py پروژهٔ اصلی ولتریکس هستند و هر مدل ۱۰ سطح دارد؛
+   سطح ۱۰ هر مدل = قدرت کامل رسمی همان مدل (فست: ۴٬۰۰۰ گره/۶۰ms، لایت: ۶۴٬۰۰۰ گره/۴۰۰ms، های: بی‌سقف).
+   فست/لایت بودجهٔ گره خطی دارند؛ های با زمان فکر مقیاس می‌شود.
+   کد ترکیبی: مدل×۱۰۰۰ + سطح (۳۰۰۵ = های سطح ۵). کدهای قدیمی سیوها با normVlt برگردانده می‌شوند. */
+const VLT_MODELS=[
+  {code:1,key:"Fast", fa:"فست",  tag:"سقف ۴٬۰۰۰ گره • ~۶۰ms",
+   desc:"پاسخ تقریباً فوری: تا ۴٬۰۰۰ موقعیت در هر حرکت (تقریباً عمق ۴-۵)؛ مناسب بازی‌های سریع و شروع‌کارها. ۱۰ سطح تا قدرت کامل فست."},
+  {code:2,key:"Light",fa:"لایت", tag:"سقف ۶۴٬۰۰۰ گره • ~۴۰۰ms",
+   desc:"بازی متعادل و آموزشی: تا ۶۴٬۰۰۰ موقعیت در هر حرکت (تقریباً عمق ۷-۸) و هرگز بیشتر از نیم ثانیه فکر نمی‌کند. ۱۰ سطح تا قدرت کامل لایت."},
+  {code:3,key:"High", fa:"های",  tag:"جست‌وجوی کامل",
+   desc:"قوی‌ترین حالت: جست‌وجوی کامل، کتاب شروع و ارزیابی فعال. سطح ۱۰ = بدون هیچ محدودیت مصنوعی (های کامل اصلی)."}
 ];
-const VLTRIX_LEVELS=[null,
-  {nodes:4000,mt:60},{nodes:8000,mt:80},{nodes:16000,mt:120},
-  {nodes:32000,mt:160},{nodes:64000,mt:240},{nodes:128000,mt:400},
-  {nodes:512000,mt:1000},{nodes:null,mt:null}];
+function vltParams(model,n){
+  if(model===3)return n>=10?{nodes:null,mt:null}:{nodes:null,mt:100*n};
+  const base=model===1?400:6400, mt=model===1?60:400;
+  return{nodes:base*n,mt};
+}
+/* کدهای قدیمی (سطح ۱-۸ عددی و مدل‌های رسمی ۳۰۱/۳۰۲/۳۰۳) → کد جدید مدل×۱۰۰۰+سطح */
+function normVlt(lv){
+  if(lv==null||lv>=1000)return lv;
+  if(lv>=300&&lv<=303)return{301:3010,302:2010,303:1010}[lv];
+  if(lv>=1&&lv<=8)return[0,1010,2001,2003,2005,2010,3006,3008,3010][lv];
+  return lv;
+}
 // فایل‌های ربات‌های دانلودی در «پوشهٔ خود بازی» (حافظهٔ داخلی برنامه/IndexedDB) ذخیره می‌شوند؛ نه در Downloads
 const BotStore={
   db:null,
@@ -1814,6 +1874,46 @@ function fetchWithProgress(url,onPct){
     });
   });
 }
+/* دانلود از سمت Rust (Tauri) — آخرین مسیر نجات وقتی هم سورس اصلی و هم mirror
+   در دسترس نیستند (مثلاً سرورهای دانلود گیت‌هاب که CORS نمی‌دهند).
+   فقط داخل نسخهٔ ویندوز فعال است؛ در اندروید/مرورگر بی‌اثر است. */
+function tauriFetch(url,onPct){
+  try{
+    if(!window.__TAURI__)return Promise.reject(new Error("no-tauri"));
+    const T=window.__TAURI__;
+    return new Promise((resolve,reject)=>{
+      let chunks=[],got=0,total=0,fin=false,fail=null;
+      const unbind=[];
+      const listen=(n,h)=>{ try{ unbind.push(T.event.listen(n,h)); }catch(e){} };
+      const finish=()=>{
+        if(fin)return; fin=true;
+        unbind.forEach(p=>{ try{ if(p&&p.then)p.then(f=>{ try{f();}catch(e){} }); }catch(e){} });
+        if(fail)reject(fail);
+        else{
+          try{
+            const out=new Uint8Array(got); let off=0;
+            for(const c of chunks){ out.set(c,off); off+=c.length; }
+            onPct&&onPct(100);
+            resolve(out.buffer);
+          }catch(e){ reject(e); }
+        }
+      };
+      listen("dl-chunk",ev=>{
+        try{
+          const d=ev.payload||{}; total=d.total||total;
+          const bin=atob(d.b64||""); const arr=new Uint8Array(bin.length);
+          for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+          chunks.push(arr); got+=arr.length;
+          if(total)onPct&&onPct(Math.min(99,Math.round(got/total*100)));
+        }catch(e){ fail=e; finish(); }
+      });
+      listen("dl-done",()=>finish());
+      listen("dl-error",ev=>{ fail=new Error((ev.payload&&ev.payload.msg)||"download failed"); finish(); });
+      T.core.invoke("download_stream",{url:url}).catch(e=>{ fail=e; finish(); });
+      setTimeout(()=>{ if(!fin){ fail=new Error("timeout"); finish(); } },30*60*1000);
+    });
+  }catch(e){ return Promise.reject(e); }
+}
 function downloadBot(b,onStatus,onPct,ver){
   const files=botFilesFor(b,ver);
   return botKeys(true).then(()=>{
@@ -1822,13 +1922,25 @@ function downloadBot(b,onStatus,onPct,ver){
     const runOne=(f)=>{
       const url=f.u;
       onStatus(`دانلود ${f.n} … (${done+1}/${per})`);
-      const fetchOne=(u)=>fetchWithProgress(u,p=>{
-        onPct(Math.min(100,Math.round((done+p/per))));
-      });
-      return fetchOne(url).catch(err=>{
-        if(f.fb){ onStatus(`اتصال اصلی ناموفق؛ mirror ${f.n} …`); return fetchOne(f.fb); }
-        throw err;
-      }).then(buf=>{
+      const pct=(p)=>{ onPct(Math.min(100,Math.round((done+p/per)))); };
+      const web=(u)=>fetchWithProgress(u,pct);
+      const rust=(u)=>tauriFetch(u,pct);
+      let chain;
+      if(f.direct&&window.__TAURI__){
+        /* فایل‌های asset رسمی گیت‌هاب (مثل lozza 9): مرورگر به‌خاطر CORS نمی‌تواند مستقیم بگیرد؛
+           خود برنامهٔ ویندوز مستقیم از سورس رسمی می‌گیرد، بعد mirror وب */
+        chain=()=>rust(url).catch(()=>web(url)).catch(()=>f.fb?web(f.fb):Promise.reject(new Error("dl-fail")));
+      }else{
+        chain=()=>web(url).catch(err=>{
+            if(f.fb){ onStatus(`اتصال اصلی ناموفق؛ mirror ${f.n} …`); return web(f.fb); }
+            throw err;
+          }).catch(err=>{
+            // آخرین مسیر: دانلود مستقیم از سمت خود برنامه (فقط ویندوز/Tauri)
+            onStatus(`مسیرهای وب ناموفق؛ دانلود مستقیم ${f.n} …`);
+            return rust(url);
+          });
+      }
+      return chain().then(buf=>{
         let data=buf;
         // patch کوچک برای بارگیری wasm از حافظهٔ بازی در Stockfish
         if(f.patch){
@@ -1896,34 +2008,46 @@ function buildBots(){
     }
   });
 }
-function botLevels(b){
-  if(b.id==="veltrix")return{
-    numeric:Array.from({length:8},(_,i)=>({num:i+1})),
-    official:VLTRIX_MODELS.map(m=>({num:m.num,fa:m.fa,latin:m.key})),
-    offlLabel:"مدل‌های اصلی"
-  };
-  const n={matin:20,berserk:20,fairy:20,lozza:10,garbochess:8}[b.id]||20;
-  return{numeric:Array.from({length:n},(_,i)=>({num:i+1})),official:null};
+/* تعداد سطح‌های هر انتخاب: نسخه‌دار → lvls همان نسخه؛ ولتریکس → ۱۰ سطح در هر مدل */
+function botLevelCount(b,ver){
+  if(b.id==="veltrix")return 10;
+  if(b.versions){const v=b.versions.find(x=>x.v===ver);return v?v.lvls:20;}
+  return{matin:20,berserk:20,fairy:20,lozza:10,garbochess:8}[b.id]||20;
 }
 /* کد سطح ترکیبی برای ربات‌های نسخه‌دار: v*100+n (مثلاً ۱۹۰۵ = استاک‌فیش ۱۹ سطح ۵)
+   ولتریکس: مدل×۱۰۰۰+سطح (۳۰۰۵ = های سطح ۵).
    سطوح بدون نسخه (کد < ۱۰۰) یعنی نسخهٔ پیش‌فرضِ سازگار با سیوهای قدیمی */
 function botDefaultVer(b){
   if(!b||!b.versions)return null;
   return b.versions[b.versions.length-1].v;
 }
-function decodeBotLevel(b,lv){
+function decodeBotLevel(b,lv,ver){
+  if(b&&b.id==="veltrix"){
+    if(ver!=null&&ver>=1&&ver<=3&&lv!=null&&lv>=1&&lv<=10)return{ver:ver,n:lv}; // حالت تماشا: (مدل، سطح) جدا
+    lv=normVlt(lv);
+    if(lv>=1000)return{ver:Math.floor(lv/1000),n:lv%1000};
+    return{ver:null,n:lv};
+  }
   if(b&&b.versions&&lv>=100)return{ver:Math.floor(lv/100),n:lv%100};
   return{ver:null,n:lv}; // نسخهٔ پیش‌فرض (سیوهای قدیمی)
 }
 function botLevelShort(b,lv){
+  if(b&&b.id==="veltrix"){
+    const d=decodeBotLevel(b,lv);
+    const m=VLT_MODELS.find(x=>x.code===d.ver);
+    if(d.ver!=null&&m)return m.fa+" • سطح "+faNum(d.n);
+    return "سطح "+faNum(d.n);
+  }
   const d=decodeBotLevel(b,lv);
   if(b&&b.versions&&d.ver!=null)return faNum(d.ver)+" • سطح "+faNum(d.n);
   return "سطح "+faNum(d.n);
 }
 function botLevelLabel(b,lv){
-  if(b.id==="veltrix"&&lv>=300){
-    const o=VLTRIX_MODELS.find(x=>x.num===lv);
-    return o?`${b.fa} ${o.fa} (${o.key})`:"";
+  if(b.id==="veltrix"){
+    const d=decodeBotLevel(b,lv);
+    const m=VLT_MODELS.find(x=>x.code===d.ver);
+    if(d.ver!=null&&m)return b.fa+" "+m.fa+" — سطح "+faNum(d.n);
+    return b.fa+" — سطح "+faNum(d.n);
   }
   if(b.versions){
     const d=decodeBotLevel(b,lv);
@@ -1931,6 +2055,18 @@ function botLevelLabel(b,lv){
     return b.fa+" نسخهٔ "+faNum(ver)+" — سطح "+faNum(d.n);
   }
   return b.fa+" — سطح "+faNum(lv);
+}
+/* ---------- مودال ربات: ربات ← نسخه/مدل ← سطح (درخواست کاربر) ----------
+   متین بات استثناست: مستقیم ۲۰ سطح (بدون گام نسخه).
+   ولتریکس: به‌جای نسخه، سه مدل فست/لایت/های — هر کدام ۱۰ سطح سختی.
+   ربات‌های تک‌نسخه (لوزا/گاربوچس/فری): یک کارت «نسخهٔ رسمی» و بعد سطح‌ها. */
+function botVersionsUI(b){
+  if(b.id==="veltrix")
+    return VLT_MODELS.map(m=>({model:m.code,fa:m.fa,latin:m.key,sub:m.tag,desc:m.desc,lvls:10,vltrix:true}));
+  if(b.versions)
+    return b.versions.map(v=>({ver:v.v,fa:"نسخهٔ "+faNum(v.v),sub:v.fa,size:v.size,lvls:v.lvls||20}));
+  return [{ver:null,fa:(b.id==="lozza"?"نسخهٔ ۹":"نسخهٔ رسمی"),sub:b.tag,size:b.size,
+    lvls:{lozza:10,garbochess:8,fairy:20}[b.id]||20}];
 }
 function openBotModal(b){
   const head=(sub)=>`
@@ -1942,23 +2078,18 @@ function openBotModal(b){
     <div class="bot-desc">${sub}</div>`;
   const box=openModal(head(b.tag)+`<div id="botBody"></div>`);
   const body=box.querySelector("#botBody");
-  const showLevels=()=>{
-    const L=botLevels(b);
-    let h="";
-    if(L.official){
-      h+=`<div class="sect-lbl">سطح‌های عددی</div>
-          <div class="blvl-grid cols5" style="--c1:${b.c1};--c2:${b.c2}">${
-            L.numeric.map(x=>`<button class="blvl" data-lv="${x.num}">${faNum(x.num)}</button>`).join("")}</div>
-          <div class="sect-lbl">${L.offlLabel||"سطح‌های رسمی"}</div>
-          <div class="blvl-grid" style="--c1:${b.c1};--c2:${b.c2}">${
-            L.official.map(x=>{const md=(typeof VLTRIX_MODELS!=="undefined")&&VLTRIX_MODELS.find(m=>m.num===x.num);
-              return `<button class="blvl offl" data-lv="${x.num}"${md?` title="${md.desc}"`:""}>${x.fa}<small>${x.latin}</small></button>`;}).join("")}</div>`;
-    }else{
-      h+=`<div class="sect-lbl">سطح‌ها (همه باز)</div>
-          <div class="blvl-grid cols5" style="--c1:${b.c1};--c2:${b.c2}">${
-            L.numeric.map(x=>`<button class="blvl" data-lv="${x.num}">${faNum(x.num)}</button>`).join("")}</div>`;
-    }
-    if(!b.builtin)h+=`<div class="row2" style="margin-top:4px"><button class="btn ghost" id="botUninstall">🗑 حذف ربات نصب‌شده</button></div>`;
+  const verInstalled=(u)=>u.vltrix?botInstalled("veltrix"):botInstalled(b.id,u.ver);
+  const lvlCode=(u,i)=>u.vltrix?(u.model*1000+i):(b.versions?(u.ver*100+i):i);
+
+  /* گام دوم: سطح‌های نسخه/مدل انتخاب‌شده (u==null → متین، ۲۰ سطح) */
+  const showLevels=(u)=>{
+    const n=u?u.lvls:20;
+    const lbl=u?(u.vltrix?("سطح‌های "+u.fa+" — همه باز"):(u.fa+" — سطح‌ها (همه باز)")):"سطح‌ها (همه باز)";
+    let h=`<div class="sect-lbl">${lbl}</div>
+        <div class="blvl-grid cols5" style="--c1:${b.c1};--c2:${b.c2}">`;
+    for(let i=1;i<=n;i++)h+=`<button class="blvl" data-lv="${u?lvlCode(u,i):i}">${faNum(i)}</button>`;
+    h+=`</div>`;
+    if(u)h+=`<div class="row2" style="margin-top:8px"><button class="btn ghost" id="botBack">↩ بازگشت به انتخاب ${u.vltrix?"مدل":"نسخه"}</button></div>`;
     body.innerHTML=h;
     body.querySelectorAll(".blvl").forEach(btn=>{
       btn.onclick=()=>{
@@ -1968,120 +2099,110 @@ function openBotModal(b){
         else botGameSetup(b,lv);
       };
     });
+    const back=body.querySelector("#botBack");
+    if(back)back.onclick=()=>{ AudioEng.play("button"); showVersions(); };
+  };
+
+  /* دانلود و نصب نسخه/مدل انتخاب‌شده و بعد رفتن به سطح‌ها */
+  const showDownload=(u)=>{
+    const verArg=u.vltrix?undefined:u.ver;
+    const name=u.vltrix?(b.fa+" "+u.fa):(b.versions?(b.fa+" نسخهٔ "+faNum(u.ver)):b.fa);
+    body.innerHTML=`
+      <div class="bot-desc">${u.vltrix?u.desc:
+        "این ربات به‌صورت پیش‌فرض نصب نیست. با یک ضربه دانلود می‌شود و فایل آن داخل حافظهٔ خود بازی ذخیره می‌شود (نه پوشهٔ Downloads) و از دفعات بعد بدون اینترنت کار می‌کند."}</div>
+      <div class="dl-bar"><div class="dl-fill" id="dlFill" style="--c1:${b.c1};--c2:${b.c2}"></div></div>
+      <div class="dl-status" id="dlStatus">آمادهٔ دانلود${u.size?(" • حجم "+u.size):""}</div>
+      <div class="row2">
+        <button class="btn big" id="dlStart">⬇ دانلود و نصب</button>
+        <button class="btn" id="dlCancel">انصراف</button>
+      </div>`;
+    body.querySelector("#dlCancel").onclick=()=>{ AudioEng.play("button"); showVersions(); };
+    const btn=body.querySelector("#dlStart");
+    btn.onclick=()=>{
+      const fill=body.querySelector("#dlFill"), st=body.querySelector("#dlStatus");
+      btn.disabled=true;
+      st.textContent="در حال اتصال…";
+      downloadBot(b,s=>{ st.textContent=s; },p=>{ fill.style.width=p+"%"; st.textContent=`دانلود… ${p}%`; },verArg)
+        .then(()=>{ AudioEng.play("promote"); toast(name+" نصب شد ✓"); buildBots(); showLevels(u); })
+        .catch(err=>{
+          btn.disabled=false;
+          fill.style.width="0%";
+          st.textContent="دانلود ناموفق؛ اینترنت را بررسی کن و دوباره تلاش کن.";
+          console.warn("download failed",err);
+        });
+    };
+  };
+
+  /* گام اول: انتخاب نسخه (یا مدل) */
+  const showVersions=()=>{
+    const list=botVersionsUI(b);
+    const solo=list.length===1;
+    const cardSub=(u)=>{
+      if(u.vltrix)return u.sub;
+      return faNum(u.lvls)+" سطح"+(u.size?(" • "+u.size):"");
+    };
+    let h=`<div class="sect-lbl">${b.id==="veltrix"?"انتخاب مدل — بعد سطح":"انتخاب نسخه — بعد سطح"}${b.versions?(" • "+faNum(b.versions.length)+" نسخه"):""}</div>`;
+    if(b.versions)h+=`<div class="row2" style="margin:6px 0 2px"><button class="btn" id="dlAll">⬇ دانلود همهٔ ${faNum(b.versions.length)} نسخه</button></div>`;
+    h+=`<div class="verpick${solo?" solo":""}" style="--c1:${b.c1};--c2:${b.c2}">`;
+    list.forEach((u,i)=>{
+      h+=`<div class="vcard" data-vi="${i}"${u.desc?` title="${u.desc}"`:""}>
+          <div class="vnum">${u.vltrix?u.fa:(b.versions?faNum(u.ver):b.icon)}</div>
+          <div class="vname">${u.vltrix?u.latin:u.fa}</div>
+          <div class="vsub">${cardSub(u)}</div>
+          <div class="vstat" data-vst>…</div>
+        </div>`;
+    });
+    h+=`</div>`;
+    if(!b.builtin)h+=`<div class="row2" style="margin-top:8px"><button class="btn ghost" id="botUninstall">🗑 حذف ${b.versions?"همهٔ نسخه‌های نصب‌شده":"ربات نصب‌شده"}</button></div>`;
+    body.innerHTML=h;
+    const cardOf=(u)=>body.querySelector(`.vcard[data-vi="${list.indexOf(u)}"]`);
+    const setC=(u,txt,ok)=>{ const c=cardOf(u); if(!c)return; const st=c.querySelector("[data-vst]");
+      if(st){ st.textContent=txt; st.classList.toggle("ok",!!ok); } if(ok)c.classList.add("done"); };
+    list.forEach(u=>{
+      verInstalled(u).then(ok=>{ if(ok)setC(u,"✓ نصب‌شده",true); else setC(u,u.vltrix?"⬇ دانلود":("⬇ دانلود • "+(u.size||""))); });
+    });
+    body.querySelectorAll(".vcard").forEach(card=>{
+      card.onclick=()=>{
+        const u=list[+card.dataset.vi];
+        AudioEng.play("button");
+        verInstalled(u).then(ok=>{ if(ok)showLevels(u); else showDownload(u); });
+      };
+    });
+    const dall=body.querySelector("#dlAll");
+    if(dall)dall.onclick=()=>{
+      dall.disabled=true;
+      let i=0;
+      const next=()=>{
+        if(i>=list.length){ AudioEng.play("promote"); toast("همهٔ نسخه‌ها نصب شدند ✓"); dall.disabled=false; showVersions(); return; }
+        const u=list[i++];
+        setC(u,"⏳ در صف…");
+        verInstalled(u).then(ok=>{
+          if(ok){ setC(u,"✓ نصب‌شده",true); return null; }
+          return downloadBot(b,
+            s=>{ setC(u,s||"دانلود…"); },
+            p=>{ setC(u,`(${faNum(i)}/${faNum(list.length)}) ${p}%`); },
+            u.ver);
+        }).then(()=>next()).catch(()=>{ dall.disabled=false; setC(u,"ناموفق"); toast("یک دانلود ناموفق بود؛ دوباره تلاش کن"); });
+      };
+      next();
+    };
     const un=body.querySelector("#botUninstall");
     if(un)un.onclick=()=>{
       const files=b.versions?b.versions.reduce((a,v)=>a.concat(v.files),[]):b.files;
       ask("حذف ربات",`فایل‌های ${b.fa} از حافظهٔ بازی پاک شوند؟`,[
         ["انصراف",null,""],
         ["حذف",()=>{
-          Promise.all(files.map(f=>BotStore.del(b.id+"/"+f.n)))
-            .catch(()=>{}).finally(()=>{ _botKeys=null; toast("ربات حذف شد"); buildBots(); openBotModal(b); });
-        },"big"]
+            Promise.all(files.map(f=>BotStore.del(b.id+"/"+f.n)))
+              .catch(()=>{}).finally(()=>{ _botKeys=null; toast("ربات حذف شد"); buildBots(); showVersions(); });
+          },"big"]
       ]);
     };
   };
-  /* ---------- منوی نسخه‌دار: هر نسخه یک ردیف؛ نصب‌شده‌ها گرید سطح دارند ---------- */
-  const showVersioned=()=>{
-    let h=`<div class="sect-lbl">همهٔ نسخه‌ها به‌ترتیب — تک‌تک یا همه با هم دانلود کن</div>`;
-    h+=`<div class="row2" style="margin-bottom:6px"><button class="btn" id="dlAll">⬇ دانلود همهٔ ${faNum(b.versions.length)} نسخه</button></div>`;
-    h+=`<div id="verRows">`+b.versions.map(v=>`
-      <div class="ver-row" data-ver="${v.v}">
-        <div class="ver-head">
-          <div class="ver-name">${b.icon} ${v.fa}</div>
-          <div class="ver-status" data-vs>${v.size}</div>
-        </div>
-        <div class="dl-bar slim"><div class="dl-fill" data-vfill="${v.v}" style="--c1:${b.c1};--c2:${b.c2}"></div></div>
-        <div class="dl-status" data-vst="${v.v}"></div>
-        <div class="ver-lvls" data-vbox="${v.v}"></div>
-      </div>`).join("")+`</div>`;
-    if(!b.builtin)h+=`<div class="row2" style="margin-top:4px"><button class="btn ghost" id="botUninstall">🗑 حذف همهٔ نسخه‌های نصب‌شده</button></div>`;
-    body.innerHTML=h;
-    const renderRow=async(v)=>{
-      const ok=await botInstalled(b.id,v.v);
-      const st=body.querySelector(`[data-vst="${v.v}"]`);
-      const boxv=body.querySelector(`[data-vbox="${v.v}"]`);
-      const vsEl=body.querySelector(`[data-ver="${v.v}"] [data-vs]`);
-      if(ok){
-        if(vsEl)vsEl.textContent="✓ نصب‌شده • "+v.size;
-        boxv.innerHTML=`<div class="sect-lbl" style="margin:2px 0">سطح‌های این نسخه (همه باز)</div>
-          <div class="blvl-grid cols5" style="--c1:${b.c1};--c2:${b.c2}">${
-            Array.from({length:v.lvls},(_,i)=>`<button class="blvl" data-lv="${v.v*100+i+1}">${faNum(i+1)}</button>`).join("")}</div>`;
-        boxv.querySelectorAll(".blvl").forEach(btn=>{
-          btn.onclick=()=>{ AudioEng.play("button"); botGameSetup(b,+btn.dataset.lv); };
-        });
-      }else{
-        if(vsEl)vsEl.textContent="⬇ دانلود • "+v.size;
-        boxv.innerHTML=`<button class="btn" data-dlv="${v.v}">⬇ دانلود نسخهٔ ${faNum(v.v)}</button>`;
-        const btn=boxv.querySelector(`[data-dlv="${v.v}"]`);
-        btn.onclick=()=>{
-          btn.disabled=true;
-          const fill=body.querySelector(`[data-vfill="${v.v}"]`);
-          if(st)st.textContent="در حال اتصال…";
-          downloadBot(b,s=>{ if(st)st.textContent=s; },p=>{ if(fill)fill.style.width=p+"%"; if(st)st.textContent=`دانلود… ${p}%`; },v.v)
-            .then(()=>{ AudioEng.play("promote"); toast(b.fa+" نسخهٔ "+faNum(v.v)+" نصب شد ✓"); buildBots(); renderRow(v); })
-            .catch(err=>{ btn.disabled=false; if(st)st.textContent="دانلود ناموفق؛ اینترنت را بررسی کن."; console.warn(err); });
-        };
-      }
-    };
-    b.versions.forEach(v=>renderRow(v));
-    const dall=body.querySelector("#dlAll");
-    if(dall)dall.onclick=()=>{
-      dall.disabled=true;
-      let i=0;
-      const next=()=>{
-        if(i>=b.versions.length){ AudioEng.play("promote"); toast("همهٔ نسخه‌ها نصب شدند ✓"); buildBots(); openBotModal(b); return; }
-        const v=b.versions[i++];
-        const fill=body.querySelector(`[data-vfill="${v.v}"]`), st=body.querySelector(`[data-vst="${v.v}"]`);
-        const go=()=>botInstalled(b.id,v.v).then(ok=>{ if(ok)return null;
-          return downloadBot(b,s=>{ if(st)st.textContent=s; },p=>{ if(fill)fill.style.width=p+"%"; if(st)st.textContent=`(${faNum(i)}/${faNum(b.versions.length)}) ${p}%`; },v.v); });
-        go().then(()=>renderRow(v)).then(next).catch(()=>{ dall.disabled=false; toast("یک دانلود ناموفق بود؛ دوباره تلاش کن"); });
-      };
-      next();
-    };
-    const un=body.querySelector("#botUninstall");
-    if(un)un.onclick=()=>{
-      const files=b.versions.reduce((a,v)=>a.concat(v.files),[]);
-      ask("حذف ربات",`فایل‌های همهٔ نسخه‌های ${b.fa} پاک شوند؟`,[
-        ["انصراف",null,""],
-        ["حذف",()=>{
-          Promise.all(files.map(f=>BotStore.del(b.id+"/"+f.n)))
-            .catch(()=>{}).finally(()=>{ _botKeys=null; toast("ربات حذف شد"); buildBots(); openBotModal(b); });
-        },"big"]
-      ]);
-    };
-  };
-  const showDownload=()=>{
-    body.innerHTML=`
-      <div class="bot-desc">این ربات به‌صورت پیش‌فرض نصب نیست. با یک ضربه دانلود می‌شود و فایل آن
-      داخل حافظهٔ خود بازی ذخیره می‌شود (نه پوشهٔ Downloads) و از دفعات بعد بدون اینترنت کار می‌کند.</div>
-      <div class="dl-bar"><div class="dl-fill" id="dlFill" style="--c1:${b.c1};--c2:${b.c2}"></div></div>
-      <div class="dl-status" id="dlStatus">آمادهٔ دانلود • حجم ${b.size}</div>
-      <div class="row2">
-        <button class="btn big" id="dlStart">⬇ دانلود و نصب</button>
-        <button class="btn" id="dlCancel">انصراف</button>
-      </div>`;
-    body.querySelector("#dlCancel").onclick=closeModal;
-    body.querySelector("#dlStart").onclick=()=>{
-      const fill=body.querySelector("#dlFill"), st=body.querySelector("#dlStatus");
-      const btn=body.querySelector("#dlStart");
-      btn.disabled=true;
-      st.textContent="در حال اتصال…";
-      downloadBot(b,
-        s=>{ st.textContent=s; },
-        p=>{ fill.style.width=p+"%"; st.textContent=`دانلود… ${p}%`; })
-      .then(()=>{ AudioEng.play("promote"); toast(b.fa+" نصب شد ✓"); showLevels(); })
-      .catch(err=>{
-        btn.disabled=false;
-        fill.style.width="0%";
-        st.textContent="دانلود ناموفق؛ اینترنت را بررسی کن و دوباره تلاش کن.";
-        console.warn("download failed",err);
-      });
-    };
-  };
-  if(b.builtin)showLevels();
-  else if(b.versions)showVersioned();
-  else botInstalled(b.id).then(ok=>{ if(ok)showLevels(); else showDownload(); });
+
+  if(b.builtin)showLevels(null); // متین بات: مستقیم ۲۰ سطح
+  else showVersions();
 }
+
 function botGameSetup(b,lv){
   const box=openModal(`
     <h2>${b.icon} ${botLevelLabel(b,lv)}</h2>
@@ -2169,18 +2290,23 @@ function botLevelParams(id,lv,ver){
   if(id==="garbochess")return{type:"garbo",
     ms:[80,150,260,420,650,950,1400,2100][Math.max(0,Math.min(7,lv-1))]};
   if(id==="veltrix"){
-    /* دقیقاً مطابق go_kwargs در gui/models.py پروژهٔ اصلی:
-       بودجهٔ گره + سقف زمان؛ High بدون سقف و فقط با ساعت کاربر */
-    let nodes=null,mt=null;
-    if(lv>=300){ const m=VLTRIX_MODELS.find(x=>x.num===lv); if(m){nodes=m.nodes;mt=m.mt;} }
-    else{ const L=VLTRIX_LEVELS[Math.max(1,Math.min(8,lv))]; if(L){nodes=L.nodes;mt=L.mt;} }
+    /* الگوی جدید (مدل × سطح): فست/لایت بودجهٔ گره خطی تا سقف رسمی مدل؛
+       های با زمانِ فکر مقیاس می‌شود و سطح ۱۰ = بی‌سقف (همان High اصلی).
+       سطح ۱۰ فست = ۴٬۰۰۰ گره/۶۰ms و سطح ۱۰ لایت = ۶۴٬۰۰۰ گره/۴۰۰ms — دقیقاً go_kwargs gui/models.py */
+    let model=null,n=null;
+    if(lv!=null&&lv>=1000){ model=Math.floor(lv/1000); n=lv%1000; }
+    else if(ver!=null&&ver>=1&&ver<=3&&lv!=null&&lv>=1&&lv<=10){ model=ver; n=lv; }
+    else{ const L2=normVlt(lv); if(L2!=null&&L2>=1000){ model=Math.floor(L2/1000); n=L2%1000; } }
+    if(model==null||n==null||model<1||model>3){ model=3; n=10; }
+    const P=vltParams(model,Math.max(1,Math.min(10,n)));
+    let nodes=P.nodes,mt=P.mt;
     const timed=R.timeMode&&R.timeMode!=="∞"&&R.clock&&R.clock.w!=null&&R.clock.b!=null;
     const cw=timed?Math.max(1000,Math.round(R.clock.w*1000)):null;
     const cb=timed?Math.max(1000,Math.round(R.clock.b*1000)):null;
     let go="go";
     if(cw&&cb)go+=` wtime ${cw} btime ${cb}`;
     if(mt!=null)go+=` movetime ${mt}`;
-    else if(!cw)go+=" movetime 1500"; // High در بازی بی‌نهایت → مووتایم پیش‌فرض
+    else if(!cw)go+=" movetime 1500"; // های بی‌سقف در بازی بی‌نهایت → مووتایم پیش‌فرض
     if(nodes!=null)go+=` nodes ${nodes}`;
     return{type:"uci",
       setopt:[["Hash","32"],["Threads","1"],["UseBook","true"],["UCI_LimitStrength","false"]],
@@ -2258,8 +2384,9 @@ function destroySession(s){
   try{ s.w.terminate(); }catch(e){}
 }
 function createEngineSession(b,level,ver){
-  const d=decodeBotLevel(b,level);
-  const effVer=(b.versions)?(d.ver!=null?d.ver:(ver!=null?ver:botDefaultVer(b))):null;
+  const d=decodeBotLevel(b,level,ver);
+  const effVer=(b.versions)?(d.ver!=null?d.ver:(ver!=null?ver:botDefaultVer(b)))
+    :(b.id==="veltrix"?(d.ver!=null?d.ver:(ver!=null?ver:null)):null);
   return botInstalled(b.id,effVer).then(ok=>{
     if(!ok)return null;
     const files=botFilesFor(b,effVer);
@@ -2366,9 +2493,15 @@ function createEngineSession(b,level,ver){
 function runBotMove(botId,state,level,ver){
   const b=BOTS.find(x=>x.id===botId);
   if(!b||b.builtin)return Promise.resolve(null);
-  const key=EngPool.key(botId,ver,level);
+  let lv=level;
+  if(botId==="veltrix"){ // نرمال‌سازی کد ولتریکس: همیشه مدل×۱۰۰۰+سطح
+    if(lv!=null&&lv>=1&&lv<=10&&ver!=null&&ver>=1&&ver<=3)lv=ver*1000+lv;
+    else lv=normVlt(lv);
+    if(lv!=null&&lv>=1000)ver=Math.floor(lv/1000);
+  }
+  const key=EngPool.key(botId,ver,lv);
   let s=EngPool.m[key]&&EngPool.m[key].alive?EngPool.m[key]:null;
-  const ensure=s?Promise.resolve(s):createEngineSession(b,level,ver).then(ns=>{
+  const ensure=s?Promise.resolve(s):createEngineSession(b,lv,ver).then(ns=>{
     if(ns){ ns.t=Date.now(); EngPool.m[key]=ns; EngPool.evict(); }
     return ns;
   });
@@ -2406,11 +2539,11 @@ function applyBotMove(mv){
   return true;
 }
 // ---------- مشاهده بازی هوش مصنوعی (ربات مقابل ربات) ----------
-/* گزینه‌های هر ربات در تماشا: (ربات، نسخه) → سطح‌ها + مدل‌های رسمی ولتریکس */
+/* گزینه‌های هر ربات در تماشا: (ربات، نسخه/مدل) → سطح‌ها.
+   ولتریکس: هر مدل (فست/لایت/های) ۱۰ سطح. */
 function watchLvlChoices(b,ver){
   if(b.id==="veltrix"){
-    return{numeric:Array.from({length:8},(_,i)=>i+1),
-           official:VLTRIX_MODELS.map(m=>({num:m.num,fa:m.fa,latin:m.key}))};
+    return{numeric:Array.from({length:10},(_,i)=>i+1),official:null};
   }
   let n=20;
   if(b.versions){
@@ -2435,6 +2568,11 @@ function fillWatchSelects(){
           return Promise.all(b.versions.map(v=>
             botInstalled(b.id,v.v).then(vok=>{ if(vok)add(b.id,v.v,b.latin+" "+faNum(v.v)+" — "+b.fa); })));
         }
+        if(b.id==="veltrix"){
+          // سه مدل رسمی ولتریکس — هر کدام یک گزینهٔ مستقل با ۱۰ سطح
+          VLT_MODELS.forEach(m=>add(b.id,m.code,b.latin+" "+m.fa+" ("+m.key+") — "+b.fa));
+          return;
+        }
         add(b.id,null,b.latin+" — "+b.fa);
       })
     );
@@ -2454,7 +2592,8 @@ function fillWatchSelects(){
     const dW=wSel.dataset.last||"matin|";
     const dB=bSel.dataset.last||dW;
     mk(wSel,dW); mk(bSel,dB);
-    if(!wSel.dataset.filled){ wSel.value="matin|"; bSel.value=opts.some(o=>o[0]==="veltrix")?"veltrix|":"matin|"; wSel.dataset.filled="1"; }
+    if(!wSel.dataset.filled){ wSel.value="matin|"; const vt=opts.find(o=>o[0]==="veltrix");
+      bSel.value=vt?(vt[0]+"|"+vt[1]):"matin|"; wSel.dataset.filled="1"; }
     fillWatchLevels();
   });
 }
@@ -2468,8 +2607,13 @@ function fillWatchLevels(){
     if(!b)return;
     const C=watchLvlChoices(b,pv.ver);
     let opts="";
-    opts+=C.numeric.map(n=>`<option value="${n}">${b.id==="veltrix"&&n===8?"۸ (فست)":"سطح "+faNum(n)}</option>`).join("");
-    if(C.official)opts+=C.official.map(m=>`<option value="${m.num}">★ ${m.fa} (${m.latin})</option>`).join("");
+    if(b.id==="veltrix"){
+      const m=VLT_MODELS.find(x=>x.code===pv.ver)||VLT_MODELS[2];
+      opts+=C.numeric.map(n=>`<option value="${n}">سطح ${faNum(n)}${n===10?" — "+m.fa+" کامل":""}</option>`).join("");
+    }else{
+      opts+=C.numeric.map(n=>`<option value="${n}">سطح ${faNum(n)}</option>`).join("");
+      if(C.official)opts+=C.official.map(m=>`<option value="${m.num}">★ ${m.fa} (${m.latin})</option>`).join("");
+    }
     lvlSel.innerHTML=opts;
   };
   fill($("wLvlSel"),pw); fill($("bLvlSel"),pb);
@@ -2532,7 +2676,7 @@ function spectateLoop(){
   const side=R.g.turn;
   const cfg=side==="w"?R.specW:R.specB;
   const b=BOTS.find(x=>x.id===cfg.botId);
-  setRailStatus("👁 تماشا — "+(side==="w"?"سفید":"سیاه")+": "+(b?b.latin+(cfg.ver?" "+faNum(cfg.ver):"")+" در حال فکر…":""));
+  setRailStatus("👁 تماشا — "+(side==="w"?"سفید":"سیاه")+": "+(b?b.latin+(cfg.ver!=null?(b.id==="veltrix"?(" "+((VLT_MODELS.find(m=>m.code===cfg.ver)||{}).fa||"")):(" "+faNum(cfg.ver))):"")+" در حال فکر…":""));
   const state=R.g.serialize();
   const t0=Date.now();
   const req=(cfg.botId==="matin")
@@ -2824,12 +2968,12 @@ function showHelp(){
     "• واگردانی، یک یا چند حرکت را برمی‌گرداند.\n"+
     "• Save/Load بازی را در JSON نگه می‌دارد.\n"+
     "• در مراحل زمانی، ساعت واقعی فعال است.\n"+
-    "• در نسخه اندروید همه‌چیز لمسی و ریسپانسیو است.");
+    "• در نسخهٔ ویندوز همه‌چیز با ماوس روان و دقیق است.");
 }
 function showAbout(){
   info("درباره",
     "MATIN CHESS\n"+
-    "یک بازی شطرنج با موتور داخلی؛ نسخه اندروید.\n\n"+
+    "یک بازی شطرنج با موتور داخلی؛ نسخهٔ ویندوز.\n\n"+
     "هوش مصنوعی • قوانین کامل شطرنج • زمان‌سنج • صدا • آمار • ذخیره/بارگذاری\n"+
     "سازندگان: امیرمحمد گلستان و متین کتویی زاده\n\n"+
     "طراحی و ساخته‌شده برای دوستداران شطرنج.");
@@ -3063,12 +3207,12 @@ function makeMove(m,byAI){
   g.apply(m);
   if(!R.spectate)S.stats.moves++;
   R.selected=null; R.hint=null;
-  if(special==="castleK"||special==="castleQ")AudioEng.play("castle");
-  else if(cap)AudioEng.play("capture");
-  else AudioEng.play("move");
+  if(special==="castleK"||special==="castleQ")AudioEng.playFile("move-self");
+  else if(cap)AudioEng.playFile("capture");
+  else AudioEng.playFile("move-self");
   const promoted=g.board[end[0]][end[1]];
   if(movingBefore.toUpperCase()==="P"&&promoted.toUpperCase()==="Q")AudioEng.play("promote");
-  AudioEng.tone(g.check(g.turn)?1050:(cap?430:720),70);
+  if(g.check(g.turn))AudioEng.tone(1050,70);
   animateMove(start,end,cap,special,movingBefore,promoted,moverEl,byAI).then(()=>{
     if(R.gameGen!==gen)return;
     try{ updateHud(); }catch(e){}
@@ -3278,26 +3422,31 @@ function updateHud(){
   const sc=scoreSides();
   if(R.spectate){
     const bw=BOTS.find(x=>x.id===R.specW.botId), bb=BOTS.find(x=>x.id===R.specB.botId);
-    const wl=(R.specW.ver!=null)?(bw?bw.latin:"")+" "+faNum(R.specW.ver):(bw?bw.latin:"");
-    const bl=(R.specB.ver!=null)?(bb?bb.latin:"")+" "+faNum(R.specB.ver):(bb?bb.latin:"");
+    const nameOf=(bb2,ver)=>{
+      const latin=bb2?bb2.latin:"";
+      if(bb2&&bb2.id==="veltrix")return latin+(ver!=null?" "+((VLT_MODELS.find(m=>m.code===ver)||{}).fa||""):"");
+      return ver!=null?latin+" "+faNum(ver):latin;
+    };
+    const wl=nameOf(bw,R.specW.ver), bl=nameOf(bb,R.specB.ver);
     $("railInfo").textContent=`👁 مشاهده بازی هوش مصنوعی\n♔ سفید: ${wl}\n♚ سیاه: ${bl}\nنوبت: ${g.turn==="w"?"سفید":"سیاه"}\nحرکت‌ها: ${g.moves.length}`;
     const pcss=g.captured.slice(-16).map(p=>UNICODE[p]).join(" ")||"—";
     $("railCaptured").innerHTML=`<div>${pcss}</div><div class="capline">تماشا جریان دارد…</div>`;
     $("capHud").textContent="👁 مشاهده بازی هوش مصنوعی — "+wl+" vs "+bl;
     return;
   }
+  const vltFa=()=>{const m=VLT_MODELS.find(x=>x.code===R.botVer);return m?" "+m.fa:"";};
   const whoLine=R.twoPlayer?`حالت: ${R.gameMode}\n`
-    :(R.botId&&R.botId!=="matin"?`ربات: ${R.botLatin}${R.botVer!=null?" "+faNum(R.botVer):""}\n`:`شما: ${R.player==="w"?"سفید":"سیاه"}\n`);
+    :(R.botId&&R.botId!=="matin"?`ربات: ${R.botLatin}${R.botId==="veltrix"?vltFa():(R.botVer!=null?" "+faNum(R.botVer):"")}\n`:`شما: ${R.player==="w"?"سفید":"سیاه"}\n`);
   const lvlLine=(R.botId&&R.botId!=="matin")
-    ?(R.botId==="veltrix"&&R.level>=300
-        ?"مدل: "+((VLTRIX_MODELS.find(m=>m.num===R.level)||{}).key||R.level)+"\n"
+    ?(R.botId==="veltrix"
+        ?`مدل: ${((VLT_MODELS.find(m=>m.code===R.botVer)||{fa:"—"}).fa)} • سطح: ${faNum(decodeBotLevel(BOTS.find(x=>x.id==="veltrix"),R.level).n)}\n`
         :`سطح: ${botLevelShort(BOTS.find(x=>x.id===R.botId),R.level)}\n`)
     :`مرحله: ${R.level}/20\n`;
   $("railInfo").textContent=
     lvlLine+whoLine+
     `نوبت: ${g.turn==="w"?"سفید":"سیاه"}\n`+
     `حرکت‌ها: ${g.moves.length}   گره‌های AI: ${R.twoPlayer?0:R.aiNodes}\n`+
-    `عمق جست‌وجو: ${R.twoPlayer?0:R.aiDepth}\nقدرت موتور: ${R.twoPlayer?"—":(R.botId==="veltrix"&&R.level>=300?"VELTRIX "+((VLTRIX_MODELS.find(m=>m.num===R.level)||{}).key||R.level):(R.botId!=="matin"?R.botLatin+" سطح "+R.level:R.level+"/20"))}`;
+    `عمق جست‌وجو: ${R.twoPlayer?0:R.aiDepth}\nقدرت موتور: ${R.twoPlayer?"—":(R.botId!=="matin"?botLevelShort(BOTS.find(x=>x.id===R.botId),R.level):(R.level+"/20"))}`;
   const pieces=g.captured.slice(-16).map(p=>UNICODE[p]).join(" ")||"—";
   $("railCaptured").innerHTML=
     `<div>${pieces}</div><div class="capline">امتیاز سفید: ${sc.w} | سیاه: ${sc.b}</div>`;
@@ -3447,7 +3596,7 @@ function dbAddGame(result){
   try{
     const db=JSON.parse(localStorage.getItem("mcg_db")||'{"games":[]}');
     const nowIso=new Date().toISOString();
-    db.games.push({started:nowIso,finished:nowIso,level:R.level>=100?R.level%100:R.level,player_side:R.player,
+    db.games.push({started:nowIso,finished:nowIso,level:R.level>=1000?R.level%1000:(R.level>=100?R.level%100:R.level),player_side:R.player,
       result,moves:0,captures:0,duration:0});
     if(db.games.length>300)db.games=db.games.slice(-300);
     localStorage.setItem("mcg_db",JSON.stringify(db));
@@ -3746,6 +3895,11 @@ function restoreAll(d){
     R.twoPlayer=!!d.two_player;
     R.botId=(!R.twoPlayer&&d.bot_id&&BOTS.some(x=>x.id===d.bot_id))?d.bot_id:"matin";
     R.botVer=(!R.twoPlayer&&d.bot_ver!=null&&R.botId!=="matin")?d.bot_ver:null;
+    if(!R.twoPlayer&&R.botId==="veltrix"&&R.level!=null){
+      // کدهای قدیمی ولتریکس (۱-۸ و ۳۰۱/۳۰۲/۳۰۳) → مدل×۱۰۰۰+سطح جدید
+      R.level=normVlt(R.level);
+      if(R.level>=1000)R.botVer=Math.floor(R.level/1000);
+    }
     const bbR=BOTS.find(x=>x.id===R.botId);
     R.botLatin=bbR?bbR.latin:"MATIN BOT";
     R.gameMode=R.twoPlayer?"دونفره":(R.botId==="matin"?"هوش مصنوعی":R.botLatin);
@@ -3818,7 +3972,7 @@ function exportPgn(){
     '[Event "Matin Chess Galaxy X"]','[Site "Android"]',
     `[Date "${today}"]`,"[Round \"-\"]",
     `[Creator "${CREATORS}"]`,
-    `[Level "${R.level>=100?Math.floor(R.level/100)+"."+(R.level%100):R.level}"]`,"",""
+    `[Level "${R.level>=1000?Math.floor(R.level/1000)+"."+(R.level%1000):(R.level>=100?Math.floor(R.level/100)+"."+(R.level%100):R.level)}"]`,"",""
   ];
   const chunks=[];
   for(let i=0;i<g.moves.length;i+=2){
@@ -3953,6 +4107,8 @@ function init(){
     ask("خروج","از بازی خارج می‌شوی؟",[
       ["انصراف",null,""],
       ["خروج",()=>{
+        // ویندوز: از پل الکترون؛ اندروید: خروج خازنی؛ در غیر این صورت window.close
+        try{ if(window.MatinDesktop&&window.MatinDesktop.close){ window.MatinDesktop.close(); return; } }catch(e){}
         try{ if(window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.App)Capacitor.Plugins.App.exitApp();
         }catch(e){}
         try{ window.close(); }catch(e){}

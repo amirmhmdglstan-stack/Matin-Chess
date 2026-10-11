@@ -1,4 +1,4 @@
-name: Build Windows EXE (Electron)
+name: Build Windows EXE (Tauri)
 
 on:
   push:
@@ -14,8 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-electron:
-    name: Build Electron Windows EXE (portable + setup)
+  build-tauri:
+    name: Build Tauri Windows EXE (portable + setup + zip)
     runs-on: windows-latest
     defaults:
       run:
@@ -24,70 +24,87 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Rust (stable MSVC)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: windows/src-tauri -> windows/src-tauri/target
+
       - name: Set up Node 20
         uses: actions/setup-node@v5
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: windows/package-lock.json
 
-      - name: Install dependencies
+      - name: Install Tauri CLI
         run: npm install --no-audit --no-fund
 
       - name: Sanity check (app files present)
         shell: pwsh
         run: |
-          foreach ($f in @("main.js","preload.js","app/index.html",
-                           "app/audio/theme.mp3","app/audio/move-self.mp3",
-                           "app/audio/capture.mp3","build/icon.ico")) {
+          foreach ($f in @("app/index.html","app/audio/theme.mp3","app/audio/move-self.mp3",
+                           "app/audio/capture.mp3","src-tauri/tauri.conf.json","src-tauri/src/main.rs",
+                           "src-tauri/Cargo.toml","src-tauri/capabilities/default.json",
+                           "src-tauri/icons/icon.ico")) {
             if (-not (Test-Path $f)) { Write-Error "missing $f"; exit 1 }
           }
           Write-Host "app files OK"
 
-      - name: Build EXEs (electron-builder)
-        run: npx electron-builder --win portable nsis --publish never
-        env:
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Build (tauri build → NSIS setup + standalone exe)
+        run: npx tauri build
 
-      - name: Collect artifacts
+      - name: Collect, rename and zip artifacts (max compression)
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path ../dist-out | Out-Null
-          Get-ChildItem dist -Filter *.exe | ForEach-Object {
-            Copy-Item $_.FullName ("../dist-out/" + $_.Name)
-            Write-Host ("artifact: " + $_.Name + "  " + $_.Length + " bytes")
-          }
-          if (-not (Get-ChildItem ../dist-out -Filter *.exe)) {
-            Write-Error "no exe produced"; exit 1
-          }
+          New-Item -ItemType Directory -Force -Path ..\dist-out | Out-Null
+          $ver = (Get-Content package.json | ConvertFrom-Json).version
+          Write-Host "version = $ver"
+          # --- portable: standalone native exe (needs WebView2, standard on Windows 10/11) ---
+          $portable = "src-tauri\target\release\matin-chess.exe"
+          if (-not (Test-Path $portable)) { Write-Error "portable exe missing: $portable"; exit 1 }
+          Copy-Item $portable ("..\dist-out\MATIN-CHESS-v$ver-windows-portable.exe") -Force
+          # --- setup: NSIS installer (LZMA solid; desktop shortcut + start menu + WebView2 bootstrap) ---
+          $setup = Get-ChildItem "src-tauri\target\release\bundle\nsis" -Filter *.exe | Select-Object -First 1
+          if (-not $setup) { Write-Error "setup exe missing in nsis bundle dir"; exit 1 }
+          Write-Host ("nsis bundle: " + $setup.Name)
+          Copy-Item $setup.FullName ("..\dist-out\MATIN-CHESS-v$ver-windows-setup.exe") -Force
+          # --- zip the setup with 7-Zip max compression (user request) ---
+          $sz = (Get-Command 7z -ErrorAction SilentlyContinue).Source
+          if (-not $sz) { $sz = "C:\Program Files\7-Zip\7z.exe" }
+          & $sz a -tzip -mx=9 "..\dist-out\MATIN-CHESS-v$ver-windows-setup.zip" "..\dist-out\MATIN-CHESS-v$ver-windows-setup.exe"
+          if ($LASTEXITCODE -ne 0) { Write-Error "7z zip failed"; exit 1 }
+          Get-ChildItem ..\dist-out | ForEach-Object { Write-Host ("artifact: " + $_.Name + "  " + $_.Length + " bytes") }
+          if ((Get-ChildItem ..\dist-out).Count -lt 3) { Write-Error "artifacts missing"; exit 1 }
 
-      - name: Upload artifact
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: MATIN-CHESS-windows-electron
-          path: dist-out/*.exe
+          name: MATIN-CHESS-windows-tauri
+          path: dist-out/*
           if-no-files-found: error
 
   release:
     name: Publish GitHub Release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: build-electron
+    needs: build-tauri
     runs-on: ubuntu-latest
     steps:
-      - name: Download EXE artifact
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: MATIN-CHESS-windows-electron
+          name: MATIN-CHESS-windows-tauri
           path: dist
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/*.exe
+          files: dist/*
           body: |
             ## MATIN CHESS — نسخهٔ ویندوز (Windows Desktop Edition) 🪟
 
-            همان بازی اندروید، همان ظاهر و متن‌ها، همان موتورها — این‌بار به‌صورت برنامهٔ واقعی ویندوز.
+            همان بازی اندروید، همان ظاهر و متن‌ها، همان موتورها — این‌بار با پوستهٔ بومی Tauri:
+            **حجم حدود ۷۰ مگابایت کمتر** از نسخهٔ Electron قبلی، با تمام امکانات.
 
             **سازندگان / Creators:** امیرمحمد گلستان • متین کتویی زاده
             (AmirMohammad Golestan & Matin Katooei-zadeh)
@@ -95,16 +112,19 @@ jobs:
             ### دانلود / Download
             | فایل | توضیح |
             |---|---|
-            | `MATIN-CHESS-v${{ github.ref_name }}-windows-portable.exe` | تک‌فایل — بدون نصب، فقط اجرا کن |
+            | `MATIN-CHESS-v${{ github.ref_name }}-windows-setup.zip` | **پیشنهادی** — نصب‌کنندهٔ کامل، فشرده‌شده با حداکثر فشار |
             | `MATIN-CHESS-v${{ github.ref_name }}-windows-setup.exe` | نصب‌کنندهٔ کامل (میان‌بر دسکتاپ + منوی استارت) |
+            | `MATIN-CHESS-v${{ github.ref_name }}-windows-portable.exe` | تک‌فایل — بدون نصب، فقط اجرا کن |
 
-            ### امکانات این نسخه
-            - ظاهر و متن‌های دکمه‌ها **دقیقاً همان نسخهٔ اندروید**
-            - آهنگ صفحهٔ اصلی (`theme.mp3`) فقط در منوی اصلی، با وقفهٔ ۳ ثانیه — هرگز داخل بازی
-            - صدای واقعی حرکت (`move-self.mp3`) و گرفتن مهره (`capture.mp3`) برای همهٔ حرکت‌ها — بازیکن یا ربات
-            - ۷ خانوادهٔ ربات: متین (۲۰ سطح، از پیش نصب)، ولتریکس (۳ مدل رسمی + ۸ سطح)، استاک‌فیش ۶ تا ۱۹، برسرک ۱۲/۱۳/۱۴، لوزا، گاربوچس، فری-استاک‌فیش
+            ### تازه‌های این نسخه
+            - **انتخاب ربات ← انتخاب نسخه ← انتخاب سطح**: اول ربات را انتخاب می‌کنی، بعد نسخهٔ آن (مثلاً استاک‌فیش ۱۰)، بعد سطح سختی
+            - متین بات: مستقیم ۲۰ سطح (بدون گام نسخه) — ولتریکس: سه مدل فست/لایت/های، هر مدل ۱۰ سطح
+            - حجم بسیار کمتر با موتور بومی Tauri (همان محتوا، همان امکانات)
+            - صدای واقعی حرکت و گرفتن مهره، آهنگ منوی اصلی با وقفهٔ ۳ ثانیه (هرگز داخل بازی)
             - **همهٔ ربات‌ها داخل خود برنامه از سورس رسمی سازنده دانلود می‌شوند** (هیچ موتوری از قبل نصب نیست، جز متین)
-            - تماشای ربات در برابر ربات، آکادمی ۱۰ درسی، ۱۰ تمرین مات، ذخیره/بارگذاری، خروجی PGN
-            - طراحی صفحهٔ شطرنج از پروژهٔ Veltrix (۸ تم رنگی)
+            - مسیر دانلود اضافی در ویندوز: اگر سرورهای وب در دسترس نبودند، خود برنامه مستقیم دانلود می‌کند
 
-            Windows 10/11 64-bit • Built with Electron + GitHub Actions
+            > نکته: برنامه از WebView2 ویندوز استفاده می‌کند (روی ویندوز ۱۰/۱۱ به‌صورت پیش‌فرض نصب است).
+            > نصب‌کننده در صورت نبودش خودش آن را نصب می‌کند.
+
+            Windows 10/11 64-bit • Built with Tauri 2 + GitHub Actions

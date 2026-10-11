@@ -1,0 +1,9 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capabilities of the main window: custom app commands + core events (download progress)",
+  "windows": ["main"],
+  "permissions": [
+    "core:default"
+  ]
+}
