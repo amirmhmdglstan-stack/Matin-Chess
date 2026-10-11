@@ -1,0 +1,110 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-exe-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-exe:
+    name: Build standalone Windows executable
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Sanity check (headless self-test)
+        working-directory: desktop
+        run: python main.py --selftest
+
+      - name: Install PyInstaller
+        run: pip install "pyinstaller>=6.6"
+
+      - name: Build EXE
+        working-directory: desktop
+        shell: pwsh
+        run: |
+          pyinstaller --noconfirm --clean `
+            --onefile --windowed `
+            --name "MATIN-CHESS" `
+            --icon assets/icon.ico `
+            --add-data "assets;assets" `
+            --collect-submodules matin_chess `
+            main.py
+
+      - name: Smoke check artifact exists
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "dist/MATIN-CHESS.exe")) {
+            Write-Error "MATIN-CHESS.exe was not produced"; exit 1
+          }
+          Get-Item "dist/MATIN-CHESS.exe" | Select-Object Name, Length
+
+      - name: Rename EXE with version
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $ver = "${{ github.ref_name }}"
+          if ($ver -notmatch '^v') { $ver = "dev-${{ github.run_number }}" }
+          Move-Item "desktop/dist/MATIN-CHESS.exe" "dist/MATIN-CHESS-$ver-windows.exe" -Force
+          Get-ChildItem dist
+
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MATIN-CHESS-windows-exe
+          path: dist/*.exe
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-exe
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download EXE artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: MATIN-CHESS-windows-exe
+          path: dist
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.exe
+          body: |
+            ## MATIN CHESS — نسخهٔ دسکتاپ ویندوز / Windows Desktop Edition
+
+            بازی شطرنج MATIN CHESS به‌صورت یک فایل اجرایی مستقل (بدون نیاز به نصب پایتون).
+
+            **سازندگان / Creators:** متین کتویی زاده • امیرمحمد گلستان
+            (Matin Katooei-zadeh & AmirMohammad Golestan)
+
+            ### نصب / Install
+            1. فایل `MATIN-CHESS-${{ github.ref_name }}-windows.exe` را دانلود کنید.
+            2. آن را اجرا کنید — نیازی به نصب، پایتون یا اینترنت نیست.
+
+            ### امکانات این نسخه
+            - سیستم نبرد ربات‌ها: ۷ ربات؛ متین ۲۰ سطح، ولتریکس ۸ سطح + ۳ مدل (فست/لایت/های)، بقیه ۱۰ سطح
+            - سطح ۱ هر ربات واقعاً آسان است و پله‌پله تا قدرت کامل نسخهٔ آخر قوی می‌شود
+            - مشاهدهٔ مسابقهٔ ربات در برابر ربات (spectate)
+            - صدای واقعی حرکت (move-self) و گرفتن مهره (capture) برای همهٔ حرکت‌ها
+            - تبدیل پیاده با پنجرهٔ انتخاب مهره
+            - طراحی صفحهٔ شطرنج از پروژهٔ Veltrix (۸ تم رنگی)
+            - قوانین کامل شطرنج + آکادمی ۱۰ درسی + ۱۰ تمرین مات + ذخیره/بارگذاری + PGN
+            - بروزرسانی خودکار: اگر نسخهٔ جدید منتشر شود، در صفحهٔ اصلی اطلاع داده می‌شود
+
+            Fully offline • Single-file • No installation required • Windows 10/11 64-bit

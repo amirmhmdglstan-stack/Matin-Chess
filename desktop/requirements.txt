@@ -1,0 +1,5 @@
+# MATIN CHESS desktop edition uses ONLY the Python standard library.
+# No third-party packages are required to run the game.
+#
+# (PyInstaller, used only by GitHub Actions to build the Windows .exe,
+#  is installed by the CI workflow itself — see .github/workflows/build-exe.yml)
