@@ -45,22 +45,18 @@ fn win_max(app: tauri::AppHandle) {
 }
 
 /* --- CORS-free engine downloader (last-resort path for bot files) ---
- * Runs on the command thread pool (blocking is fine). Streams the file
- * to the webview via events so the UI keeps its live progress bar:
- *   dl-chunk {b64, seq, total} -> dl-done -> (or dl-error {msg})
- * Follows redirects; no CORS, no mixed-content, no browser limits. */
-#[tauri::command]
-fn download_stream(app: tauri::AppHandle, url: String) -> Result<(), String> {
+ * Streams the file to the webview via events so the UI keeps its live
+ * progress bar:  dl-chunk {b64, seq, total} -> dl-done -> (or dl-error {msg})
+ * Follows redirects; no CORS, no mixed-content, no browser limits.
+ * Runs on the blocking thread pool — the UI/main thread never freezes. */
+fn download_blocking(app: tauri::AppHandle, url: String) -> Result<(), String> {
     let agent = ureq::AgentBuilder::new()
         .timeout_connect(Duration::from_secs(30))
         .build();
-    let resp = agent
-        .get(&url)
-        .call()
-        .map_err(|e| {
-            let _ = app.emit("dl-error", serde_json::json!({ "msg": e.to_string() }));
-            e.to_string()
-        })?;
+    let resp = agent.get(&url).call().map_err(|e| {
+        let _ = app.emit("dl-error", serde_json::json!({ "msg": e.to_string() }));
+        e.to_string()
+    })?;
     let total: u64 = resp
         .header("content-length")
         .and_then(|v| v.parse().ok())
@@ -69,12 +65,10 @@ fn download_stream(app: tauri::AppHandle, url: String) -> Result<(), String> {
     let mut seq: u64 = 0;
     loop {
         let mut buf = vec![0u8; 262144];
-        let n = reader
-            .read(&mut buf)
-            .map_err(|e| {
-                let _ = app.emit("dl-error", serde_json::json!({ "msg": e.to_string() }));
-                e.to_string()
-            })?;
+        let n = reader.read(&mut buf).map_err(|e| {
+            let _ = app.emit("dl-error", serde_json::json!({ "msg": e.to_string() }));
+            e.to_string()
+        })?;
         if n == 0 {
             break;
         }
@@ -87,6 +81,16 @@ fn download_stream(app: tauri::AppHandle, url: String) -> Result<(), String> {
     }
     let _ = app.emit("dl-done", ());
     Ok(())
+}
+
+#[tauri::command]
+async fn download_stream(app: tauri::AppHandle, url: String) -> Result<(), String> {
+    // async command => runs on the runtime; blocking work is moved to the
+    // blocking pool so neither the main thread nor the UI ever stalls
+    match tauri::async_runtime::spawn_blocking(move || download_blocking(app, url)).await {
+        Ok(res) => res,
+        Err(e) => Err(format!("download task failed: {e}")),
+    }
 }
 
 fn main() {

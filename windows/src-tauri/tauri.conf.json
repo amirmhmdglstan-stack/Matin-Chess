@@ -38,12 +38,12 @@
     "windows": {
       "webviewInstallMode": {
         "type": "downloadBootstrapper"
+      },
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": ["English"],
+        "displayLanguageSelector": false
       }
-    },
-    "nsis": {
-      "installMode": "currentUser",
-      "languages": ["English"],
-      "displayLanguageSelector": false
     }
   }
 }
