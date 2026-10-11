@@ -48,10 +48,10 @@ jobs:
       - name: Smoke check artifact exists
         shell: pwsh
         run: |
-          if (-not (Test-Path "dist/MATIN-CHESS.exe")) {
+          if (-not (Test-Path "desktop/dist/MATIN-CHESS.exe")) {
             Write-Error "MATIN-CHESS.exe was not produced"; exit 1
           }
-          Get-Item "dist/MATIN-CHESS.exe" | Select-Object Name, Length
+          Get-Item "desktop/dist/MATIN-CHESS.exe" | Select-Object Name, Length
 
       - name: Rename EXE with version
         shell: pwsh
