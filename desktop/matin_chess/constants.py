@@ -118,6 +118,17 @@ PST = {
           [2, 2, 2, -4, -4, 2, 2, 2], [2, 2, -2, 0, 0, -2, 2, 2]],
 }
 
+# Endgame king table: in simple endings the king must RUN TO THE CENTER and
+# help push pawns / hunt the enemy king — otherwise mates take forever.
+KING_END = [[-30, -20, -10, -10, -10, -10, -20, -30],
+            [-20, -10, 0, 0, 0, 0, -10, -20],
+            [-10, 0, 12, 16, 16, 12, 0, -10],
+            [-10, 0, 16, 24, 24, 16, 0, -10],
+            [-10, 0, 16, 24, 24, 16, 0, -10],
+            [-10, 0, 12, 16, 16, 12, 0, -10],
+            [-20, -10, 0, 0, 0, 0, -10, -20],
+            [-30, -20, -10, -10, -10, -10, -20, -30]]
+
 
 def fa_num(n):
     """Persian digits for the UI, like the Android edition."""

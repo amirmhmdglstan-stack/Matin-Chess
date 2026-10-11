@@ -498,7 +498,8 @@ class MatinChessX:
         self.status.configure(text=f"🧠 {BOT_BY_ID[spec[0]].fa} در حال فکر کردن...")
 
         def work():
-            m = engine.best(self.g, spec[1], variant=spec[2])
+            cap = 0.55 if self.demo_mode else None
+            m = engine.best(self.g, spec[1], variant=spec[2], time_limit=cap)
             self.root.after(0, lambda: self._spectate_move(m))
         threading.Thread(target=work, daemon=True).start()
 
@@ -521,8 +522,8 @@ class MatinChessX:
             winner = "b" if self.g.turn == "w" else "w"
             txt = (f"🏆 {wname} ({wl}) با کیش‌ومات برنده شد!" if winner == "w"
                    else f"🏆 {bname} ({bl}) با کیش‌ومات برنده شد!")
-        elif state == "stalemate":
-            txt = "مساوی شد — پات!"
+        elif state in ("stalemate", "drawMaterial"):
+            txt = "مساوی شد — پات!" if state == "stalemate" else "مساوی — مهرهٔ کافی برای مات نبود."
         else:
             txt = "مساوی شد."
         self.audio.play("finish")
@@ -1057,7 +1058,7 @@ class MatinChessX:
             self.draw_piece_art(self.canvas, sx, sy, cell * 0.92, moving_piece, "anim")
             ai_anim = getattr(self, "_ai_move_animation", False)
             if self.spectate:
-                duration = max(320, min(620, int(self.ai_animation_speed * 0.42)))
+                duration = max(240, min(620, int(self.ai_animation_speed * (0.30 if self.demo_mode else 0.42))))
             else:
                 duration = max(700, int(self.ai_animation_speed if ai_anim else self.anim_speed))
             steps = max(42, int(duration / 22))
@@ -1328,7 +1329,7 @@ class MatinChessX:
                 # BUGFIX (original): the winner was inverted — after checkmate
                 # g.turn is the side that is mated, so the winner is the other.
                 self.finish("b" if self.g.turn == "w" else "w")
-            elif state in ("stalemate", "draw50", "draw3"):
+            elif state in ("stalemate", "draw50", "draw3", "drawMaterial"):
                 self.finish("draw")
             elif self.spectate:
                 self.spec_job = self.root.after(self.spec_delay, self._spectate_step)
@@ -1417,7 +1418,8 @@ class MatinChessX:
         st = self.g.game_state()
         msg = {"play": "نوبت بازی.", "check": "⚠ کیش!", "checkmate": "♛ کیش‌ومات!",
                "stalemate": "مساوی! پات.", "draw50": "مساوی با قانون ۵۰ حرکت",
-               "draw3": "مساوی با تکرار سه‌باره"}.get(st, "")
+               "draw3": "مساوی با تکرار سه‌باره",
+               "drawMaterial": "مساوی — مهرهٔ کافی برای مات وجود ندارد"}.get(st, "")
         if self.training_mode:
             msg = f"🎯 تمرین {fa_num(self.training_index + 1)}: {TRAINING_LEVELS[self.training_index]['goal']}"
         if self.game_finished:
@@ -2038,27 +2040,22 @@ class MatinChessX:
     def _demo_tour(self):
         """Scripted tour for the gameplay video (``--demo``)."""
         try:
-            self.root.after(2600, lambda: self._demo_bots())
-
-            def _go_bots():
-                self.bots_screen()
-                self.root.after(2400, self._demo_levels)
-
-            def _demo_bots():
-                _go_bots()
-
-            def _demo_levels():
-                self.bot_levels(BOT_BY_ID["veltrix"])
-                self.root.after(2200, self._demo_spectate)
-
-            def _demo_spectate():
-                self.spec_delay = 420
-                self.start_spectate(("veltrix", 1, "flash"), ("matin", 6, None))
-                # the game plays itself; when it ends the popup shows, then we quit
-                self.root.after(1000, self._demo_watch_end)
+            self.root.after(2600, self._demo_bots)
         except Exception:
             pass
 
+    def _demo_bots(self):
+        self.bots_screen()
+        self.root.after(2400, self._demo_levels)
+
+    def _demo_levels(self):
+        self.bot_levels(BOT_BY_ID["veltrix"])
+        self.root.after(2200, self._demo_spectate)
+
+    def _demo_spectate(self):
+        self.spec_delay = 150
+        self.start_spectate(("veltrix", 8, "high"), ("garbochess", 1, None))
+        self.root.after(1000, lambda: self._demo_watch_end(0))
     def _demo_watch_end(self, elapsed=0):
         if not self.root.winfo_exists():
             return
@@ -2075,6 +2072,12 @@ class MatinChessX:
                 self.root.destroy()
             except Exception:
                 pass
+        # the recorder waits for process exit; make it deterministic
+        import os as _os
+        try:
+            _os._exit(0)
+        except Exception:
+            pass
 
     # ================================================================ close
     def close(self):

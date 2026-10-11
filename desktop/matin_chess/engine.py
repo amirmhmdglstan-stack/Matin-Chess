@@ -22,7 +22,7 @@ import random
 import time
 from collections import defaultdict
 
-from .constants import VALUE, MATE, PST
+from .constants import VALUE, MATE, PST, KING_END
 
 # ------------------------------------------------------------ personalities
 # Evaluation weights that give each bot a distinct playing style.
@@ -164,6 +164,9 @@ class ChessAI:
         wpawns, bpawns = [], []
         wk, bk = None, None
         attack_w = attack_b = 0
+        non_pawn_count = sum(1 for r in range(8) for c in range(8)
+                             if g.board[r][c] != "." and g.board[r][c].upper() not in ("P", "K"))
+        endgame = non_pawn_count <= 6
         for r in range(8):
             for c in range(8):
                 p = g.board[r][c]
@@ -171,7 +174,10 @@ class ChessAI:
                     continue
                 up = p.upper()
                 v = VALUE[up]
-                bonus = PST[up][r if p.isupper() else 7 - r][c]
+                if up == "K" and endgame:
+                    bonus = KING_END[r if p.isupper() else 7 - r][c]
+                else:
+                    bonus = PST[up][r if p.isupper() else 7 - r][c]
                 if up == "B":
                     if p.isupper():
                         white_bishops += 1

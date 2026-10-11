@@ -279,11 +279,27 @@ class ChessGame:
             s += "=" + flag[1]
         return s
 
+    def _insufficient_material(self):
+        """FIDE draw: K vs K, K+minor vs K cannot force mate."""
+        minors = []
+        for r in range(8):
+            for c in range(8):
+                p = self.board[r][c]
+                if p == "." or p.upper() == "K":
+                    continue
+                if p.upper() in ("N", "B"):
+                    minors.append(p)
+                else:            # any pawn / rook / queen -> mate is possible
+                    return False
+        return len(minors) <= 1
+
     def game_state(self):
         lm = self.legal(self.turn)
         if not lm:
             return "checkmate" if self.check(self.turn) else "stalemate"
         # FIDE-style automatic draw conditions supported by this local engine.
+        if self._insufficient_material():
+            return "drawMaterial"
         if self.halfmove >= 100:
             return "draw50"
         current = self.key()
