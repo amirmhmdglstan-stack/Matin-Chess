@@ -550,10 +550,14 @@ try{
       <button class="btn white small" data-go="menu">←  منوی اصلی</button>
       <div class="page-title">♟️ بازی با هوش مصنوعی</div>
     </div>
-    <div class="page-sub" style="text-align:left;padding:0 24px">۱۷ موتور واقعی شطرنج از سازندگان رسمی — همهٔ نسخه‌ها به‌ترتیب • همهٔ سطح‌ها باز • فایل رسمی هر ربات یک‌بار دانلود و داخل حافظهٔ خود بازی نصب می‌شود (کاملاً آفلاین)</div>
+    <div class="page-sub" style="text-align:left;padding:0 24px">۱۷ موتور واقعی شطرنج از سازندگان رسمی — همهٔ نسخه‌ها به‌ترتیب • همهٔ سطح‌ها باز • فایل رسمی هر ربات یک‌بار دانلود و داخل حافظهٔ خود بازی نصب می‌شود (کاملاً آفلاین) • با «وارد کردن/خروجی» موتورها را با یک فایل بین کامپیوترها جابه‌جا کن</div>
     <div class="hr" style="margin:8px 22px 4px"></div>
     <div class="page-body">
       <div style="padding:0 22px 10px"><button class="btn" style="width:100%" id="btnGoWatch">👁 تماشای دو ربات در برابر هم — مشاهده بازی هوش مصنوعی</button></div>
+      <div class="row2" style="padding:0 22px 10px">
+        <button class="btn" id="btnBotImport">📥 وارد کردن موتور از فایل</button>
+        <button class="btn" id="btnBotExport">📤 خروجی موتورهای نصب‌شده</button>
+      </div>
       <div class="bot-grid" id="botGrid"></div>
     </div>
   </section>
@@ -1511,7 +1515,10 @@ function initWorker(){
         p.resolve(d);
       }
     };
-    R.aiWorker.onerror=()=>{ R.aiWorker=null; };
+    /* اگر ورکر داخلی بمیرد، بلافاصله یکی تازه ساخته می‌شود — در غیر این صورت
+       همهٔ حرکت‌های بعدیِ متین‌بات روی رشتهٔ اصلی و با فریزشدن کل برنامه اجرا می‌شد
+       (باگ گزارش‌شده: بعد از بستن مسابقه، برنامه عملاً بی‌جواب می‌شد) */
+    R.aiWorker.onerror=()=>{ try{R.aiWorker&&R.aiWorker.terminate();}catch(e){} R.aiWorker=null; setTimeout(initWorker,120); };
   }catch(e){ R.aiWorker=null; }
 }
 function runAI(state,level,timeLimit){
@@ -1521,15 +1528,21 @@ function runAI(state,level,timeLimit){
       if(!R.aiPending)R.aiPending=new Map();
       const id=Math.random().toString(36).slice(2);
       R.aiPending.set(id,{resolve,gen});
+      const w=R.aiWorker;
       R.aiWorker.postMessage({cmd:"best",id,state,level,timeLimit});
-      setTimeout(()=>{ // safety net: worker lost/slow → resolve on main thread
+      setTimeout(()=>{ // safety net: worker lost/slow → این تلاش رها و ورکر بازسازی می‌شود
         if(R.aiPending&&R.aiPending.has(id)){
           R.aiPending.delete(id);
-          resolve(syncAI(state,level,timeLimit));
+          resolve({move:null,info:null});
+          if(R.aiWorker===w){
+            try{w.terminate();}catch(e){}
+            R.aiWorker=null; setTimeout(initWorker,120);
+          }
         }
-      }, Math.max(4000,(timeLimit||1)*4000));
+      }, Math.max(6000,(timeLimit||1)*6000));
     }else{
-      setTimeout(()=>resolve(syncAI(state,level,timeLimit)),30);
+      /* بدون ورکر فقط جست‌وجوی کوتاه و محدود — هرگز جست‌وجوی سنگین روی رشتهٔ اصلی */
+      setTimeout(()=>resolve(syncAI(state,Math.min(level||1,10),Math.min(timeLimit||0.8,0.8))),30);
     }
   });
 }
@@ -1569,7 +1582,18 @@ function info(title,msg,cb){
 
 // ---------- Router ----------
 const SCREENS=["menu","bots","levels","academy","training","themes","settings","save","game","watch"];
+/* خروج از صفحهٔ بازی = توقف کامل هر فعالیت بازی جاری (درخواست کاربر):
+   پاسخ‌های در راه هوش مصنوعی باطل می‌شوند، ساعت می‌ایستد و جلسات موتورها بسته
+   می‌شوند — دیگر نه صدای حرکت مهره‌ها از منو پخش می‌شود و نه حافظهٔ موتورهای
+   سنگین (مثل استاک‌فیش ۱۹) بعد از بستن مسابقه اشغال می‌ماند. */
+function stopMatchActivity(){
+  R.gameGen++; R.aiAttempt++; R.aiThinking=false; R.animating=false;
+  if(R.aiPending)R.aiPending.clear();
+  clearTimeout(R.clockTimer);
+  try{ EngPool.clearAll(); }catch(e){}
+}
 function go(name){
+  if(name!=="game"&&$("scr-game").classList.contains("active"))stopMatchActivity();
   SCREENS.forEach(s=>$("scr-"+s).classList.toggle("active",s===name));
   if(name==="levels")buildLevels(); // همیشه تازه‌سازی: سطح‌های تازه باز‌شده دیده شوند
   if(name==="bots")buildBots();
@@ -1626,7 +1650,7 @@ function buildLevels(){
 }
 
 // ---------- Bot Hub (مرکز ربات‌ها) ----------
-const APP_VERSION="3.1.0";
+const APP_VERSION="3.2.0";
 const REPO_OWNER="amirmhmdglstan-stack", REPO_NAME="Matin-Chess";
 const REPO_API=`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`;
 const BOT_RAW=`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/bots/`;
@@ -1852,6 +1876,221 @@ function botVersionsInstalledCount(b){
   if(!b.versions)return Promise.resolve(0);
   return botKeys().then(ks=>b.versions.filter(v=>v.files.every(f=>ks.includes(b.id+"/"+f.n))).length);
 }
+/* ---------- انتقال موتورها با فایل (درخواست کاربر) ----------
+   بستهٔ .mceng یک فایل باینری ساده است که همهٔ فایل‌های موتورهای نصب‌شده را یکجا
+   دارد: «MCENGPKG» + طول مانیفست (۴ بایت) + JSON مانیفست + بایت‌های فایل‌ها.
+   با «خروجی» یک بسته می‌سازی، با فایل/فلش به کامپیوتر دیگر می‌بری و با
+   «وارد کردن» نصب می‌کنی — کاملاً آفلاین و بدون اینترنت. */
+const MCE_MAGIC="MCENGPKG";
+function mceU8(d){ return d instanceof Uint8Array?d:new Uint8Array(d); }
+function mceBuild(items){
+  const enc=new TextEncoder();
+  const manifest={v:1,created:new Date().toISOString(),
+    engines:items.map(e=>({bot:e.bot,ver:e.ver!=null?e.ver:null,
+      files:e.files.map(f=>({n:f.n,size:mceU8(f.data).byteLength}))}))};
+  const mj=enc.encode(JSON.stringify(manifest));
+  let total=12+mj.length;
+  items.forEach(e=>e.files.forEach(f=>total+=mceU8(f.data).byteLength));
+  const out=new Uint8Array(total);
+  out.set(enc.encode(MCE_MAGIC),0);
+  new DataView(out.buffer).setUint32(8,mj.length,true);
+  out.set(mj,12);
+  let off=12+mj.length;
+  items.forEach(e=>e.files.forEach(f=>{ const b=mceU8(f.data); out.set(b,off); off+=b.byteLength; }));
+  return out.buffer;
+}
+function mceParse(buf){
+  const u8=mceU8(buf);
+  if(u8.length<12)throw new Error("short");
+  let magic="";
+  for(let i=0;i<8;i++)magic+=String.fromCharCode(u8[i]);
+  if(magic!==MCE_MAGIC)throw new Error("bad-magic");
+  const mlen=new DataView(u8.buffer,u8.byteOffset).getUint32(8,true);
+  if(12+mlen>u8.length)throw new Error("bad-manifest");
+  const man=JSON.parse(new TextDecoder().decode(u8.subarray(12,12+mlen)));
+  let off=12+mlen;
+  const engines=(man.engines||[]).map(e=>({
+    bot:String(e.bot||""), ver:(e.ver==null?null:e.ver),
+    files:(e.files||[]).map(f=>{
+      const sz=+f.size||0;
+      if(off+sz>u8.length)throw new Error("bad-size");
+      const data=u8.slice(off,off+sz); off+=sz;
+      return{n:String(f.n||""),data:data.buffer};
+    })}));
+  return{created:man.created,engines};
+}
+/* فایل تکی (js/wasm) را با نامش در رجیستری ربات‌ها تطبیق بده */
+function mceMatchLoose(name){
+  for(const b of BOTS){
+    if(b.builtin)continue;
+    if(b.versions){
+      for(const v of b.versions)if(v.files.some(f=>f.n===name))return{bot:b.id,n:name};
+    }else if((b.files||[]).some(f=>f.n===name))return{bot:b.id,n:name};
+  }
+  return null;
+}
+/* فقط فایل‌های شناخته‌شدهٔ همان ربات/نسخه نصب می‌شوند — فایل ناشناس رد می‌شود */
+function mceValidateEngine(e){
+  const b=BOTS.find(x=>x.id===e.bot);
+  if(!b||b.builtin)return null;
+  if(b.versions){
+    const v=b.versions.find(x=>x.v===e.ver);
+    if(!v)return null;
+    return e.files.filter(f=>v.files.some(rf=>rf.n===f.n));
+  }
+  return e.files.filter(f=>(b.files||[]).some(rf=>rf.n===f.n));
+}
+function mceB64(u8){
+  let bin="";
+  for(let i=0;i<u8.length;i+=0x8000)bin+=String.fromCharCode.apply(null,u8.subarray(i,Math.min(i+0x8000,u8.length)));
+  return btoa(bin);
+}
+/* همهٔ موتورهای نصب‌شده را از حافظهٔ بازی جمع کن (botFilter = فقط یک ربات) */
+function mceCollect(botFilter){
+  return botKeys(true).then(ks=>{
+    const jobs=[];
+    BOTS.forEach(b=>{
+      if(b.builtin)return;
+      if(botFilter&&b.id!==botFilter)return;
+      if(b.versions){
+        b.versions.forEach(v=>{
+          if(!v.files.every(f=>ks.includes(b.id+"/"+f.n)))return;
+          jobs.push(Promise.all(v.files.map(f=>BotStore.get(b.id+"/"+f.n)))
+            .then(recs=>({bot:b.id,ver:v.v,files:recs.filter(Boolean).map(r=>({n:r.n,data:r.data}))})));
+        });
+      }else if((b.files||[]).length&&b.files.every(f=>ks.includes(b.id+"/"+f.n))){
+        jobs.push(Promise.all(b.files.map(f=>BotStore.get(b.id+"/"+f.n)))
+          .then(recs=>({bot:b.id,ver:null,files:recs.filter(Boolean).map(r=>({n:r.n,data:r.data}))})));
+      }
+    });
+    return Promise.all(jobs);
+  });
+}
+/* ذخیرهٔ بسته: ویندوز = پنجرهٔ ذخیرهٔ بومی (Tauri) با نوشتن تکه‌تکه؛
+   اندروید/مرورگر = دانلود معمولی فایل */
+function mceSavePackage(buf,defaultName,onPct){
+  const u8=new Uint8Array(buf), total=u8.length;
+  const browserDownload=()=>new Promise(res=>{
+    try{
+      const a=document.createElement("a");
+      a.href=URL.createObjectURL(new Blob([buf],{type:"application/octet-stream"}));
+      a.download=defaultName;
+      document.body.appendChild(a); a.click();
+      setTimeout(()=>{ try{URL.revokeObjectURL(a.href); a.remove();}catch(e){} },5000);
+      onPct&&onPct(100);
+      res({ok:true,path:"Downloads"});
+    }catch(err){ res({ok:false,err:String(err)}); }
+  });
+  if(window.__TAURI__&&window.__TAURI__.core&&window.__TAURI__.core.invoke){
+    const T=window.__TAURI__;
+    return T.core.invoke("mc_export_pick",{defaultName}).then(path=>{
+      if(!path)return{ok:false,cancel:true};
+      const CH=524288; let off=0;
+      let chain=T.core.invoke("mc_export_begin",{path});
+      const step=()=>{
+        if(off>=total)return Promise.resolve();
+        const end=Math.min(off+CH,total);
+        const c=mceB64(u8.subarray(off,end)); off=end;
+        onPct&&onPct(total?Math.min(99,Math.round(off/total*100)):99);
+        return T.core.invoke("mc_export_chunk",{b64data:c}).then(step);
+      };
+      chain=chain.then(step);
+      return chain
+        .then(()=>T.core.invoke("mc_export_end"))
+        .then(()=>{ onPct&&onPct(100); return{ok:true,path}; })
+        .catch(err=>{ try{T.core.invoke("mc_export_end");}catch(e){} return{ok:false,err:String(err)}; });
+    }).catch(()=>browserDownload()); /* اگر دستور بومی در دسترس نبود → دانلود مرورگر */
+  }
+  return browserDownload();
+}
+/* خروجی گرفتن: botFilter=null → همهٔ موتورها؛ در غیر این صورت فقط همان ربات */
+function mceExportEngines(botFilter){
+  return mceCollect(botFilter).then(items=>{
+    if(!items.length){ toast("هیچ موتور نصب‌شده‌ای برای خروجی نیست؛ اول یک ربات دانلود کن."); return; }
+    const totalMB=Math.max(1,Math.round(items.reduce((a,e)=>a+e.files.reduce((x,f)=>x+mceU8(f.data).byteLength,0),0)/1048576));
+    const stamp=new Date().toISOString().slice(0,10);
+    const name=(botFilter?("MATIN-CHESS-"+botFilter+"-"):"MATIN-CHESS-engines-")+stamp+".mceng";
+    const box=openModal(
+      `<h2>📤 خروجی فایل موتورها</h2>
+       <div class="msg">${faNum(items.length)} موتور • حدود ${faNum(totalMB)} مگابایت</div>
+       <div class="dl-bar"><div class="dl-fill" id="mceFill" style="--c1:#f2c66d;--c2:#b8860b"></div></div>
+       <div class="dl-status" id="mceStatus">در حال ساخت بسته…</div>`,{lock:true});
+    const st=box.querySelector("#mceStatus"), fill=box.querySelector("#mceFill");
+    setTimeout(()=>{
+      try{
+        const buf=mceBuild(items);
+        st.textContent="در حال نوشتن فایل…";
+        mceSavePackage(buf,name,p=>{ if(fill)fill.style.width=p+"%"; if(st)st.textContent="نوشتن فایل… "+faNum(p)+"%"; })
+          .then(r=>{
+            closeModal();
+            if(r.ok)toast("بستهٔ موتورها ذخیره شد ✓"+(r.path&&r.path!=="Downloads"?"":" • در پوشهٔ Downloads"));
+            else if(!r.cancel)toast("خروجی ناموفق؛ دوباره تلاش کن.");
+          });
+      }catch(err){ closeModal(); toast("خروجی ناموفق: "+String(err&&err.message||err)); }
+    },60);
+  });
+}
+/* انتخاب فایل(ها) برای وارد کردن: بستهٔ .mceng یا فایل‌های تکی js/wasm */
+function mceImportPick(){
+  return new Promise(resolve=>{
+    const inp=$("fileInput");
+    inp.accept=".mceng,.js,.wasm";
+    inp.multiple=true;
+    inp.value="";
+    inp.onchange=()=>{
+      const fs=inp.files?Array.from(inp.files):[];
+      setTimeout(()=>{ try{inp.multiple=false;}catch(e){} },0);
+      resolve(fs);
+    };
+    inp.click();
+  });
+}
+function mceImportEngines(){
+  mceImportPick().then(files=>{
+    if(!files.length)return;
+    AudioEng.play("button");
+    const jobs=[]; let installed=0; const skipped=[];
+    files.forEach(f=>{
+      jobs.push(new Promise(res=>{
+        const rd=new FileReader();
+        rd.onload=()=>{
+          try{
+            const buf=rd.result;
+            if(/\.mceng$/i.test(f.name)){
+              mceParse(buf).engines.forEach(e=>{
+                const okFiles=mceValidateEngine(e);
+                if(!okFiles||!okFiles.length){ skipped.push(e.bot||"?"); return; }
+                okFiles.forEach(fl=>BotStore.put(e.bot+"/"+fl.n,
+                  {n:fl.n,data:fl.data,size:fl.data.byteLength,ts:Date.now()}));
+                installed++;
+              });
+            }else{
+              const m=mceMatchLoose(f.name);
+              if(!m){ skipped.push(f.name); return; }
+              const u8=new Uint8Array(buf);
+              BotStore.put(m.bot+"/"+m.n,{n:m.n,data:u8.slice().buffer,size:u8.byteLength,ts:Date.now()});
+              installed++;
+            }
+          }catch(err){ skipped.push(f.name); }
+          res();
+        };
+        rd.onerror=()=>{ skipped.push(f.name); res(); };
+        rd.readAsArrayBuffer(f);
+      }));
+    });
+    Promise.all(jobs).then(()=>{
+      _botKeys=null;
+      botKeys(true).then(()=>{
+        try{ buildBots(); }catch(e){}
+        let msg=installed?("وارد کردن انجام شد ✓ ("+faNum(installed)+" مورد)"):"هیچ فایل شناخته‌شده‌ای پیدا نشد";
+        if(skipped.length)msg+=" — "+faNum(skipped.length)+" فایل ناشناخته رد شد";
+        toast(msg);
+        if(skipped.length)console.warn("import skipped:",skipped);
+      });
+    });
+  });
+}
+
 function fetchWithProgress(url,onPct){
   return fetch(url,{cache:"no-store"}).then(res=>{
     if(!res.ok)throw new Error("HTTP "+res.status);
@@ -1972,6 +2211,9 @@ function buildBots(){
   const grid=$("botGrid"); if(!grid)return;
   const gw=$("btnGoWatch");
   if(gw&&!gw.dataset.bound){ gw.dataset.bound="1"; gw.onclick=()=>{ AudioEng.play("button"); buildWatch(); go("watch"); }; }
+  const bi=$("btnBotImport"), be=$("btnBotExport");
+  if(bi&&!bi.dataset.bound){ bi.dataset.bound="1"; bi.onclick=()=>{ AudioEng.play("button"); mceImportEngines(); }; }
+  if(be&&!be.dataset.bound){ be.dataset.bound="1"; be.onclick=()=>{ AudioEng.play("button"); mceExportEngines(); }; }
   grid.innerHTML="";
   BOTS.forEach(b=>{
     const c=el("div","bot-card");
@@ -2153,7 +2395,8 @@ function openBotModal(b){
         </div>`;
     });
     h+=`</div>`;
-    if(!b.builtin)h+=`<div class="row2" style="margin-top:8px"><button class="btn ghost" id="botUninstall">🗑 حذف ${b.versions?"همهٔ نسخه‌های نصب‌شده":"ربات نصب‌شده"}</button></div>`;
+    if(!b.builtin)h+=`<div class="row2" style="margin-top:8px"><button class="btn ghost" id="botUninstall">🗑 حذف ${b.versions?"همهٔ نسخه‌های نصب‌شده":"ربات نصب‌شده"}</button></div>
+      <div class="row2" style="margin-top:8px"><button class="btn ghost" id="botExport">📤 خروجی فایل‌های نصب‌شدهٔ ${b.fa}</button></div>`;
     body.innerHTML=h;
     const cardOf=(u)=>body.querySelector(`.vcard[data-vi="${list.indexOf(u)}"]`);
     const setC=(u,txt,ok)=>{ const c=cardOf(u); if(!c)return; const st=c.querySelector("[data-vst]");
@@ -2186,6 +2429,8 @@ function openBotModal(b){
       };
       next();
     };
+    const bex=body.querySelector("#botExport");
+    if(bex)bex.onclick=()=>{ AudioEng.play("button"); mceExportEngines(b.id); };
     const un=body.querySelector("#botUninstall");
     if(un)un.onclick=()=>{
       const files=b.versions?b.versions.reduce((a,v)=>a.concat(v.files),[]):b.files;
@@ -2271,24 +2516,45 @@ function botLevelParams(id,lv,ver){
     const v=d.ver!=null?d.ver:(ver!=null?ver:19);
     // نسخه‌های ۱۶/۱۷/۱۸/۱۹: Skill Level استاندارد. نسخه‌های قدیمی‌تر (۶/۸/۹/۱۰/۱۱):
     // setopt نمی‌فرستیم (بیلد niklasf با Threads/Hash می‌میرد)؛ قدرت با movetime کنترل می‌شود
-    if(v>=16)return{type:"uci",
-      setopt:[["Skill Level",String(Math.max(0,Math.min(20,Math.round((d.n-1)*20/19))))]],
-      go:"go movetime "+(100+d.n*40)};
+    const n=Math.max(1,Math.min(20,d.n||20));
+    /* سطح ۲۰ = قدرت کامل واقعی موتور: مهارت ۲۰ + بدون سقف قوت + هش بزرگ + ۵ ثانیه فکر
+       (درخواست کاربر: بالاترین سطح هر موتور باید تمام توان آن باشد) */
+    if(v>=16){
+      if(n>=20)return{type:"uci",
+        setopt:[["Skill Level","20"],["UCI_LimitStrength","false"],["Hash","128"]],
+        go:"go movetime 5000",timeout:9000};
+      return{type:"uci",
+        setopt:[["Skill Level",String(Math.max(0,Math.min(20,Math.round((n-1)*20/19))))],
+                ["UCI_LimitStrength","false"],["Hash","64"]],
+        go:"go movetime "+(100+n*40)};
+    }
+    if(n>=20)return{type:"uci",setopt:[],go:"go movetime 5000",timeout:9000};
     return{type:"uci",setopt:[],
-      go:"go movetime "+(60+d.n*45)};
+      go:"go movetime "+(60+n*45)};
   }
   if(id==="berserk"){
-    const n=lv>=100?lv%100:lv; // کد ترکیبی نسخه‌دار: 1305 → سطح ۵
+    const n=Math.max(1,Math.min(20,lv>=100?lv%100:lv)); // کد ترکیبی نسخه‌دار: 1305 → سطح ۵
+    const sk=String(Math.max(0,Math.min(20,Math.round((n-1)*20/19))));
+    if(n>=20)return{type:"uci",
+      setopt:[["Hash","64"],["Threads","1"],["MultiPV","1"],["Skill Level","20"],["UCI_LimitStrength","false"]],
+      go:"go movetime 5000",timeout:9000};
     return{type:"uci",
-      setopt:[["Hash","16"],["Threads","1"],["MultiPV","1"]],
+      setopt:[["Hash","32"],["Threads","1"],["MultiPV","1"],["Skill Level",sk]],
       go:"go movetime "+(80+n*45)};
   }
-  if(id==="fairy")return{type:"uci",
-    setopt:[["Hash","16"],["Threads","1"],["UCI_Variant","chess"]],
-    go:"go movetime "+(80+lv*45)};
-  if(id==="lozza")return{type:"uci",setopt:[],go:"go depth "+lv};
+  if(id==="fairy"){
+    const n=Math.max(1,Math.min(20,lv));
+    const sk=String(Math.max(0,Math.min(20,Math.round((n-1)*20/19))));
+    if(n>=20)return{type:"uci",
+      setopt:[["Hash","64"],["Threads","1"],["UCI_Variant","chess"],["Skill Level","20"],["UCI_LimitStrength","false"]],
+      go:"go movetime 5000",timeout:9000};
+    return{type:"uci",
+      setopt:[["Hash","32"],["Threads","1"],["UCI_Variant","chess"],["Skill Level",sk]],
+      go:"go movetime "+(80+n*45)};
+  }
+  if(id==="lozza")return{type:"uci",setopt:[],go:"go depth "+(lv>=10?12:Math.max(1,lv))};
   if(id==="garbochess")return{type:"garbo",
-    ms:[80,150,260,420,650,950,1400,2100][Math.max(0,Math.min(7,lv-1))]};
+    ms:[80,150,260,420,650,950,1400,3000][Math.max(0,Math.min(7,lv-1))]};
   if(id==="veltrix"){
     /* الگوی جدید (مدل × سطح): فست/لایت بودجهٔ گره خطی تا سقف رسمی مدل؛
        های با زمانِ فکر مقیاس می‌شود و سطح ۱۰ = بی‌سقف (همان High اصلی).
@@ -2306,7 +2572,7 @@ function botLevelParams(id,lv,ver){
     let go="go";
     if(cw&&cb)go+=` wtime ${cw} btime ${cb}`;
     if(mt!=null)go+=` movetime ${mt}`;
-    else if(!cw)go+=" movetime 1500"; // های بی‌سقف در بازی بی‌نهایت → مووتایم پیش‌فرض
+    else if(!cw)go+=" movetime "+(n>=10?5000:1500); /* سطح ۱۰ های = قدرت کامل (۵ ثانیه فکر) */
     if(nodes!=null)go+=` nodes ${nodes}`;
     return{type:"uci",
       setopt:[["Hash","32"],["Threads","1"],["UseBook","true"],["UCI_LimitStrength","false"]],
@@ -3207,12 +3473,17 @@ function makeMove(m,byAI){
   g.apply(m);
   if(!R.spectate)S.stats.moves++;
   R.selected=null; R.hint=null;
-  if(special==="castleK"||special==="castleQ")AudioEng.playFile("move-self");
-  else if(cap)AudioEng.playFile("capture");
-  else AudioEng.playFile("move-self");
+  const sndOn=$("scr-game").classList.contains("active"); // بیرون از بازی هیچ صدایی پخش نمی‌شود
+  if(sndOn){
+    if(special==="castleK"||special==="castleQ")AudioEng.playFile("move-self");
+    else if(cap)AudioEng.playFile("capture");
+    else AudioEng.playFile("move-self");
+  }
   const promoted=g.board[end[0]][end[1]];
-  if(movingBefore.toUpperCase()==="P"&&promoted.toUpperCase()==="Q")AudioEng.play("promote");
-  if(g.check(g.turn))AudioEng.tone(1050,70);
+  if(sndOn){
+    if(movingBefore.toUpperCase()==="P"&&promoted.toUpperCase()==="Q")AudioEng.play("promote");
+    if(g.check(g.turn))AudioEng.tone(1050,70);
+  }
   animateMove(start,end,cap,special,movingBefore,promoted,moverEl,byAI).then(()=>{
     if(R.gameGen!==gen)return;
     try{ updateHud(); }catch(e){}
@@ -3323,6 +3594,7 @@ function animateMove(start,end,cap,special,moverGlyph,promotedGlyph,moverEl,byAI
 // ---------- AI ----------
 function aiMove(){
   if(R.aiThinking||R.gameOver||!R.g)return;
+  if(!$("scr-game").classList.contains("active"))return; // خارج از صفحهٔ بازی، هوش مصنوعی هیچ حرکتی نمی‌کند
   const st=R.g.gameState();
   if(st!=="play"&&st!=="check")return;
   const gen=R.gameGen, attempt=++R.aiAttempt;
@@ -3334,6 +3606,7 @@ function aiMove(){
   // ضامن امانت: اگر به هر دلیلی پاسخ هوش مصنوعی گم شد، بازی قفل نمی‌شود
   const failsafe=setTimeout(()=>{
     if(R.aiAttempt!==attempt||R.gameGen!==gen||R.gameOver)return;
+    if(!$("scr-game").classList.contains("active"))return;
     R.aiThinking=false;
     const s2=R.g?R.g.gameState():null;
     if(s2==="play"||s2==="check")setTimeout(aiMove,300);
@@ -4036,9 +4309,8 @@ function bindGameButtons(){
     toast("💾 بازی در فضای امن ذخیره شد.");
   };
   $("btnGameMenu").onclick=()=>{
-    // لغوی تمیز هوش مصنوعی هنگام خروج از بازی؛ هیچ حرکتی بعد از این اعمال نمی‌شود
-    R.gameGen++; R.aiAttempt++; R.aiThinking=false;
-    clearTimeout(R.clockTimer); go("menu");
+    // لغوی تمیز کامل هوش مصنوعی هنگام خروج از بازی؛ هیچ حرکت/صدایی بعد از این اعمال نمی‌شود
+    stopMatchActivity(); go("menu");
   };
   $("btnSaveJson").onclick=saveJson;
   $("btnSaveMCGX").onclick=saveMCGX;

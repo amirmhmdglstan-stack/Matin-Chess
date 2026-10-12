@@ -49,6 +49,14 @@ the setup with 7-Zip max compression (`.github/workflows/build-windows.yml`).
   (`window.MatinDesktop` is defined by the inline script when `window.__TAURI__` exists)
 - `download_stream {url}` — last-resort engine download when both web mirrors
   fail (no CORS, streams `dl-chunk`/`dl-done`/`dl-error` events for the progress bar)
+- `mc_export_pick {defaultName}` / `mc_export_begin {path}` /
+  `mc_export_chunk {b64data}` / `mc_export_end` — v3.2.0 engine-package export:
+  native save dialog (rfd) + chunked base64 writer for `.mceng` files, used by
+  the Bot Hub's "📤 Export installed engines" button
 
 Bot engines themselves are **not bundled** — they are downloaded in-app from the
 creators' official sources and stored in IndexedDB, exactly like the Android app.
+
+v3.2.0 adds **file transfer**: export all installed engines into a single
+`.mceng` package and import it on another computer (Bot Hub -> 📥/📤 buttons),
+fully offline.

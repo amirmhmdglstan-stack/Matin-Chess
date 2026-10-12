@@ -9,6 +9,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::io::Read;
+use std::io::Write;
+use std::sync::Mutex;
 use std::time::Duration;
 use base64::Engine;
 use tauri::{Emitter, Manager};
@@ -93,6 +95,63 @@ async fn download_stream(app: tauri::AppHandle, url: String) -> Result<(), Strin
     }
 }
 
+/* --- engine package export (.mceng): file transfer between computers ---
+ * Native save dialog (rfd) + chunked base64 writes, so even a ~95MB
+ * Stockfish 19 package streams to disk smoothly without freezing the UI.
+ * JS side: mceSavePackage() in app/index.html. */
+static EXPORT_FILE: Mutex<Option<std::fs::File>> = Mutex::new(None);
+
+#[tauri::command]
+async fn mc_export_pick(default_name: String) -> Result<Option<String>, String> {
+    tauri::async_runtime::spawn_blocking(move || -> Result<Option<String>, String> {
+        let picked = rfd::FileDialog::new()
+            .set_title("Save MATIN CHESS engine package")
+            .set_file_name(&default_name)
+            .add_filter("MATIN engine package", &["mceng"])
+            .save_file();
+        Ok(picked.map(|p| p.to_string_lossy().into_owned()))
+    })
+    .await
+    .map_err(|e| format!("pick failed: {e}"))?
+}
+
+#[tauri::command]
+async fn mc_export_begin(path: String) -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
+        let f = std::fs::File::create(&path).map_err(|e| e.to_string())?;
+        let mut guard = EXPORT_FILE.lock().map_err(|e| e.to_string())?;
+        *guard = Some(f);
+        Ok(())
+    })
+    .await
+    .map_err(|e| format!("begin failed: {e}"))?
+}
+
+#[tauri::command]
+async fn mc_export_chunk(b64data: String) -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(b64data.as_bytes())
+            .map_err(|e| e.to_string())?;
+        let mut guard = EXPORT_FILE.lock().map_err(|e| e.to_string())?;
+        let f = guard.as_mut().ok_or("no-export-open")?;
+        f.write_all(&bytes).map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| format!("chunk failed: {e}"))?
+}
+
+#[tauri::command]
+async fn mc_export_end() -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
+        let mut guard = EXPORT_FILE.lock().map_err(|e| e.to_string())?;
+        *guard = None; // File dropped -> flushed & closed
+        Ok(())
+    })
+    .await
+    .map_err(|e| format!("end failed: {e}"))?
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
@@ -106,7 +165,11 @@ fn main() {
             win_close,
             win_min,
             win_max,
-            download_stream
+            download_stream,
+            mc_export_pick,
+            mc_export_begin,
+            mc_export_chunk,
+            mc_export_end
         ])
         .run(tauri::generate_context!())
         .expect("error while running MATIN CHESS");
