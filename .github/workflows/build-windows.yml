@@ -112,9 +112,9 @@ jobs:
             ### دانلود / Download
             | فایل | توضیح |
             |---|---|
-            | `MATIN-CHESS-v${{ github.ref_name }}-windows-setup.zip` | **پیشنهادی** — نصب‌کنندهٔ کامل، فشرده‌شده با حداکثر فشار |
-            | `MATIN-CHESS-v${{ github.ref_name }}-windows-setup.exe` | نصب‌کنندهٔ کامل (میان‌بر دسکتاپ + منوی استارت) |
-            | `MATIN-CHESS-v${{ github.ref_name }}-windows-portable.exe` | تک‌فایل — بدون نصب، فقط اجرا کن |
+            | `MATIN-CHESS-${{ github.ref_name }}-windows-setup.zip` | **پیشنهادی** — نصب‌کنندهٔ کامل، فشرده‌شده با حداکثر فشار |
+            | `MATIN-CHESS-${{ github.ref_name }}-windows-setup.exe` | نصب‌کنندهٔ کامل (میان‌بر دسکتاپ + منوی استارت) |
+            | `MATIN-CHESS-${{ github.ref_name }}-windows-portable.exe` | تک‌فایل — بدون نصب، فقط اجرا کن |
 
             ### تازه‌های این نسخه (v3.2.0)
             - **سطح آخر هر موتور = تمام قدرت واقعی آن**: مهارت ۲۰ + بدون سقف قوت + هش بزرگ + ۵ ثانیه فکر (استاک‌فیش ۱۶-۱۹، برسرک، فری) • هایِ ولتریکس سطح ۱۰ = ۵ ثانیه • لوزا عمق ۱۲ • گاربوچس ۳ ثانیه
