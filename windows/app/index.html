@@ -372,7 +372,7 @@ select,input[type=text]{
   padding:15px 8px;font-size:14px}
 .blvl.offl:hover{filter:brightness(1.12);color:#0b0f14}
 .blvl.offl small{color:rgba(0,0,0,.6)}
-/* سطح آخر = بی‌سقف (v3.3.0) */
+/* سطح آخر = حالت تمام‌توان (برچسبش برای هر موتور فرق دارد) */
 .blvl.maxlvl{border:1px solid var(--gold);box-shadow:0 0 0 1px rgba(242,198,109,.22) inset}
 .blvl.maxlvl small{display:block;font-size:8.5px;color:var(--gold);font-weight:800;margin-top:3px}
 .blvl-note{font-size:11px;color:var(--dim2);line-height:1.9;margin-top:10px;text-align:center}
@@ -1416,7 +1416,7 @@ function saveState(){
 // game-independent runtime
 const R = {
   g:null, player:"w", twoPlayer:false, gameMode:"هوش مصنوعی", level:1, timeMode:"∞",
-  botId:"matin", botLatin:"MATIN BOT",
+  botId:"matin", botLatin:"MATIN BOT", botSpeed:null,
   clock:{w:null,b:null}, clockTimer:null, lastTick:Date.now(),
   aiThinking:false, aiWorker:null, aiPending:null, aiAttempt:0, aiRetries:0,
   spectate:false, specFails:0, specDelay:700,
@@ -1727,15 +1727,15 @@ function buildLevels(){
   const grid=$("levelGrid"); grid.innerHTML="";
   for(let i=1;i<=20;i++){
     const mx=(i===20);
-    const b=el("button","lvl",'♟ '+(mx?'مرحله 20 — بی‌سقف ∞':`مرحله ${i}`));
-    if(mx)b.title="سطح ۲۰ = تمام توان متین‌بات بدون سقف زمانی (عمق ۱۲، تا ۹۰ ثانیه فکر)";
+    const b=el("button","lvl",'♟ '+(mx?'مرحله 20 — حداکثر توان':`مرحله ${i}`));
+    if(mx)b.title="سطح ۲۰ = تمام توان متین‌بات (عمق ۱۲، تا ۹۰ ثانیه فکر در هر حرکت)";
     b.onclick=()=>setupGame(i);
     grid.appendChild(b);
   }
 }
 
 // ---------- Bot Hub (مرکز ربات‌ها) ----------
-const APP_VERSION="3.3.0";
+const APP_VERSION="3.4.0";
 const REPO_OWNER="amirmhmdglstan-stack", REPO_NAME="Matin-Chess";
 const REPO_API=`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`;
 const BOT_RAW=`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/bots/`;
@@ -2416,26 +2416,70 @@ function openBotModal(b){
   const showLevels=(u)=>{
     const n=u?u.lvls:20;
     const lbl=u?(u.vltrix?("سطح‌های "+u.fa+" — همه باز"):(u.fa+" — سطح‌ها (همه باز)")):"سطح‌ها (همه باز)";
+    /* برچسب سطح آخر (v3.4.0): موتورهای سرعت‌دار → «تمام توان» + گام انتخاب سرعت؛
+       بقیه طبق تعریف رسمی سازنده (متین تا ۹۰ ثانیه • های ولتریکس بی‌سقف • ...) */
+    const spd=speedCustomizable(b.id);
+    const isHigh=(b.id==="veltrix"&&u&&u.model===3);
+    const maxLbl=spd?'<small>تمام توان</small>'
+      :isHigh?'<small>∞ بی‌سقف</small>'
+      :(b.id==="veltrix"?'<small>کامل</small>'
+      :(b.id==="matin"?'<small>حداکثر</small>'
+      :(b.id==="lozza"?'<small>عمق ۱۶</small>':'<small>کامل</small>')));
+    const maxTitle=spd?'سطح آخر = تمام ۱۰۰٪ توان موتور — سقف زمان فکر را در گام بعد («سرعت») انتخاب می‌کنی'
+      :isHigh?'سطح ۱۰ = بی‌سقف زمانی رسمی مدل های — هرقدر لازم باشد فکر می‌کند'
+      :(b.id==="veltrix"?'قدرت کامل رسمی همین مدل — بودجهٔ گره/زمانِ تعیین‌شدهٔ سازنده'
+      :(b.id==="matin"?'سطح ۲۰ = تمام توان متین‌بات — عمق ۱۲ و تا ۹۰ ثانیه فکر در هر حرکت'
+      :(b.id==="lozza"?'سطح ۱۰ = عمق ۱۶ — بیشترین عمق فکر لوزا'
+      :'سطح ۸ = حداکثر زمان فکر گاربوچس — تا ۹۰ ثانیه')));
+    const note=spd?'سطح آخر = تمام ۱۰۰٪ توان موتور — بعد از انتخاب سطح، «سرعت فکر» (سقف زمان هر حرکت) را انتخاب می‌کنی. در بازی زمان‌دار، ساعت بازی قانون است.'
+      :isHigh?'سطح ۱۰ = بی‌سقف زمانی رسمی سازندهٔ ولتریکس.'
+      :(b.id==="veltrix"?'سطح ۱۰ هر مدل = قدرت کامل رسمی همان مدل (فست: ۴٬۰۰۰ گره • لایت: ۶۴٬۰۰۰ گره).'
+      :(b.id==="matin"?'سطح ۲۰ = تمام توان متین‌بات — تا ۹۰ ثانیه فکر در هر حرکت.'
+      :(b.id==="lozza"?'سطح ۱۰ = عمق ۱۶ — بیشترین عمق فکر لوزا.'
+      :'سطح ۸ = حداکثر زمان فکر گاربوچس — تا ۹۰ ثانیه.')));
     let h=`<div class="sect-lbl">${lbl}</div>
         <div class="blvl-grid cols5" style="--c1:${b.c1};--c2:${b.c2}">`;
-    /* سطح آخر هر موتور = تمام ۱۰۰٪ توان آن، بدون هیچ سقف زمانی (v3.3.0) */
     for(let i=1;i<=n;i++){
       const mx=(i===n);
-      h+=`<button class="blvl${mx?" maxlvl":""}" data-lv="${u?lvlCode(u,i):i}"${mx?' title="سطح آخر = تمام توان موتور بدون سقف زمانی — هرقدر لازم باشد فکر می‌کند"':""}>${faNum(i)}${mx?'<small>∞ بی‌سقف</small>':""}</button>`;
+      h+=`<button class="blvl${mx?" maxlvl":""}" data-lv="${u?lvlCode(u,i):i}"${mx?` title="${maxTitle}"`:""}>${faNum(i)}${mx?maxLbl:""}</button>`;
     }
-    h+=`</div><div class="blvl-note">سطح آخر = تمام ۱۰۰٪ توان واقعی موتور، بدون هیچ سقف زمانی — موتور هرقدر لازم باشد فکر می‌کند.</div>`;
+    h+=`</div><div class="blvl-note">${note}</div>`;
     if(u)h+=`<div class="row2" style="margin-top:8px"><button class="btn ghost" id="botBack">↩ بازگشت به انتخاب ${u.vltrix?"مدل":"نسخه"}</button></div>`;
     body.innerHTML=h;
     body.querySelectorAll(".blvl").forEach(btn=>{
       btn.onclick=()=>{
         const lv=+btn.dataset.lv;
         AudioEng.play("button");
-        if(b.id==="matin")setupGame(lv); // مودال کامل متین بات (نوع مسابقه/مهره/زمان)
+        if(b.id==="matin")setupGame(lv); // متین: زمان هر سطح رسمی است — بدون گام سرعت
+        else if(spd)showSpeeds(u,lv); // v3.4.0: موتورهای مهارت‌محور → انتخاب سرعت فکر
         else botGameSetup(b,lv);
       };
     });
     const back=body.querySelector("#botBack");
     if(back)back.onclick=()=>{ AudioEng.play("button"); showVersions(); };
+  };
+
+  /* گام سوم (v3.4.0): سرعت فکر — سقف زمان هر حرکت. فقط برای موتورهایی که
+     سازنده‌شان زمان/عمق فکر تعیین نکرده (استاک‌فیش/برسرک/فری). */
+  const showSpeeds=(u,lv)=>{
+    let h=`<div class="sect-lbl">سرعت فکر — ${botLevelLabel(b,lv)}</div>
+      <div class="verpick" style="--c1:${b.c1};--c2:${b.c2}">`;
+    SPEEDS.forEach(s=>{
+      h+=`<div class="vcard" data-sp="${s.key}" title="${s.desc}">
+        <div class="vnum">${s.fa}</div>
+        <div class="vname">${s.tag}</div>
+        <div class="vsub">تا ~${faNum(Math.round(s.ms/1000))} ثانیه/حرکت</div>
+      </div>`;
+    });
+    h+=`</div>
+      <div class="blvl-note">کند = قویترین حالت (بیشترین فکر در هر حرکت) • در بازی زمان‌دار، ساعت بازی قانون است و موتور خودش زمانش را مدیریت می‌کند.</div>
+      <div class="row2" style="margin-top:8px"><button class="btn ghost" id="spBack">↩ بازگشت به سطح‌ها</button></div>`;
+    body.innerHTML=h;
+    body.querySelectorAll(".vcard").forEach(card=>{
+      card.onclick=()=>{ AudioEng.play("button"); botGameSetup(b,lv,card.dataset.sp); };
+    });
+    const bk=body.querySelector("#spBack");
+    if(bk)bk.onclick=()=>{ AudioEng.play("button"); showLevels(u); };
   };
 
   /* دانلود و نصب نسخه/مدل انتخاب‌شده و بعد رفتن به سطح‌ها */
@@ -2541,9 +2585,11 @@ function openBotModal(b){
   else showVersions();
 }
 
-function botGameSetup(b,lv){
+function botGameSetup(b,lv,speed){
+  const sp=(speed&&speedCustomizable(b.id))?speedCfg(speed):null;
   const box=openModal(`
-    <h2>${b.icon} ${botLevelLabel(b,lv)}</h2>
+    <h2>${b.icon} ${botLevelLabel(b,lv)}${sp?(" • "+sp.fa):""}</h2>
+    ${sp?`<div class="bot-desc">سرعت فکر: ${sp.fa} — تا ~${faNum(Math.round(sp.ms/1000))} ثانیه در هر حرکت${sp.key==="slow"?" (قویترین حالت)":""}.</div>`:""}
     <div class="opt-group"><div class="opt-cap">مهره شما</div>
       <label class="radio sel"><input type="radio" name="bSide" value="سفید" checked> سفید</label>
       <label class="radio"><input type="radio" name="bSide" value="سیاه"> سیاه</label>
@@ -2568,7 +2614,7 @@ function botGameSetup(b,lv){
     const tm=box.querySelector("[name=bTime]:checked").value;
     closeModal();
     const d=decodeBotLevel(b,lv);
-    startGame(lv,side,tm,false,b.id,d.ver);
+    startGame(lv,side,tm,false,b.id,d.ver,speed);
   };
 }
 // ---------- پل موتورهای خارجی (FEN/UCI) ----------
@@ -2614,12 +2660,12 @@ function engineClockCtx(){
     spectate:!!R.spectate
   };
 }
-/* دستور go بی‌سقف زمانی (v3.3.0 — درخواست کاربر: موتور هرقدر بخواهد فکر کند):
-   • بازی بی‌نهایت → «go depth N»: موتور تا رسیدن به عمق N هرقدر لازم باشد فکر می‌کند؛
-     بدون هیچ movetime/سقف زمانی. بعد از ۱۰ دقیقه فرمان stop می‌فرستیم و موتور
-     بهترین حرکتِ پیدا‌شده تا آن لحظه را می‌دهد — پس بازی همیشه ادامه می‌یابد.
+/* ساخت دستور go (v3.4.0 — «سرعت فکر» به‌جای بی‌سقف):
+   • موتورهای سرعت‌دار (استاک‌فیش/برسرک/فری) در بازی بی‌نهایت → «go movetime <بودجه>»؛
+     سطح آخر بودجهٔ کامل را می‌گیرد، سطوح پایین‌تر کسری از آن را.
    • بازی زمان‌دار → «go wtime X btime Y»: موتور خودش زمانِ باقی‌مانده‌اش را مدیریت
      می‌کند (ساعت بازی قانونِ بازی است، نه سقف قوت موتور).
+   • ولتریکس های ۱۰ و لوزا ۱۰+ همچنان عمق‌محورند (طرح رسمی سازنده؛ توقف نرم ۱۰ دقیقه).
    • تماشای ربات‌ها → برای روونگی نمایش، حداکثر ۱۰ ثانیه در هر حرکت. */
 function uciGoDeep(depth){
   return (ctx)=>{
@@ -2631,6 +2677,15 @@ function uciGoDeep(depth){
 function uciGoMovetime(ms){
   return (ctx)=> "go movetime "+(ctx.spectate?Math.min(10000,ms):ms);
 }
+/* v3.4.0 — حالت تمام‌توان با سقف زمان انتخابی کاربر («سرعت فکر»):
+   بی‌نهایت → بودجهٔ کامل • زمان‌دار → ساعت بازی قانون است • تماشا → سقف ۱۰ ثانیه */
+function uciGoBudget(budgetMs){
+  return (ctx)=>{
+    if(ctx.spectate)return "go movetime "+Math.min(10000,budgetMs);
+    if(ctx.timed)return "go wtime "+ctx.cw+" btime "+ctx.cb;
+    return "go movetime "+budgetMs;
+  };
+}
 function garboMsFor(ms){
   return (ctx)=> ctx.spectate?Math.min(10000,ms):ms;
 }
@@ -2641,49 +2696,73 @@ function veltrixGoString(cw,cb,mt,nodes){
   if(nodes!=null)go+=" nodes "+nodes;
   return go;
 }
-/* پارامتر سطح هر ربات → دستور go (نسخه‌آگاه: ver برای ربات‌های نسخه‌دار)
-   سطح آخر هر موتور = تمام ۱۰۰٪ توان آن، بدون هیچ سقف زمانی. */
-function botLevelParams(id,lv,ver){
+/* ---------- سرعت فکر موتور (v3.4.0) ----------
+   فقط برای موتورهایی که سازنده‌شان زمان/عمق فکرِ سطح‌ها را تعیین نکرده است:
+   استاک‌فیش، برسرک و فری — سطحشان Skill رسمی است و سقف زمانی دستِ برنامه می‌افتد.
+   متین‌بات (عمق+زمان هر سطح)، ولتریکس (بودجهٔ رسمی فست/لایت/های)، لوزا (سطح = عمق)
+   و گاربوچس (سطح = زمان) تعریف رسمی دارند و سرعت‌دادنی نیستند. */
+const SPEEDS=[
+  {key:"slow",fa:"کند",latin:"SLOW",tag:"قویترین حالت",ms:90000,mult:8,
+   desc:"قویترین حالت: موتور تا ~۹۰ ثانیه (۱ تا ۱٫۵ دقیقه) در هر حرکت فکر می‌کند — عمیق‌ترین بازی ممکن."},
+  {key:"medium",fa:"متوسط",latin:"MEDIUM",tag:"متعادل",ms:40000,mult:3,
+   desc:"تعادل قدرت و سرعت: حدود ۳۰ تا ۴۵ ثانیه فکر در هر حرکت."},
+  {key:"fast",fa:"سریع",latin:"FAST",tag:"چابک",ms:15000,mult:1,
+   desc:"بازی سریع و روان: کمتر از ۲۰ ثانیه فکر در هر حرکت."}
+];
+function speedCfg(s){ return SPEEDS.find(x=>x.key===s)||SPEEDS[1]; }
+function speedCustomizable(id){ return id==="stockfish"||id==="berserk"||id==="fairy"; }
+/* پارامتر سطح هر ربات → دستور go (نسخه‌آگاه: ver برای ربات‌های نسخه‌دار).
+   v3.4.0: موتورهای سرعت‌دار در سطح آخر به بودجهٔ سرعت می‌رسند (نه بی‌سقف). */
+function botLevelParams(id,lv,ver,speed){
   if(id==="stockfish"){
     const d={ver:lv>=100?Math.floor(lv/100):null,n:lv>=100?lv%100:lv};
     const v=d.ver!=null?d.ver:(ver!=null?ver:19);
     // نسخه‌های ۱۶/۱۷/۱۸/۱۹: Skill Level استاندارد. نسخه‌های قدیمی‌تر (۶/۸/۹/۱۰/۱۱):
     // setopt نمی‌فرستیم (بیلد niklasf با Threads/Hash می‌میرد)؛ قدرت با عمق/زمان کنترل می‌شود
     const n=Math.max(1,Math.min(20,d.n||20));
-    /* سطح ۲۰ = بی‌سقف زمانی واقعی: مهارت ۲۰ + بدون سقف قوت + هش بزرگ + جست‌وجوی عمق ۳۰
-       بدون هیچ movetime — موتور هرقدر لازم باشد فکر می‌کند (v3.3.0) */
+    const mx=(v===10)?10:20; // نسخهٔ ۱۰ فقط ۱۰ سطح دارد — سطح ۱۰ آن هم «تمام‌توان» است
+    /* v3.4.0 — سرعت فکر: سطح آخر → بودجهٔ کامل سرعت؛ سطوح دیگر → زمان پایهٔ سطح ×
+       ضریب سرعت (کند ۸× / متوسط ۳× / سریع ۱×)، همیشه سقف‌شده به بودجه */
+    const sp=speedCfg(speed);
     if(v>=16){
-      if(n>=20)return{type:"uci",
+      if(n>=mx)return{type:"uci",
         setopt:[["Skill Level","20"],["UCI_LimitStrength","false"],["Hash","256"]],
-        go:"go depth 30",goFor:uciGoDeep(30),timeout:900000,stopAt:600000};
+        go:"go movetime "+sp.ms,goFor:uciGoBudget(sp.ms),timeout:sp.ms+8000,stopAt:sp.ms+3000};
+      const mt=Math.min(sp.ms,(100+n*40)*sp.mult);
       return{type:"uci",
         setopt:[["Skill Level",String(Math.max(0,Math.min(20,Math.round((n-1)*20/19))))],
                 ["UCI_LimitStrength","false"],["Hash","64"]],
-        go:"go movetime "+(100+n*40),goFor:uciGoMovetime(100+n*40)};
+        go:"go movetime "+mt,goFor:uciGoMovetime(mt),timeout:mt+8000};
     }
-    if(n>=20)return{type:"uci",setopt:[],go:"go depth 30",goFor:uciGoDeep(30),timeout:900000,stopAt:600000};
+    if(n>=mx)return{type:"uci",setopt:[],go:"go movetime "+sp.ms,goFor:uciGoBudget(sp.ms),
+      timeout:sp.ms+8000,stopAt:sp.ms+3000};
+    const mt2=Math.min(sp.ms,(60+n*45)*sp.mult);
     return{type:"uci",setopt:[],
-      go:"go movetime "+(60+n*45),goFor:uciGoMovetime(60+n*45)};
+      go:"go movetime "+mt2,goFor:uciGoMovetime(mt2),timeout:mt2+8000};
   }
   if(id==="berserk"){
     const n=Math.max(1,Math.min(20,lv>=100?lv%100:lv)); // کد ترکیبی نسخه‌دار: ۱۳۰۵ → سطح ۵
     const sk=String(Math.max(0,Math.min(20,Math.round((n-1)*20/19))));
+    const sp=speedCfg(speed);
     if(n>=20)return{type:"uci",
       setopt:[["Hash","128"],["Threads","1"],["MultiPV","1"],["Skill Level","20"],["UCI_LimitStrength","false"]],
-      go:"go depth 30",goFor:uciGoDeep(30),timeout:900000,stopAt:600000};
+      go:"go movetime "+sp.ms,goFor:uciGoBudget(sp.ms),timeout:sp.ms+8000,stopAt:sp.ms+3000};
+    const mt=Math.min(sp.ms,(80+n*45)*sp.mult);
     return{type:"uci",
       setopt:[["Hash","32"],["Threads","1"],["MultiPV","1"],["Skill Level",sk]],
-      go:"go movetime "+(80+n*45),goFor:uciGoMovetime(80+n*45)};
+      go:"go movetime "+mt,goFor:uciGoMovetime(mt),timeout:mt+8000};
   }
   if(id==="fairy"){
     const n=Math.max(1,Math.min(20,lv));
     const sk=String(Math.max(0,Math.min(20,Math.round((n-1)*20/19))));
+    const sp=speedCfg(speed);
     if(n>=20)return{type:"uci",
       setopt:[["Hash","128"],["Threads","1"],["UCI_Variant","chess"],["Skill Level","20"],["UCI_LimitStrength","false"]],
-      go:"go depth 30",goFor:uciGoDeep(30),timeout:900000,stopAt:600000};
+      go:"go movetime "+sp.ms,goFor:uciGoBudget(sp.ms),timeout:sp.ms+8000,stopAt:sp.ms+3000};
+    const mt=Math.min(sp.ms,(80+n*45)*sp.mult);
     return{type:"uci",
       setopt:[["Hash","32"],["Threads","1"],["UCI_Variant","chess"],["Skill Level",sk]],
-      go:"go movetime "+(80+n*45),goFor:uciGoMovetime(80+n*45)};
+      go:"go movetime "+mt,goFor:uciGoMovetime(mt),timeout:mt+8000};
   }
   if(id==="lozza"){
     /* لوزا موتور جاوااسکریپت خالص است؛ عمق ۱۶ عملاً سقف توان واقعی آن در زمان معقول است
@@ -2694,9 +2773,10 @@ function botLevelParams(id,lv,ver){
       goFor:(ctx)=> "go depth "+(ctx.spectate?Math.min(8,dep):dep)};
   }
   if(id==="garbochess"){
-    /* پروتکل گاربوچس فقط جست‌وجوی زمانی دارد؛ سطح ۸ = ۱۰ دقیقه فکر (بی‌سقف عملی) */
-    const ms=[80,150,260,420,650,950,1400,600000][Math.max(0,Math.min(7,lv-1))];
-    return{type:"garbo",ms,msFor:garboMsFor(ms),timeout:(lv>=8?900000:14000)};
+    /* پروتکل گاربوچس فقط جست‌وجوی زمانی دارد؛ سطح ۸ = حداکثر ۹۰ ثانیه فکر
+       (v3.4.0: به‌جای ۱۰ دقیقه، هم‌تراز «کند» — بازی همیشه روون می‌ماند) */
+    const ms=[80,150,260,420,650,950,1400,90000][Math.max(0,Math.min(7,lv-1))];
+    return{type:"garbo",ms,msFor:garboMsFor(ms),timeout:(lv>=8?100000:14000)};
   }
   if(id==="veltrix"){
     /* الگوی جدید (مدل × سطح): فست/لایت بودجهٔ گره خطی تا سقف رسمی مدل؛
@@ -2727,7 +2807,7 @@ function botLevelParams(id,lv,ver){
    حالا هر (ربات، سطح) یک جلسهٔ زنده دارد و تا پایان بازی زنده می‌ماند. */
 const EngPool={
   m:{},
-  key:(id,ver,lv)=>id+"|"+(ver||0)+"|"+lv,
+  key:(id,ver,lv,sp)=>id+"|"+(ver||0)+"|"+lv+"|"+(sp||""),
   evict(){
     const ks=Object.keys(this.m);
     if(ks.length<=2)return;
@@ -2747,7 +2827,7 @@ function destroySession(s){
   try{ if(s.urls)Object.values(s.urls).forEach(u=>URL.revokeObjectURL(u)); }catch(e){}
   try{ s.w.terminate(); }catch(e){}
 }
-function createEngineSession(b,level,ver){
+function createEngineSession(b,level,ver,speed){
   const d=decodeBotLevel(b,level,ver);
   const effVer=(b.versions)?(d.ver!=null?d.ver:(ver!=null?ver:botDefaultVer(b)))
     :(b.id==="veltrix"?(d.ver!=null?d.ver:(ver!=null?ver:null)):null);
@@ -2775,7 +2855,7 @@ function createEngineSession(b,level,ver){
           [boot+'importScripts('+JSON.stringify(urls[entryName])+');'],
           {type:"application/javascript"})));
       }catch(e){ return null; }
-      const params=botLevelParams(b.id,level,effVer);
+      const params=botLevelParams(b.id,level,effVer,speed);
       const sess={w,urls,params,alive:true,t:Date.now(),pending:null,stage:0};
       w.onmessage=e=>{
         const line=String(e.data).trim();
@@ -2856,7 +2936,7 @@ function createEngineSession(b,level,ver){
             if(done)return;
             finish(null);
             destroySession(sess);
-            const k=EngPool.key(b.id,effVer,level);
+            const k=EngPool.key(b.id,effVer,level,speed);
             if(EngPool.m[k]===sess)delete EngPool.m[k];
           },hardMs);
           sess.pending={resolve:finish,timer:tHard};
@@ -2877,7 +2957,7 @@ function createEngineSession(b,level,ver){
     });
   });
 }
-function runBotMove(botId,state,level,ver){
+function runBotMove(botId,state,level,ver,speed){
   const b=BOTS.find(x=>x.id===botId);
   if(!b||b.builtin)return Promise.resolve(null);
   let lv=level;
@@ -2886,9 +2966,9 @@ function runBotMove(botId,state,level,ver){
     else lv=normVlt(lv);
     if(lv!=null&&lv>=1000)ver=Math.floor(lv/1000);
   }
-  const key=EngPool.key(botId,ver,lv);
+  const key=EngPool.key(botId,ver,lv,speed);
   let s=EngPool.m[key]&&EngPool.m[key].alive?EngPool.m[key]:null;
-  const ensure=s?Promise.resolve(s):createEngineSession(b,lv,ver).then(ns=>{
+  const ensure=s?Promise.resolve(s):createEngineSession(b,lv,ver,speed).then(ns=>{
     if(ns){ ns.t=Date.now(); EngPool.m[key]=ns; EngPool.evict(); }
     return ns;
   });
@@ -2905,7 +2985,7 @@ function runBotMove(botId,state,level,ver){
 }
 function requestBotMove(state){
   if(R.botId&&R.botId!=="matin"){
-    return runBotMove(R.botId,state,R.level,R.botVer).then(r=>({
+    return runBotMove(R.botId,state,R.level,R.botVer,R.botSpeed).then(r=>({
       move:r?r.move:null,
       info:r?{depth:r.depth||0,nodes:0,qnodes:0,time:0,score:0}:null
     }));
@@ -2992,10 +3072,17 @@ function parseWatchVal(v){ const i=v.indexOf("|"); return{botId:v.slice(0,i),ver
 function fillWatchLevels(){
   const pw=$("wBotSel"), pb=$("bBotSel");
   if(!pw||!pb)return;
+  /* v3.4.0 — رفع باگ: قبلاً با هر تغییرِ موتور (حتی موتورِ طرف مقابل)، لیست
+     سطحِ هر دو طرف از نو ساخته می‌شد و سطحِ انتخاب‌شدهٔ کاربر صفر می‌شد.
+     حالا لیست سطح هر ستون فقط وقتی بازسازی می‌شود که موتورِ خودِ همان ستون
+     عوض شده باشد؛ و اگر سطح قبلی در لیست جدید معتبر باشد، حفظ می‌شود. */
   const fill=(lvlSel,botSel)=>{
     const pv=parseWatchVal(botSel.value||"matin|");
     const b=BOTS.find(x=>x.id===pv.botId);
     if(!b)return;
+    const key=pv.botId+"|"+(pv.ver==null?"":pv.ver);
+    if(lvlSel.dataset.bot===key)return; // موتور این ستون عوض نشده — سطح‌ها دست‌نخورده
+    const prev=lvlSel.value;
     const C=watchLvlChoices(b,pv.ver);
     let opts="";
     if(b.id==="veltrix"){
@@ -3006,6 +3093,12 @@ function fillWatchLevels(){
       if(C.official)opts+=C.official.map(m=>`<option value="${m.num}">★ ${m.fa} (${m.latin})</option>`).join("");
     }
     lvlSel.innerHTML=opts;
+    lvlSel.dataset.bot=key;
+    if(prev){
+      let has=false;
+      for(let i=0;i<lvlSel.options.length;i++)if(lvlSel.options[i].value===prev){has=true;break;}
+      if(has)lvlSel.value=prev; // مثلاً تغییر نسخهٔ همان موتور: سطح انتخابی حفظ می‌شود
+    }
   };
   fill($("wLvlSel"),pw); fill($("bLvlSel"),pb);
 }
@@ -3726,7 +3819,7 @@ function animateMove(start,end,cap,special,moverGlyph,promotedGlyph,moverEl,byAI
 function expectedThinkMs(){
   try{
     if(R.botId&&R.botId!=="matin"){
-      const p=botLevelParams(R.botId,R.level,R.botVer);
+      const p=botLevelParams(R.botId,R.level,R.botVer,R.botSpeed);
       if(p&&p.timeout)return Math.min(p.timeout,960000);
       return 20000;
     }
@@ -3956,7 +4049,7 @@ function twoPlayerSetup(){
     startGame(0,"سفید",tm,true);
   };
 }
-function startGame(level,side,timeMode,twoPlayer,botId,botVer){
+function startGame(level,side,timeMode,twoPlayer,botId,botVer,botSpeed){
   closeModal(); delete modalRoot.dataset.lock;
   R.spectate=false;
   R.gameOver=false; R.gameGen++; R.aiAttempt++; R.aiRetries=0; R.aiThinking=false;
@@ -3966,6 +4059,7 @@ function startGame(level,side,timeMode,twoPlayer,botId,botVer){
   R.twoPlayer=!!twoPlayer;
   R.botId=(botId&&!twoPlayer)?botId:"matin";
   R.botVer=(R.botId!=="matin"&&botId!=="matin"&&botVer!=null)?botVer:null;
+  R.botSpeed=(R.botId!=="matin"&&speedCustomizable(R.botId)&&botSpeed)?botSpeed:null;
   const bb=BOTS.find(x=>x.id===R.botId);
   R.botLatin=bb?bb.latin:"MATIN BOT";
   R.gameMode=twoPlayer?"دونفره":(R.botId==="matin"?"هوش مصنوعی":R.botLatin);
@@ -4003,7 +4097,7 @@ function buildGameScreen(){
   $("gameMeta").textContent=R.trainingMode
     ?`/ تمرین ${R.trainingIndex+1}/${TRAINING_LEVELS.length}`
     :(R.botId&&R.botId!=="matin"&&bbG
-      ?`/ ${botLevelLabel(bbG,R.level)} / ${R.timeMode}`
+      ?`/ ${botLevelLabel(bbG,R.level)}${R.botSpeed?(" • "+speedCfg(R.botSpeed).fa):""} / ${R.timeMode}`
       :`/ ${R.gameMode} / سطح ${String(R.level).padStart(2,"0")} / ${R.timeMode}`);
   $("btnUndo").style.display=R.trainingMode?"none":"";
   buildBoardDom();
@@ -4293,7 +4387,7 @@ function serialAll(){
     custom_light:S.custom_light,custom_dark:S.custom_dark,custom_frame:S.custom_frame,
     custom_hi:S.custom_hi,piece_style:S.piece_style,stats:S.stats,unlocked:S.unlocked,
     anim_speed:S.anim_speed,tournament:S.tournament,move_analysis:R.moveAnalysis,
-    two_player:R.twoPlayer,bot_id:R.botId||"matin",bot_ver:R.botVer||null,bot_latin:R.botLatin||"",
+    two_player:R.twoPlayer,bot_id:R.botId||"matin",bot_ver:R.botVer||null,bot_speed:R.botSpeed||null,bot_latin:R.botLatin||"",
     over:!!R.gameOver,creators:CREATORS,edition:"android-1.7.0"};
 }
 function restoreAll(d){
@@ -4320,6 +4414,7 @@ function restoreAll(d){
     R.twoPlayer=!!d.two_player;
     R.botId=(!R.twoPlayer&&d.bot_id&&BOTS.some(x=>x.id===d.bot_id))?d.bot_id:"matin";
     R.botVer=(!R.twoPlayer&&d.bot_ver!=null&&R.botId!=="matin")?d.bot_ver:null;
+    R.botSpeed=(!R.twoPlayer&&d.bot_speed&&speedCustomizable(R.botId))?d.bot_speed:null;
     if(!R.twoPlayer&&R.botId==="veltrix"&&R.level!=null){
       // کدهای قدیمی ولتریکس (۱-۸ و ۳۰۱/۳۰۲/۳۰۳) → مدل×۱۰۰۰+سطح جدید
       R.level=normVlt(R.level);
