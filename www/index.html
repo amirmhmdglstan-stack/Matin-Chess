@@ -18,6 +18,8 @@
   --fg:#f4f6f8; --dim:#73818d; --dim2:#9aa8b5; --dim3:#cbd4dd;
   --gold:#f2c66d; --accent:#8ea2ff;
   --btn-bg:#141a32; --btn-fg:#f2f5ff;
+  /* تم کلی (v3.3.0): با applyUiTheme از روی THEMES تنظیم می‌شوند */
+  --grad2:#0c1218; --fab:rgba(17,24,32,.94); --row-tint:rgba(255,255,255,.02);
   --sq-l:#f1d7a0; --sq-d:#8b5a2b; --sq-frame:#5b371c; --sq-hi:#d7ad70;
   --pw:#fffaf0; --pb:#171717;
   --board:600px;
@@ -44,7 +46,7 @@ body{
 .gold{color:var(--gold)}
 .hr{height:1px;background:var(--line2);margin:14px 0}
 ::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-thumb{background:#2c3945;border-radius:4px}
+::-webkit-scrollbar-thumb{background:var(--line3);border-radius:4px}
 
 /* ---------- Buttons (like tk button w/ hover accent) ---------- */
 .btn{
@@ -59,7 +61,7 @@ body{
 .btn.big{font-size:19px;padding:16px 30px}
 .btn.small{font-size:12px;padding:8px 14px;border-radius:8px}
 .btn:disabled{opacity:.45;pointer-events:none}
-.btn.ghost{background:#151e26;color:#9eabb5;font-family:var(--font-mono);font-size:12px;padding:9px 16px}
+.btn.ghost{background:var(--panel2);color:var(--dim2);font-family:var(--font-mono);font-size:12px;padding:9px 16px}
 .btn.white{background:#fff;color:#17212a}
 
 /* ---------- Menu / dashboard ---------- */
@@ -69,24 +71,24 @@ body{
   padding:26px 0 18px;overflow-y:auto;
 }
 .logo-tile{
-  width:64px;height:64px;margin:0 auto 8px;border-radius:14px;background:#1c2732;
+  width:64px;height:64px;margin:0 auto 8px;border-radius:14px;background:var(--panel2);
   color:var(--gold);display:flex;align-items:center;justify-content:center;
   font-size:30px;font-weight:800;font-family:var(--font-mono);
-  box-shadow:0 0 0 1px #2b3a47 inset;
+  box-shadow:0 0 0 1px var(--line3) inset;
 }
 .brand{text-align:center;font-size:20px;font-weight:800;line-height:1.15;margin-bottom:26px}
-.side-cap{text-align:center;color:#667482;font-size:10px;font-weight:700;margin:4px 0 10px}
+.side-cap{text-align:center;color:var(--dim);font-size:10px;font-weight:700;margin:4px 0 10px}
 .side-nav{display:flex;flex-direction:column;gap:4px;padding:0 10px}
 .nav-item{
   display:flex;align-items:center;gap:10px;text-align:right;width:100%;
-  background:transparent;color:#cbd4dd;border:0;border-radius:9px;
+  background:transparent;color:var(--dim3);border:0;border-radius:9px;
   font-family:var(--font-ui);font-size:14px;font-weight:700;padding:12px 14px;cursor:pointer;
 }
 .nav-item .ico{width:20px;text-align:center;font-size:15px}
-.nav-item:hover,.nav-item:active{background:#202d39;color:var(--gold)}
-.side-sep{height:1px;background:#26333e;margin:20px 18px}
+.nav-item:hover,.nav-item:active{background:var(--panel2);color:var(--gold)}
+.side-sep{height:1px;background:var(--line2);margin:20px 18px}
 .creators{text-align:center;color:var(--gold);font-size:13px;font-weight:700;line-height:1.7}
-.creators small{display:block;color:#8899a7;font-weight:600;font-size:12px}
+.creators small{display:block;color:var(--dim2);font-weight:600;font-size:12px}
 .pull-hint{
   margin:0 10px 6px;text-align:center;font-size:11.5px;font-weight:800;color:var(--gold);
   background:linear-gradient(135deg,rgba(242,198,109,.14),rgba(242,198,109,.03));
@@ -95,22 +97,22 @@ body{
 }
 @keyframes pullBounce{0%,100%{transform:translateY(0);opacity:.8}50%{transform:translateY(-4px);opacity:1}}
 .exit-btn{
-  margin:auto auto 18px;background:transparent;color:#9ba7b2;border:0;font-family:var(--font-ui);
+  margin:auto auto 18px;background:transparent;color:var(--dim2);border:0;font-family:var(--font-ui);
   font-size:13px;font-weight:700;cursor:pointer;padding:10px 18px;border-radius:8px;
 }
 .exit-btn:hover{background:#2a2020;color:#ff7777}
 .content{flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:26px 30px;min-width:0}
 .content-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .content-top h1{font-size:clamp(20px,4.5vw,28px);margin:0}
-.content-top .tag{font-family:var(--font-mono);font-size:11px;color:#697786;font-weight:700}
+.content-top .tag{font-family:var(--font-mono);font-size:11px;color:var(--dim);font-weight:700}
 .hero{
   margin-top:18px;background:var(--panel2);border:1px solid var(--line3);border-radius:14px;
   display:flex;align-items:center;justify-content:space-between;gap:16px;padding:26px 28px;flex-wrap:wrap;
 }
 .hero-cap{color:var(--gold);font-size:12px;font-weight:700}
 .hero-title{font-size:clamp(22px,5vw,30px);font-weight:800;margin:8px 0 10px;line-height:1.25}
-.hero-sub{color:#9aa8b5;font-size:12px}
-.gold-cap{color:#73818e;font-size:11px;font-weight:700;margin:24px 0 10px}
+.hero-sub{color:var(--dim2);font-size:12px}
+.gold-cap{color:var(--dim);font-size:11px;font-weight:700;margin:24px 0 10px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
 .card{
   background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;cursor:pointer;
@@ -120,15 +122,15 @@ body{
 .card:hover{border-color:var(--gold)}
 .card .ico{color:var(--gold);font-size:20px;margin-bottom:8px}
 .card .ttl{font-size:15px;font-weight:800}
-.card .sub{color:#71808d;font-size:11px;margin-top:4px}
+.card .sub{color:var(--dim);font-size:11px;margin-top:4px}
 .footer{margin-top:auto;padding-top:22px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
-.footer span{font-family:var(--font-mono);font-size:10px;color:#46535f;font-weight:700}
+.footer span{font-family:var(--font-mono);font-size:10px;color:var(--dim);font-weight:700}
 
 /* ---------- Slide-in drawer (mobile side menu, like the desktop python build) ---------- */
 .menu-fab{
   display:none;position:fixed;top:calc(var(--sat) + 12px);left:calc(var(--sal) + 12px);z-index:80;
-  width:46px;height:46px;border-radius:13px;border:1px solid #2b3a47;
-  background:rgba(17,24,32,.94);cursor:pointer;padding:0;
+  width:46px;height:46px;border-radius:13px;border:1px solid var(--line3);
+  background:var(--fab);cursor:pointer;padding:0;
   flex-direction:column;align-items:center;justify-content:center;gap:5px;
   box-shadow:0 6px 18px rgba(0,0,0,.45);
 }
@@ -163,17 +165,17 @@ body.drawer-open .drawer-back{opacity:1;pointer-events:auto}
 
 /* ---------- Academy / Training cards ---------- */
 .grid-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
-.acard{background:var(--card);border:1px solid #344554;border-radius:11px;padding:10px 12px;display:flex;flex-direction:column;gap:5px}
+.acard{background:var(--card);border:1px solid var(--line3);border-radius:11px;padding:10px 12px;display:flex;flex-direction:column;gap:5px}
 .acard .num{font-family:var(--font-mono);color:var(--accent);font-size:11px;font-weight:700}
-.acard .ttl{font-size:13px;font-weight:800;color:#fff}
-.acard .desc{font-size:10.5px;color:#93a2af;line-height:1.6;flex:1}
-.acard .mini{color:#8f9eab;font-size:10px;font-weight:700}
+.acard .ttl{font-size:13px;font-weight:800;color:var(--fg)}
+.acard .desc{font-size:10.5px;color:var(--dim2);line-height:1.6;flex:1}
+.acard .mini{color:var(--dim2);font-size:10px;font-weight:700}
 .tcard{align-items:center;text-align:center}
 .tcard .hash{color:var(--accent);font-weight:800;font-size:14px}
 
 /* ---------- Themes page ---------- */
 .theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-.tcard2{background:var(--panel);border:2px solid #2d3a46;border-radius:11px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.tcard2{background:var(--panel);border:2px solid var(--line3);border-radius:11px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:6px}
 .tcard2.sel{border-color:var(--gold)}
 .mini-board{width:100%;aspect-ratio:1.5;border-radius:6px;overflow:hidden;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);border:2px solid;direction:ltr}
 .tcard2 .nm{font-size:12px;font-weight:800}
@@ -184,6 +186,9 @@ body.drawer-open .drawer-back{opacity:1;pointer-events:auto}
 }
 .pill:hover{background:var(--accent);color:#fff}
 .pill.sel{border-color:var(--gold);color:var(--gold)}
+.pill-dots{display:inline-flex;gap:3px;margin-left:7px;vertical-align:middle;direction:ltr}
+.pill-dots i{width:11px;height:11px;border-radius:50%;border:1px solid var(--line3);display:inline-block}
+.pill-light{font-size:9px;font-weight:800;color:var(--gold);margin-right:4px}
 .sect-cap{color:var(--accent);font-size:13px;font-weight:800;margin:20px 0 10px}
 
 /* ---------- Settings / forms ---------- */
@@ -191,43 +196,43 @@ body.drawer-open .drawer-back{opacity:1;pointer-events:auto}
 .form-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .form-row label{font-size:14px;font-weight:700}
 select,input[type=text]{
-  background:#0e151d;color:var(--fg);border:1px solid var(--line);border-radius:8px;
+  background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:8px;
   font-family:var(--font-ui);font-size:14px;padding:9px 12px;max-width:100%;
 }
 .switch{position:relative;width:50px;height:28px;flex:none}
 .switch input{opacity:0;width:0;height:0}
-.slider{position:absolute;inset:0;background:#26333e;border-radius:999px;transition:.2s;cursor:pointer}
-.slider:before{content:"";position:absolute;width:22px;height:22px;border-radius:50%;background:#8ea0b0;top:3px;right:3px;transition:.2s}
+.slider{position:absolute;inset:0;background:var(--line2);border-radius:999px;transition:.2s;cursor:pointer}
+.slider:before{content:"";position:absolute;width:22px;height:22px;border-radius:50%;background:var(--dim2);top:3px;right:3px;transition:.2s}
 .switch input:checked + .slider{background:var(--gold)}
-.switch input:checked + .slider:before{background:#111820;transform:translateX(-22px)}
+.switch input:checked + .slider:before{background:var(--panel);transform:translateX(-22px)}
 .color-row{display:flex;gap:8px;flex-wrap:wrap}
-.color-btn{width:56px;height:38px;border-radius:8px;border:2px solid #3a4a58;cursor:pointer;padding:0}
+.color-btn{width:56px;height:38px;border-radius:8px;border:2px solid var(--line3);cursor:pointer;padding:0}
 .board-preview{width:240px;height:76px;border-radius:8px;overflow:hidden;display:grid;grid-template-columns:repeat(4,1fr);border:2px solid;direction:ltr;margin:0 auto}
 
 /* ---------- Game screen ---------- */
 #scr-game{flex-direction:column}
 .game-head{display:flex;align-items:center;gap:10px;padding:12px 16px 8px;flex-wrap:wrap}
 .game-head .title{font-size:18px;font-weight:800}
-.game-head .meta{font-family:var(--font-mono);font-size:11px;color:#74818d;font-weight:700}
+.game-head .meta{font-family:var(--font-mono);font-size:11px;color:var(--dim);font-weight:700}
 .game-head .spacer{flex:1}
 .clockbox{font-family:var(--font-mono);font-size:15px;font-weight:800;color:var(--gold);white-space:nowrap}
 .clockbox .turn-w,.clockbox .turn-b{padding:2px 6px;border-radius:6px}
-.clockbox .on{background:#2a2410;outline:1px solid var(--gold)}
-.caphud{font-size:14px;color:#d9e0e6;direction:ltr;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.clockbox .on{background:rgba(242,198,109,.16);outline:1px solid var(--gold)}
+.caphud{font-size:14px;color:var(--dim3);direction:ltr;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .game-body{flex:1;display:flex;min-height:0;padding:0 14px 8px;gap:14px}
 .game-rail{width:200px;min-width:200px;background:var(--panel);border-radius:12px;padding:16px 16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto}
-.rail-cap{color:#73818d;font-size:10px;font-weight:800}
-.rail-info{font-size:13px;font-weight:700;color:#e6ebef;line-height:1.9;white-space:pre-line}
-.rail-status{font-size:12px;color:#a5b1bc;line-height:1.8;min-height:20px}
-.rail-captured{font-family:var(--font-piece);font-size:16px;color:#d5dce2;direction:ltr;line-height:1.7;word-break:break-all;min-height:22px}
-.rail-captured .capline{font-family:var(--font-ui);font-size:11px;color:#8b98a5}
+.rail-cap{color:var(--dim);font-size:10px;font-weight:800}
+.rail-info{font-size:13px;font-weight:700;color:var(--fg);line-height:1.9;white-space:pre-line}
+.rail-status{font-size:12px;color:var(--dim2);line-height:1.8;min-height:20px}
+.rail-captured{font-family:var(--font-piece);font-size:16px;color:var(--dim3);direction:ltr;line-height:1.7;word-break:break-all;min-height:22px}
+.rail-captured .capline{font-family:var(--font-ui);font-size:11px;color:var(--dim2)}
 .rail-btn{
-  display:flex;align-items:center;gap:8px;text-align:right;width:100%;background:transparent;color:#b9c3cc;
+  display:flex;align-items:center;gap:8px;text-align:right;width:100%;background:transparent;color:var(--dim3);
   border:0;border-radius:8px;font-family:var(--font-ui);font-size:12.5px;font-weight:700;padding:10px 12px;cursor:pointer;
 }
-.rail-btn:hover{background:#202c37;color:var(--gold)}
+.rail-btn:hover{background:var(--panel2);color:var(--gold)}
 .board-panel{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px}
-.board-top{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;font-weight:700;color:#71808d;padding:2px 6px 8px}
+.board-top{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--dim);padding:2px 6px 8px}
 .board-top .live{color:#8fcf9b}
 .board-area{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
 .board-frame{
@@ -291,34 +296,34 @@ select,input[type=text]{
 .modal.wide{width:min(94vw,760px)}
 .modal h2{margin:0;font-size:22px;color:var(--gold);text-align:center}
 .modal .sub{text-align:center;color:var(--dim2);font-size:12px}
-.modal .msg{text-align:center;font-size:14px;line-height:2;color:#eef2f5;white-space:pre-line}
+.modal .msg{text-align:center;font-size:14px;line-height:2;color:var(--fg);white-space:pre-line}
 .opt-group{display:flex;flex-direction:column;gap:7px}
 .opt-cap{font-size:13px;font-weight:800;color:var(--fg)}
-.radio{display:flex;align-items:center;gap:10px;background:#0e151d;border:1px solid var(--line);border-radius:9px;padding:11px 14px;cursor:pointer;font-size:14px;font-weight:600}
+.radio{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:11px 14px;cursor:pointer;font-size:14px;font-weight:600}
 .radio input{accent-color:var(--gold);width:17px;height:17px}
 .radio.sel{border-color:var(--gold)}
 .modal .row2{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .promo-row{display:flex;justify-content:center;gap:10px;direction:ltr}
 .promo-pc{
   width:64px;height:64px;font-size:40px;font-family:var(--font-piece);display:flex;align-items:center;justify-content:center;
-  background:#0e151d;border:2px solid var(--line);border-radius:12px;cursor:pointer;color:var(--pw);
+  background:var(--panel);border:2px solid var(--line);border-radius:12px;cursor:pointer;color:var(--pw);
 }
-.promo-pc:hover{border-color:var(--gold);background:#1a2431}
-.lesson-body{background:#17212a;border:1px solid #33424e;border-radius:12px;padding:18px;font-size:14px;line-height:2.15;color:#eef2f5;text-align:right;max-height:46dvh;overflow-y:auto}
+.promo-pc:hover{border-color:var(--gold);background:var(--panel2)}
+.lesson-body{background:var(--panel2);border:1px solid var(--line3);border-radius:12px;padding:18px;font-size:14px;line-height:2.15;color:var(--fg);text-align:right;max-height:46dvh;overflow-y:auto}
 .trophy-big{text-align:center;font-size:70px;animation:trophyin .6s cubic-bezier(.2,1.6,.4,1)}
 @keyframes trophyin{from{transform:scale(.2) rotate(-14deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
 .flash-title{animation:flashc .5s infinite alternate}
-@keyframes flashc{from{color:#fff2a8}to{color:#ffd76a}}
+@keyframes flashc{from{color:var(--gold)}to{color:var(--accent)}}
 .ach-line{text-align:center;font-size:14px;font-weight:800;color:var(--gold);line-height:1.9}
-.ana-box{background:#17212a;border-radius:10px;padding:12px;font-family:var(--font-mono);font-size:12px;line-height:2;color:#eef2f5;max-height:44dvh;overflow-y:auto;white-space:pre-wrap;direction:ltr;text-align:left}
+.ana-box{background:var(--panel2);border-radius:10px;padding:12px;font-family:var(--font-mono);font-size:12px;line-height:2;color:var(--fg);max-height:44dvh;overflow-y:auto;white-space:pre-wrap;direction:ltr;text-align:left}
 .grade-chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
-.gchip{font-size:11px;font-weight:800;border-radius:999px;padding:5px 12px;background:#0e151d;border:1px solid var(--line)}
+.gchip{font-size:11px;font-weight:800;border-radius:999px;padding:5px 12px;background:var(--panel);border:1px solid var(--line)}
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px}
-.stat-cell{background:#0e151d;border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+.stat-cell{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
 .stat-cell .v{font-size:19px;font-weight:800;color:var(--gold)}
 .stat-cell .k{font-size:10.5px;color:var(--dim);margin-top:3px}
 .toast{
-  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#17212a;color:var(--fg);
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--panel2);color:var(--fg);
   border:1px solid var(--line3);border-radius:10px;padding:11px 20px;font-size:13px;font-weight:700;z-index:99;
   opacity:0;transition:opacity .25s;pointer-events:none;max-width:88vw;text-align:center;
 }
@@ -328,7 +333,7 @@ select,input[type=text]{
 .bot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:12px}
 .bot-card{
   position:relative;overflow:hidden;cursor:pointer;border-radius:16px;padding:15px 15px 13px;
-  background:linear-gradient(165deg,var(--panel2) 0%,#0c1218 100%);
+  background:linear-gradient(165deg,var(--panel2) 0%,var(--grad2) 100%);
   border:1px solid var(--line3);
   transition:transform .12s,border-color .15s,box-shadow .25s;
   display:flex;flex-direction:column;gap:9px;text-align:right;
@@ -345,19 +350,19 @@ select,input[type=text]{
   box-shadow:0 6px 18px var(--glow);flex:none;font-family:var(--font-piece)}
 .bot-latin{font-family:var(--font-mono);font-size:11.5px;font-weight:800;letter-spacing:.14em;color:var(--c1);direction:ltr;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bot-fa{font-size:16px;font-weight:800;margin-top:2px}
-.bot-tag{color:#93a2af;font-size:11.5px;line-height:1.8}
+.bot-tag{color:var(--dim2);font-size:11.5px;line-height:1.8}
 .bot-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:2px}
-.bot-badge{font-size:10.5px;font-weight:800;border-radius:999px;padding:5px 11px;border:1px solid var(--line3);color:#9aa8b5;background:#0e151d;white-space:nowrap}
+.bot-badge{font-size:10.5px;font-weight:800;border-radius:999px;padding:5px 11px;border:1px solid var(--line3);color:var(--dim2);background:var(--panel);white-space:nowrap}
 .bot-badge.ok{color:#0b0f14;background:linear-gradient(135deg,var(--gold),#d9a441);border-color:transparent}
-.bot-lvls{font-family:var(--font-mono);font-size:10px;color:#697786;font-weight:700;white-space:nowrap}
+.bot-lvls{font-family:var(--font-mono);font-size:10px;color:var(--dim);font-weight:700;white-space:nowrap}
 /* level menu inside modal */
 .bot-head{display:flex;align-items:center;gap:12px;justify-content:center}
 .bot-head .bot-ico{width:46px;height:46px;font-size:23px}
-.bot-desc{color:#93a2af;font-size:12px;line-height:2;text-align:center}
+.bot-desc{color:var(--dim2);font-size:12px;line-height:2;text-align:center}
 .sect-lbl{color:var(--accent);font-size:12px;font-weight:800;margin:4px 0 0}
 .blvl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .blvl-grid.cols5{grid-template-columns:repeat(5,1fr)}
-.blvl{background:#0e151d;border:1px solid var(--line3);color:var(--fg);border-radius:11px;
+.blvl{background:var(--panel);border:1px solid var(--line3);color:var(--fg);border-radius:11px;
   padding:12px 6px;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-ui);
   transition:background .15s,transform .06s,border-color .15s;text-align:center}
 .blvl:hover{background:var(--btn-bg);border-color:var(--c1,#f2c66d);color:#fff}
@@ -367,45 +372,49 @@ select,input[type=text]{
   padding:15px 8px;font-size:14px}
 .blvl.offl:hover{filter:brightness(1.12);color:#0b0f14}
 .blvl.offl small{color:rgba(0,0,0,.6)}
+/* سطح آخر = بی‌سقف (v3.3.0) */
+.blvl.maxlvl{border:1px solid var(--gold);box-shadow:0 0 0 1px rgba(242,198,109,.22) inset}
+.blvl.maxlvl small{display:block;font-size:8.5px;color:var(--gold);font-weight:800;margin-top:3px}
+.blvl-note{font-size:11px;color:var(--dim2);line-height:1.9;margin-top:10px;text-align:center}
 /* download progress */
-.dl-bar{height:10px;border-radius:999px;background:#0e151d;border:1px solid var(--line3);overflow:hidden}
+.dl-bar{height:10px;border-radius:999px;background:var(--panel);border:1px solid var(--line3);overflow:hidden}
 .dl-fill{height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,var(--c1),var(--c2));transition:width .18s}
-.dl-status{font-size:11px;color:#9aa8b5;font-family:var(--font-mono);text-align:center;min-height:16px}
+.dl-status{font-size:11px;color:var(--dim2);font-family:var(--font-mono);text-align:center;min-height:16px}
 /* ردیف‌های نسخه‌دار (استاک‌فیش ۶..۱۹ / برسرک ۱۳..۱۴) */
-.ver-row{border:1px solid var(--line3);border-radius:12px;padding:8px 10px;margin:8px 0;background:rgba(255,255,255,.02)}
+.ver-row{border:1px solid var(--line3);border-radius:12px;padding:8px 10px;margin:8px 0;background:var(--row-tint)}
 .ver-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .ver-name{font-weight:800;font-size:13px;color:var(--c1,#fff)}
-.ver-status{font-size:11px;color:#9aa8b5;font-family:var(--font-mono);white-space:nowrap}
+.ver-status{font-size:11px;color:var(--dim2);font-family:var(--font-mono);white-space:nowrap}
 .dl-bar.slim{height:6px;margin-top:6px}
 .ver-lvls{margin-top:6px}
 /* انتخاب نسخه (ربات ← نسخه/مدل ← سطح) */
 .verpick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
 .verpick.solo{grid-template-columns:1fr}
-.verpick .vcard{background:#0e151d;border:1px solid var(--line3);border-radius:14px;padding:12px 8px 10px;
+.verpick .vcard{background:var(--panel);border:1px solid var(--line3);border-radius:14px;padding:12px 8px 10px;
   text-align:center;cursor:pointer;transition:transform .12s,border-color .15s,background .15s;overflow:hidden}
-.verpick .vcard:hover{border-color:var(--c1,#f2c66d);background:#111a24}
+.verpick .vcard:hover{border-color:var(--c1,#f2c66d);background:var(--panel2)}
 .verpick .vcard:active{transform:scale(.96)}
 .verpick .vcard.done{border-color:rgba(242,198,109,.45)}
 .verpick .vnum{font-size:24px;font-weight:900;line-height:1.15;color:var(--c1,#fff)}
 .verpick .vname{font-size:11.5px;font-weight:800;color:var(--fg);margin-top:3px}
 .verpick .vsub{font-size:10px;color:var(--dim);margin-top:4px;font-family:var(--font-mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .verpick .vstat{margin-top:7px;font-size:10px;font-weight:800;border-radius:999px;padding:3px 9px;display:inline-block;
-  border:1px solid var(--line3);color:#9aa8b5;white-space:nowrap;max-width:100%}
+  border:1px solid var(--line3);color:var(--dim2);white-space:nowrap;max-width:100%}
 .verpick .vstat.ok{color:#0b0f14;background:linear-gradient(135deg,var(--gold),#d9a441);border-color:transparent}
-.verpick .vdesc{font-size:10.5px;color:#9aa8b5;line-height:1.7;margin-top:7px;text-align:right}
+.verpick .vdesc{font-size:10.5px;color:var(--dim2);line-height:1.7;margin-top:7px;text-align:right}
 @media(max-width:760px){.verpick{grid-template-columns:repeat(2,1fr)}}
 /* update modal */
-.up-notes{background:#17212a;border:1px solid #33424e;border-radius:10px;padding:12px 14px;
-  font-size:12px;line-height:2;white-space:pre-wrap;max-height:32dvh;overflow-y:auto;color:#dfe7ee;text-align:left;direction:ltr}
+.up-notes{background:var(--panel2);border:1px solid var(--line3);border-radius:10px;padding:12px 14px;
+  font-size:12px;line-height:2;white-space:pre-wrap;max-height:32dvh;overflow-y:auto;color:var(--fg);text-align:left;direction:ltr}
 .upd-banner{display:block;width:100%;margin-top:14px;padding:13px 16px;border-radius:12px;
   background:linear-gradient(135deg,#2b2113,#41331a);border:1px solid #f2c66d66;color:#ffe9b3;
   font-weight:800;font-size:13.5px;cursor:pointer;animation:updPulse 2.2s ease-in-out infinite;text-align:right}
 .upd-banner:active{transform:scale(.98)}
 @keyframes updPulse{0%,100%{box-shadow:0 0 0 0 #f2c66d33}50%{box-shadow:0 0 18px 2px #f2c66d44}}
 a.btn{text-decoration:none}
-select.sel{background:#101820;border:1px solid #33424e;color:#e8eef4;border-radius:10px;
+select.sel{background:var(--panel);border:1px solid var(--line3);color:var(--fg);border-radius:10px;
   padding:10px 12px;font-family:inherit;font-weight:700;font-size:13px;flex:1;min-width:0;
-  appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,#8fa3b5 50%),linear-gradient(135deg,#8fa3b5 50%,transparent 50%);
+  appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--dim2) 50%),linear-gradient(135deg,var(--dim2) 50%,transparent 50%);
   background-position:calc(12px + 4px) 55%,calc(12px) 55%;background-size:5px 5px;background-repeat:no-repeat}
 select.sel:active{border-color:var(--gold)}
 a.btn:active{transform:scale(.97)}
@@ -419,9 +428,9 @@ a.btn:active{transform:scale(.97)}
   .sidebar{
     position:fixed;top:0;bottom:0;left:0;z-index:70;
     width:min(82vw,320px);min-width:0;
-    background:#111820;padding:calc(var(--sat) + 24px) 0 18px;
+    background:var(--panel);padding:calc(var(--sat) + 24px) 0 18px;
     transform:translateX(-108%);transition:transform .3s cubic-bezier(.22,.85,.3,1);
-    box-shadow:0 0 0 1px #232f3a inset;
+    box-shadow:0 0 0 1px var(--line2) inset;
   }
   body.drawer-open .sidebar{transform:translateX(0);box-shadow:16px 0 48px rgba(0,0,0,.55)}
   .logo-tile{width:64px;height:64px;font-size:30px;margin:0 auto 8px;border-radius:14px}
@@ -439,7 +448,7 @@ a.btn:active{transform:scale(.97)}
   .rail-status{flex:1;font-size:11px;min-height:0}
   .rail-captured{flex:none;max-width:40%}
   .rail-btns{display:flex;flex-direction:row;gap:4px}
-  .rail-btn{width:auto;white-space:nowrap;padding:8px 10px;font-size:11px;background:#151d27}
+  .rail-btn{width:auto;white-space:nowrap;padding:8px 10px;font-size:11px;background:var(--panel2)}
   .game-head{padding:10px 12px 6px}
   .game-head .title{font-size:15px}
   .clockbox{font-size:13px}
@@ -550,7 +559,7 @@ try{
       <button class="btn white small" data-go="menu">←  منوی اصلی</button>
       <div class="page-title">♟️ بازی با هوش مصنوعی</div>
     </div>
-    <div class="page-sub" style="text-align:left;padding:0 24px">۱۷ موتور واقعی شطرنج از سازندگان رسمی — همهٔ نسخه‌ها به‌ترتیب • همهٔ سطح‌ها باز • فایل رسمی هر ربات یک‌بار دانلود و داخل حافظهٔ خود بازی نصب می‌شود (کاملاً آفلاین) • با «وارد کردن/خروجی» موتورها را با یک فایل بین کامپیوترها جابه‌جا کن</div>
+    <div class="page-sub" style="text-align:left;padding:0 24px">۱۷ موتور واقعی شطرنج از سازندگان رسمی — همهٔ نسخه‌ها به‌ترتیب • همهٔ سطح‌ها باز • سطح آخر هر موتور = تمام ۱۰۰٪ توان آن، بدون سقف زمانی • فایل رسمی هر ربات یک‌بار دانلود و داخل حافظهٔ خود بازی نصب می‌شود (کاملاً آفلاین) • با «وارد کردن/خروجی» موتورها را با یک فایل بین کامپیوترها جابه‌جا کن</div>
     <div class="hr" style="margin:8px 22px 4px"></div>
     <div class="page-body">
       <div style="padding:0 22px 10px"><button class="btn" style="width:100%" id="btnGoWatch">👁 تماشای دو ربات در برابر هم — مشاهده بازی هوش مصنوعی</button></div>
@@ -631,14 +640,14 @@ try{
       <button class="btn white small" data-go="menu">←  منوی اصلی</button>
       <div class="page-title">🎨 ظاهر و تم</div>
     </div>
-    <div class="page-sub" style="text-align:left;padding:0 24px">اول صفحهٔ شطرنج را مثل عکس انتخاب کن؛ همان لحظه روی بازی اعمال می‌شود.</div>
+    <div class="page-sub" style="text-align:left;padding:0 24px">طرح صفحهٔ شطرنج، رنگ مهره‌ها و تم کلی برنامه (پس‌زمینه + دکمه‌ها) — همه‌‌ همان لحظه اعمال می‌شوند.</div>
     <div class="hr" style="margin:8px 22px 4px"></div>
     <div class="page-body">
       <div class="sect-cap">طرح آمادهٔ صفحه</div>
       <div class="theme-grid" id="boardThemeGrid"></div>
       <div class="sect-cap">رنگ مهره‌ها</div>
       <div class="ui-theme-row" id="pieceColorRow"></div>
-      <div class="sect-cap">تم رابط بازی</div>
+      <div class="sect-cap">تم کلی برنامه — پس‌زمینه و دکمه‌ها (۱۷ تم؛ ۲ تم روشن)</div>
       <div class="ui-theme-row" id="uiThemeRow"></div>
       <div class="sect-cap">رنگ دستی خانه‌ها</div>
       <div class="form-card" style="gap:10px">
@@ -666,7 +675,7 @@ try{
         </div>
         <div class="form-row"><label>طرح صفحه شطرنج</label><select id="setBoardStyle"></select></div>
         <div class="form-row"><label>سبک مهره‌ها</label><select id="setPieceStyle"></select></div>
-        <div class="form-row"><label>تم رابط</label><select id="setTheme"></select></div>
+        <div class="form-row"><label>تم کلی برنامه (۱۷ تم)</label><select id="setTheme"></select></div>
         <div class="form-row"><label>زبان</label><select id="setLang"><option>فارسی</option></select></div>
         <button class="btn big" id="btnApplySettings">✓ اعمال تنظیمات</button>
         <button class="btn ghost" id="btnSelfCheck">🧪 آزمون سلامت بازی</button>
@@ -1030,7 +1039,10 @@ class ChessAI {
     5:[2,.28,.24],  6:[2,.34,.19],  7:[2,.40,.15],  8:[3,.48,.11],
     9:[3,.56,.08], 10:[3,.66,.06], 11:[3,.78,.045],12:[4,.90,.035],
     13:[4,1.02,.025],14:[4,1.16,.018],15:[4,1.30,.012],16:[5,1.48,.009],
-    17:[5,1.68,.006],18:[5,1.92,.003],19:[6,2.25,.001],20:[6,2.70,0.0]
+    17:[5,1.68,.006],18:[5,1.92,.003],19:[6,2.25,.001],
+    /* سطح ۲۰ = تمام قدرت بدون سقف عملی (v3.3.0): عمق ۱۲ و ۹۰ ثانیه فکر
+       (قبلاً: عمق ۶ و ۲٫۷ ثانیه) — درخواست کاربر: موتور تا هرجا می‌تواند فکر کند */
+    20:[12,90,0.0]
   };
   settings(level){
     level=Math.max(1,Math.min(20,Math.floor(level)));
@@ -1265,17 +1277,61 @@ const PIECE_COLORS = {
   "Silver":["#f2f5f8","#17202a"],
   "Gold":["#ffe49a","#20150b"]
 };
+/* ---------- تم‌های کلی برنامه (v3.3.0) ----------
+   هر تم = پالت کامل: پس‌زمینه، پنل‌ها، خطوط، متن‌ها، دکمه‌ها و رنگ تاکیدی.
+   همهٔ رنگ‌های رابط از این متغیرها می‌آیند؛ صفحهٔ شطرنج و مهره‌ها جداگانه تم می‌شوند. */
 const THEMES = {
-  "Galaxy":["#090b18","#141a32","#f2f5ff","#8ea2ff","#1b2240"],
-  "Emerald":["#07120f","#0d211a","#ecfff6","#65d6a0","#163a2b"],
-  "Royal":["#110b16","#21122b","#fff4ff","#d7a6e6","#3c2050"],
-  "Ocean":["#07131a","#0d2733","#effbff","#6bd5ee","#174759"],
-  "Crimson":["#16080b","#321017","#fff1f2","#ff7180","#541923"],
-  "Sapphire":["#071020","#102447","#eef5ff","#64a9ff","#1b3970"],
-  "Obsidian Gold":["#0b0a08","#211b10","#fff7df","#d7ad52","#463817"],
-  "Cyber":["#050b0d","#092125","#eaffff","#35e5d0","#12474a"],
-  "Ice":["#0a1118","#183040","#f5fcff","#9be7ff","#29526a"],
-  "Sunset":["#170c0a","#30201b","#fff8ef","#ffb36b","#583827"]
+  "Galaxy":      {bg:"#090b14",panel:"#101828",panel2:"#182136",card:"#121a2c",line:"#26304a",line2:"#2a3550",line3:"#2e3a58",
+                  fg:"#f2f5ff",dim:"#7a88ad",dim2:"#98a4c9",dim3:"#c8d1ee",gold:"#f2c66d",accent:"#8ea2ff",
+                  btnBg:"#1b2240",btnFg:"#f2f5ff",grad2:"#0b101f",fab:"rgba(16,24,40,.94)",rowTint:"rgba(255,255,255,.025)"},
+  "Emerald":     {bg:"#06110d",panel:"#0c1c16",panel2:"#12261e",card:"#0e2018",line:"#1e3a2c",line2:"#22402f",line3:"#264734",
+                  fg:"#ecfff6",dim:"#6fa894",dim2:"#93c4ae",dim3:"#c2e5d4",gold:"#f2c66d",accent:"#65d6a0",
+                  btnBg:"#0f2a1f",btnFg:"#ecfff6",grad2:"#081510",fab:"rgba(12,28,22,.94)",rowTint:"rgba(255,255,255,.025)"},
+  "Royal":       {bg:"#0f0a15",panel:"#1a1126",panel2:"#241733",card:"#1c132a",line:"#3a2a52",line2:"#402e5a",line3:"#463363",
+                  fg:"#fff4ff",dim:"#a08cc0",dim2:"#c0aade",dim3:"#e0d2f2",gold:"#f2c66d",accent:"#d7a6e6",
+                  btnBg:"#2c1b45",btnFg:"#fff4ff",grad2:"#120b1c",fab:"rgba(26,17,38,.94)",rowTint:"rgba(255,255,255,.025)"},
+  "Ocean":       {bg:"#061219",panel:"#0c2230",panel2:"#12303f",card:"#0f2836",line:"#1f4155",line2:"#234a60",line3:"#27536b",
+                  fg:"#effbff",dim:"#74a7bd",dim2:"#9cc9dc",dim3:"#c8e6f2",gold:"#f2c66d",accent:"#6bd5ee",
+                  btnBg:"#103344",btnFg:"#effbff",grad2:"#081820",fab:"rgba(12,34,48,.94)",rowTint:"rgba(255,255,255,.025)"},
+  "Crimson":     {bg:"#130608",panel:"#250d12",panel2:"#33121a",card:"#2a0f15",line:"#55212c",line2:"#602733",line3:"#6b2d3a",
+                  fg:"#fff1f2",dim:"#b07a84",dim2:"#d09aa4",dim3:"#eec4ca",gold:"#f2c66d",accent:"#ff7180",
+                  btnBg:"#3d1119",btnFg:"#fff1f2",grad2:"#1a080b",fab:"rgba(37,13,18,.94)",rowTint:"rgba(255,255,255,.025)"},
+  "Sapphire":    {bg:"#060d1e",panel:"#0d1b38",panel2:"#122548",card:"#0f203e",line:"#22375f",line2:"#27406c",line3:"#2c4979",
+                  fg:"#eef5ff",dim:"#7a94c2",dim2:"#9fb6dd",dim3:"#cad9f2",gold:"#f2c66d",accent:"#64a9ff",
+                  btnBg:"#122a52",btnFg:"#eef5ff",grad2:"#091226",fab:"rgba(13,27,56,.94)",rowTint:"rgba(255,255,255,.025)"},
+  "Obsidian Gold":{bg:"#0b0a08",panel:"#1c170e",panel2:"#251e12",card:"#201a10",line:"#463818",line2:"#4f401e",line3:"#584824",
+                  fg:"#fff7df",dim:"#ab9a6a",dim2:"#ccb987",dim3:"#ebdfbd",gold:"#ffd970",accent:"#d7ad52",
+                  btnBg:"#33291a",btnFg:"#fff7df",grad2:"#0e0c07",fab:"rgba(28,23,14,.94)",rowTint:"rgba(255,255,255,.03)"},
+  "Cyber":       {bg:"#04100f",panel:"#07211f",panel2:"#0a2c29",card:"#082523",line:"#124744",line2:"#155049",line3:"#17594f",
+                  fg:"#eaffff",dim:"#5fa8a0",dim2:"#86ccc4",dim3:"#bceee8",gold:"#f2c66d",accent:"#35e5d0",
+                  btnBg:"#0a3532",btnFg:"#eaffff",grad2:"#051514",fab:"rgba(7,33,31,.94)",rowTint:"rgba(255,255,255,.025)"},
+  "Ice":         {bg:"#0a1118",panel:"#142433",panel2:"#1b2f42",card:"#172a3c",line:"#31485f",line2:"#37516b",line3:"#3d5a77",
+                  fg:"#f5fcff",dim:"#8aa9c2",dim2:"#adc8dd",dim3:"#d3e8f4",gold:"#f2c66d",accent:"#9be7ff",
+                  btnBg:"#1f3a52",btnFg:"#f5fcff",grad2:"#0d161f",fab:"rgba(20,36,51,.94)",rowTint:"rgba(255,255,255,.025)"},
+  "Sunset":      {bg:"#150b08",panel:"#2a1712",panel2:"#37201a",card:"#301c15",line:"#5a3a2c",line2:"#64422f",line3:"#6e4934",
+                  fg:"#fff8ef",dim:"#b58a74",dim2:"#d3ab94",dim3:"#f0d2bd",gold:"#f2c66d",accent:"#ffb36b",
+                  btnBg:"#47291c",btnFg:"#fff8ef",grad2:"#1a0e0a",fab:"rgba(42,23,18,.94)",rowTint:"rgba(255,255,255,.025)"},
+  "Amethyst":    {bg:"#0d0918",panel:"#1a1330",panel2:"#231a42",card:"#1e1638",line:"#3d2f66",line2:"#453674",line3:"#4d3d82",
+                  fg:"#f6f2ff",dim:"#9a8cc9",dim2:"#baaee4",dim3:"#dcd2f6",gold:"#f2c66d",accent:"#a78bfa",
+                  btnBg:"#2b1e56",btnFg:"#f6f2ff",grad2:"#100b1e",fab:"rgba(26,19,48,.94)",rowTint:"rgba(255,255,255,.025)"},
+  "Forest":      {bg:"#07110a",panel:"#102314",panel2:"#152e1b",card:"#122818",line:"#2b4a2e",line2:"#315433",line3:"#375e39",
+                  fg:"#f0fff2",dim:"#85b08a",dim2:"#a8cca9",dim3:"#cfe8d0",gold:"#f2c66d",accent:"#77dd7c",
+                  btnBg:"#1a3a20",btnFg:"#f0fff2",grad2:"#0a160c",fab:"rgba(16,35,20,.94)",rowTint:"rgba(255,255,255,.025)"},
+  "Lava":        {bg:"#160704",panel:"#2b0f08",panel2:"#39160c",card:"#32130a",line:"#5c2a14",line2:"#66301a",line3:"#703620",
+                  fg:"#fff3ec",dim:"#b88068",dim2:"#d8a58c",dim3:"#f2cdb8",gold:"#f2c66d",accent:"#ff8c5a",
+                  btnBg:"#47200f",btnFg:"#fff3ec",grad2:"#1a0905",fab:"rgba(43,15,8,.94)",rowTint:"rgba(255,255,255,.025)"},
+  "Rose":        {bg:"#140810",panel:"#26101d",panel2:"#331626",card:"#2c131f",line:"#54273d",line2:"#5f2f45",line3:"#6a364e",
+                  fg:"#fff0f6",dim:"#b57f9c",dim2:"#d5a3bd",dim3:"#f0cfdf",gold:"#f2c66d",accent:"#ff9ecb",
+                  btnBg:"#3f1a2e",btnFg:"#fff0f6",grad2:"#190a12",fab:"rgba(38,16,29,.94)",rowTint:"rgba(255,255,255,.025)"},
+  "Mono":        {bg:"#0d0d0d",panel:"#171717",panel2:"#202020",card:"#1b1b1b",line:"#333333",line2:"#383838",line3:"#3e3e3e",
+                  fg:"#f2f2f2",dim:"#8f8f8f",dim2:"#b0b0b0",dim3:"#d4d4d4",gold:"#e5c76b",accent:"#d8d8d8",
+                  btnBg:"#262626",btnFg:"#f2f2f2",grad2:"#0a0a0a",fab:"rgba(23,23,23,.94)",rowTint:"rgba(255,255,255,.03)"},
+  "Daylight":    {bg:"#e9eef5",panel:"#f7fafd",panel2:"#ffffff",card:"#f2f6fb",line:"#c9d5e3",line2:"#c2cedd",line3:"#bcc9d9",
+                  fg:"#1a2432",dim:"#5b6a7e",dim2:"#46556a",dim3:"#2e3c50",gold:"#a16207",accent:"#2563eb",
+                  btnBg:"#d7e3f4",btnFg:"#10233c",grad2:"#dbe4ef",fab:"rgba(255,255,255,.96)",rowTint:"rgba(0,0,0,.03)",light:true},
+  "Paper":       {bg:"#f2ecdf",panel:"#faf6ec",panel2:"#fffdf6",card:"#f6f1e5",line:"#d8cfba",line2:"#d1c7b2",line3:"#c9bfa8",
+                  fg:"#2a2118",dim:"#6e6252",dim2:"#544a3c",dim3:"#3a3327",gold:"#8a6414",accent:"#b45309",
+                  btnBg:"#e9dfc8",btnFg:"#33291a",grad2:"#e8e0cd",fab:"rgba(250,246,236,.96)",rowTint:"rgba(0,0,0,.035)",light:true}
 };
 const CREATORS = "امیرمحمد گلستان • متین کتویی زاده";
 const TRAINING_LEVELS = [
@@ -1363,6 +1419,7 @@ const R = {
   botId:"matin", botLatin:"MATIN BOT",
   clock:{w:null,b:null}, clockTimer:null, lastTick:Date.now(),
   aiThinking:false, aiWorker:null, aiPending:null, aiAttempt:0, aiRetries:0,
+  spectate:false, specFails:0, specDelay:700,
   gameOver:false, gameGen:0,
   selected:null, hint:null, hoverSq:null, animating:false,
   flipped:false, trainingMode:false, trainingIndex:0, trainingTarget:null,
@@ -1389,12 +1446,29 @@ function fmtClock(x){
   return String(Math.floor(x/60)).padStart(2,"0")+":"+String(x%60).padStart(2,"0");
 }
 function themeColors(){ return THEMES[S.theme]||THEMES.Galaxy; }
+/* اعمال پالت کامل تم روی همهٔ متغیرهای رابط — پس‌زمینه، پنل‌ها، خطوط، متن و دکمه‌ها */
 function applyUiTheme(){
   const t=themeColors();
   const root=document.documentElement.style;
-  root.setProperty("--accent", t[3]);
-  root.setProperty("--btn-bg", t[1]);
-  root.setProperty("--btn-fg", t[2]);
+  root.setProperty("--bg",t.bg);
+  root.setProperty("--panel",t.panel);
+  root.setProperty("--panel2",t.panel2);
+  root.setProperty("--card",t.card);
+  root.setProperty("--line",t.line);
+  root.setProperty("--line2",t.line2);
+  root.setProperty("--line3",t.line3);
+  root.setProperty("--fg",t.fg);
+  root.setProperty("--dim",t.dim);
+  root.setProperty("--dim2",t.dim2);
+  root.setProperty("--dim3",t.dim3);
+  root.setProperty("--gold",t.gold);
+  root.setProperty("--accent",t.accent);
+  root.setProperty("--btn-bg",t.btnBg);
+  root.setProperty("--btn-fg",t.btnFg);
+  root.setProperty("--grad2",t.grad2||t.bg);
+  root.setProperty("--fab",t.fab||"rgba(17,24,32,.94)");
+  root.setProperty("--row-tint",t.rowTint||"rgba(255,255,255,.02)");
+  root.setProperty("color-scheme",t.light?"light":"dark");
   $("themeFooter").textContent="تم / "+S.theme.toUpperCase();
 }
 function applyBoardColors(){
@@ -1530,6 +1604,14 @@ function runAI(state,level,timeLimit){
       R.aiPending.set(id,{resolve,gen});
       const w=R.aiWorker;
       R.aiWorker.postMessage({cmd:"best",id,state,level,timeLimit});
+      /* ضامن امانت متناسب با بودجهٔ واقعی سطح (سطح ۲۰ = ۹۰ ثانیه؛ قبلاً ۶ ثانیه بود
+         و ورکر را زودتر از پایان فکرش می‌کشت) */
+      let budget=timeLimit;
+      if(budget==null){
+        try{ const conf=ChessAI.LEVELS[Math.max(1,Math.min(20,Math.floor(level||1)))];
+          if(conf)budget=conf[1]; }catch(e){}
+      }
+      const netMs=Math.max(6000,((budget||0.5)*1000*3)+6000);
       setTimeout(()=>{ // safety net: worker lost/slow → این تلاش رها و ورکر بازسازی می‌شود
         if(R.aiPending&&R.aiPending.has(id)){
           R.aiPending.delete(id);
@@ -1539,7 +1621,7 @@ function runAI(state,level,timeLimit){
             R.aiWorker=null; setTimeout(initWorker,120);
           }
         }
-      }, Math.max(6000,(timeLimit||1)*6000));
+      }, Math.min(netMs,600000));
     }else{
       /* بدون ورکر فقط جست‌وجوی کوتاه و محدود — هرگز جست‌وجوی سنگین روی رشتهٔ اصلی */
       setTimeout(()=>resolve(syncAI(state,Math.min(level||1,10),Math.min(timeLimit||0.8,0.8))),30);
@@ -1590,6 +1672,7 @@ function stopMatchActivity(){
   R.gameGen++; R.aiAttempt++; R.aiThinking=false; R.animating=false;
   if(R.aiPending)R.aiPending.clear();
   clearTimeout(R.clockTimer);
+  R.spectate=false; R.specFails=0; /* تماشا هم کامل خاموش شود — قبلاً حلقهٔ تماشا در پس‌زمینه ادامه می‌یافت (باگ) */
   try{ EngPool.clearAll(); }catch(e){}
 }
 function go(name){
@@ -1643,14 +1726,16 @@ function buildLevels(){
   // همهٔ سطح‌ها از ابتدا باز هستند (درخواست کاربر: همگی باز باشند)
   const grid=$("levelGrid"); grid.innerHTML="";
   for(let i=1;i<=20;i++){
-    const b=el("button","lvl",'♟ '+`مرحله ${i}`);
+    const mx=(i===20);
+    const b=el("button","lvl",'♟ '+(mx?'مرحله 20 — بی‌سقف ∞':`مرحله ${i}`));
+    if(mx)b.title="سطح ۲۰ = تمام توان متین‌بات بدون سقف زمانی (عمق ۱۲، تا ۹۰ ثانیه فکر)";
     b.onclick=()=>setupGame(i);
     grid.appendChild(b);
   }
 }
 
 // ---------- Bot Hub (مرکز ربات‌ها) ----------
-const APP_VERSION="3.2.0";
+const APP_VERSION="3.3.0";
 const REPO_OWNER="amirmhmdglstan-stack", REPO_NAME="Matin-Chess";
 const REPO_API=`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`;
 const BOT_RAW=`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/bots/`;
@@ -1785,7 +1870,7 @@ const VLT_MODELS=[
   {code:2,key:"Light",fa:"لایت", tag:"سقف ۶۴٬۰۰۰ گره • ~۴۰۰ms",
    desc:"بازی متعادل و آموزشی: تا ۶۴٬۰۰۰ موقعیت در هر حرکت (تقریباً عمق ۷-۸) و هرگز بیشتر از نیم ثانیه فکر نمی‌کند. ۱۰ سطح تا قدرت کامل لایت."},
   {code:3,key:"High", fa:"های",  tag:"جست‌وجوی کامل",
-   desc:"قوی‌ترین حالت: جست‌وجوی کامل، کتاب شروع و ارزیابی فعال. سطح ۱۰ = بدون هیچ محدودیت مصنوعی (های کامل اصلی)."}
+   desc:"قوی‌ترین حالت: جست‌وجوی کامل، کتاب شروع و ارزیابی فعال. سطح ۱۰ = بی‌سقف زمانی واقعی — جست‌وجوی عمق ۳۰ و هرقدر لازم باشد فکر می‌کند (در بازی زمان‌دار، خودش ساعتش را مدیریت می‌کند)."}
 ];
 function vltParams(model,n){
   if(model===3)return n>=10?{nodes:null,mt:null}:{nodes:null,mt:100*n};
@@ -2034,14 +2119,18 @@ function mceExportEngines(botFilter){
 function mceImportPick(){
   return new Promise(resolve=>{
     const inp=$("fileInput");
+    const prevAccept=inp.accept;
     inp.accept=".mceng,.js,.wasm";
     inp.multiple=true;
     inp.value="";
-    inp.onchange=()=>{
-      const fs=inp.files?Array.from(inp.files):[];
-      setTimeout(()=>{ try{inp.multiple=false;}catch(e){} },0);
+    let settled=false;
+    const done=(fs)=>{
+      if(settled)return; settled=true;
+      setTimeout(()=>{ try{inp.multiple=false; inp.accept=prevAccept||".json,.mcgx,.pgn,.txt";}catch(e){} },0);
       resolve(fs);
     };
+    inp.onchange=()=>done(inp.files?Array.from(inp.files):[]);
+    inp.oncancel=()=>done([]); /* لغو دیالوگ هم پرومس را می‌بندد (قبلاً باز می‌ماند) */
     inp.click();
   });
 }
@@ -2329,8 +2418,12 @@ function openBotModal(b){
     const lbl=u?(u.vltrix?("سطح‌های "+u.fa+" — همه باز"):(u.fa+" — سطح‌ها (همه باز)")):"سطح‌ها (همه باز)";
     let h=`<div class="sect-lbl">${lbl}</div>
         <div class="blvl-grid cols5" style="--c1:${b.c1};--c2:${b.c2}">`;
-    for(let i=1;i<=n;i++)h+=`<button class="blvl" data-lv="${u?lvlCode(u,i):i}">${faNum(i)}</button>`;
-    h+=`</div>`;
+    /* سطح آخر هر موتور = تمام ۱۰۰٪ توان آن، بدون هیچ سقف زمانی (v3.3.0) */
+    for(let i=1;i<=n;i++){
+      const mx=(i===n);
+      h+=`<button class="blvl${mx?" maxlvl":""}" data-lv="${u?lvlCode(u,i):i}"${mx?' title="سطح آخر = تمام توان موتور بدون سقف زمانی — هرقدر لازم باشد فکر می‌کند"':""}>${faNum(i)}${mx?'<small>∞ بی‌سقف</small>':""}</button>`;
+    }
+    h+=`</div><div class="blvl-note">سطح آخر = تمام ۱۰۰٪ توان واقعی موتور، بدون هیچ سقف زمانی — موتور هرقدر لازم باشد فکر می‌کند.</div>`;
     if(u)h+=`<div class="row2" style="margin-top:8px"><button class="btn ghost" id="botBack">↩ بازگشت به انتخاب ${u.vltrix?"مدل":"نسخه"}</button></div>`;
     body.innerHTML=h;
     body.querySelectorAll(".blvl").forEach(btn=>{
@@ -2509,123 +2602,125 @@ function uciToMove(g,u){
   }
   return null;
 }
-/* پارامتر سطح هر ربات → دستور go (نسخه‌آگاه: ver برای ربات‌های نسخه‌دار) */
+/* زمینهٔ لحظه‌ای ساعت بازی برای ساخت دستور go در همان لحظهٔ فکر (v3.3.0):
+   مقدار ساعت‌ها در هر حرکت تازه از R خوانده می‌شود (قبلاً یک‌بار موقع ساخت جلسه
+   ثابت می‌شد و مقدار کهنه برای کل بازی می‌ماند — باگ). */
+function engineClockCtx(){
+  const timed=!!(R.timeMode&&R.timeMode!=="∞"&&R.clock&&R.clock.w!=null&&R.clock.b!=null);
+  return{
+    timed,
+    cw:timed?Math.max(1000,Math.round(R.clock.w*1000)):null,
+    cb:timed?Math.max(1000,Math.round(R.clock.b*1000)):null,
+    spectate:!!R.spectate
+  };
+}
+/* دستور go بی‌سقف زمانی (v3.3.0 — درخواست کاربر: موتور هرقدر بخواهد فکر کند):
+   • بازی بی‌نهایت → «go depth N»: موتور تا رسیدن به عمق N هرقدر لازم باشد فکر می‌کند؛
+     بدون هیچ movetime/سقف زمانی. بعد از ۱۰ دقیقه فرمان stop می‌فرستیم و موتور
+     بهترین حرکتِ پیدا‌شده تا آن لحظه را می‌دهد — پس بازی همیشه ادامه می‌یابد.
+   • بازی زمان‌دار → «go wtime X btime Y»: موتور خودش زمانِ باقی‌مانده‌اش را مدیریت
+     می‌کند (ساعت بازی قانونِ بازی است، نه سقف قوت موتور).
+   • تماشای ربات‌ها → برای روونگی نمایش، حداکثر ۱۰ ثانیه در هر حرکت. */
+function uciGoDeep(depth){
+  return (ctx)=>{
+    if(ctx.spectate)return "go movetime 10000";
+    if(ctx.timed)return "go wtime "+ctx.cw+" btime "+ctx.cb;
+    return "go depth "+depth;
+  };
+}
+function uciGoMovetime(ms){
+  return (ctx)=> "go movetime "+(ctx.spectate?Math.min(10000,ms):ms);
+}
+function garboMsFor(ms){
+  return (ctx)=> ctx.spectate?Math.min(10000,ms):ms;
+}
+function veltrixGoString(cw,cb,mt,nodes){
+  let go="go";
+  if(cw&&cb)go+=" wtime "+cw+" btime "+cb;
+  if(mt!=null)go+=" movetime "+mt;
+  if(nodes!=null)go+=" nodes "+nodes;
+  return go;
+}
+/* پارامتر سطح هر ربات → دستور go (نسخه‌آگاه: ver برای ربات‌های نسخه‌دار)
+   سطح آخر هر موتور = تمام ۱۰۰٪ توان آن، بدون هیچ سقف زمانی. */
 function botLevelParams(id,lv,ver){
   if(id==="stockfish"){
     const d={ver:lv>=100?Math.floor(lv/100):null,n:lv>=100?lv%100:lv};
     const v=d.ver!=null?d.ver:(ver!=null?ver:19);
     // نسخه‌های ۱۶/۱۷/۱۸/۱۹: Skill Level استاندارد. نسخه‌های قدیمی‌تر (۶/۸/۹/۱۰/۱۱):
-    // setopt نمی‌فرستیم (بیلد niklasf با Threads/Hash می‌میرد)؛ قدرت با movetime کنترل می‌شود
+    // setopt نمی‌فرستیم (بیلد niklasf با Threads/Hash می‌میرد)؛ قدرت با عمق/زمان کنترل می‌شود
     const n=Math.max(1,Math.min(20,d.n||20));
-    /* سطح ۲۰ = قدرت کامل واقعی موتور: مهارت ۲۰ + بدون سقف قوت + هش بزرگ + ۵ ثانیه فکر
-       (درخواست کاربر: بالاترین سطح هر موتور باید تمام توان آن باشد) */
+    /* سطح ۲۰ = بی‌سقف زمانی واقعی: مهارت ۲۰ + بدون سقف قوت + هش بزرگ + جست‌وجوی عمق ۳۰
+       بدون هیچ movetime — موتور هرقدر لازم باشد فکر می‌کند (v3.3.0) */
     if(v>=16){
       if(n>=20)return{type:"uci",
-        setopt:[["Skill Level","20"],["UCI_LimitStrength","false"],["Hash","128"]],
-        go:"go movetime 5000",timeout:9000};
+        setopt:[["Skill Level","20"],["UCI_LimitStrength","false"],["Hash","256"]],
+        go:"go depth 30",goFor:uciGoDeep(30),timeout:900000,stopAt:600000};
       return{type:"uci",
         setopt:[["Skill Level",String(Math.max(0,Math.min(20,Math.round((n-1)*20/19))))],
                 ["UCI_LimitStrength","false"],["Hash","64"]],
-        go:"go movetime "+(100+n*40)};
+        go:"go movetime "+(100+n*40),goFor:uciGoMovetime(100+n*40)};
     }
-    if(n>=20)return{type:"uci",setopt:[],go:"go movetime 5000",timeout:9000};
+    if(n>=20)return{type:"uci",setopt:[],go:"go depth 30",goFor:uciGoDeep(30),timeout:900000,stopAt:600000};
     return{type:"uci",setopt:[],
-      go:"go movetime "+(60+n*45)};
+      go:"go movetime "+(60+n*45),goFor:uciGoMovetime(60+n*45)};
   }
   if(id==="berserk"){
-    const n=Math.max(1,Math.min(20,lv>=100?lv%100:lv)); // کد ترکیبی نسخه‌دار: 1305 → سطح ۵
+    const n=Math.max(1,Math.min(20,lv>=100?lv%100:lv)); // کد ترکیبی نسخه‌دار: ۱۳۰۵ → سطح ۵
     const sk=String(Math.max(0,Math.min(20,Math.round((n-1)*20/19))));
     if(n>=20)return{type:"uci",
-      setopt:[["Hash","64"],["Threads","1"],["MultiPV","1"],["Skill Level","20"],["UCI_LimitStrength","false"]],
-      go:"go movetime 5000",timeout:9000};
+      setopt:[["Hash","128"],["Threads","1"],["MultiPV","1"],["Skill Level","20"],["UCI_LimitStrength","false"]],
+      go:"go depth 30",goFor:uciGoDeep(30),timeout:900000,stopAt:600000};
     return{type:"uci",
       setopt:[["Hash","32"],["Threads","1"],["MultiPV","1"],["Skill Level",sk]],
-      go:"go movetime "+(80+n*45)};
+      go:"go movetime "+(80+n*45),goFor:uciGoMovetime(80+n*45)};
   }
   if(id==="fairy"){
     const n=Math.max(1,Math.min(20,lv));
     const sk=String(Math.max(0,Math.min(20,Math.round((n-1)*20/19))));
     if(n>=20)return{type:"uci",
-      setopt:[["Hash","64"],["Threads","1"],["UCI_Variant","chess"],["Skill Level","20"],["UCI_LimitStrength","false"]],
-      go:"go movetime 5000",timeout:9000};
+      setopt:[["Hash","128"],["Threads","1"],["UCI_Variant","chess"],["Skill Level","20"],["UCI_LimitStrength","false"]],
+      go:"go depth 30",goFor:uciGoDeep(30),timeout:900000,stopAt:600000};
     return{type:"uci",
       setopt:[["Hash","32"],["Threads","1"],["UCI_Variant","chess"],["Skill Level",sk]],
-      go:"go movetime "+(80+n*45)};
+      go:"go movetime "+(80+n*45),goFor:uciGoMovetime(80+n*45)};
   }
-  if(id==="lozza")return{type:"uci",setopt:[],go:"go depth "+(lv>=10?12:Math.max(1,lv))};
-  if(id==="garbochess")return{type:"garbo",
-    ms:[80,150,260,420,650,950,1400,3000][Math.max(0,Math.min(7,lv-1))]};
+  if(id==="lozza"){
+    /* لوزا موتور جاوااسکریپت خالص است؛ عمق ۱۶ عملاً سقف توان واقعی آن در زمان معقول است
+       (در تماشا برای روونگی، عمق حداکثر ۸) */
+    if(lv>=10)return{type:"uci",setopt:[],go:"go depth 16",goFor:uciGoDeep(16),timeout:900000,stopAt:600000};
+    const dep=Math.max(1,Math.min(9,lv));
+    return{type:"uci",setopt:[],go:"go depth "+dep,
+      goFor:(ctx)=> "go depth "+(ctx.spectate?Math.min(8,dep):dep)};
+  }
+  if(id==="garbochess"){
+    /* پروتکل گاربوچس فقط جست‌وجوی زمانی دارد؛ سطح ۸ = ۱۰ دقیقه فکر (بی‌سقف عملی) */
+    const ms=[80,150,260,420,650,950,1400,600000][Math.max(0,Math.min(7,lv-1))];
+    return{type:"garbo",ms,msFor:garboMsFor(ms),timeout:(lv>=8?900000:14000)};
+  }
   if(id==="veltrix"){
     /* الگوی جدید (مدل × سطح): فست/لایت بودجهٔ گره خطی تا سقف رسمی مدل؛
-       های با زمانِ فکر مقیاس می‌شود و سطح ۱۰ = بی‌سقف (همان High اصلی).
-       سطح ۱۰ فست = ۴٬۰۰۰ گره/۶۰ms و سطح ۱۰ لایت = ۶۴٬۰۰۰ گره/۴۰۰ms — دقیقاً go_kwargs gui/models.py */
+       های با زمانِ فکر مقیاس می‌شود و سطح ۱۰ = بی‌سقف زمانی واقعی (عمق ۳۰).
+       ساعت زمان‌دار حالا در هر حرکت تازه خوانده می‌شود (رفع باگ مقدار کهنه). */
     let model=null,n=null;
     if(lv!=null&&lv>=1000){ model=Math.floor(lv/1000); n=lv%1000; }
     else if(ver!=null&&ver>=1&&ver<=3&&lv!=null&&lv>=1&&lv<=10){ model=ver; n=lv; }
     else{ const L2=normVlt(lv); if(L2!=null&&L2>=1000){ model=Math.floor(L2/1000); n=L2%1000; } }
     if(model==null||n==null||model<1||model>3){ model=3; n=10; }
     const P=vltParams(model,Math.max(1,Math.min(10,n)));
-    let nodes=P.nodes,mt=P.mt;
-    const timed=R.timeMode&&R.timeMode!=="∞"&&R.clock&&R.clock.w!=null&&R.clock.b!=null;
-    const cw=timed?Math.max(1000,Math.round(R.clock.w*1000)):null;
-    const cb=timed?Math.max(1000,Math.round(R.clock.b*1000)):null;
-    let go="go";
-    if(cw&&cb)go+=` wtime ${cw} btime ${cb}`;
-    if(mt!=null)go+=` movetime ${mt}`;
-    else if(!cw)go+=" movetime "+(n>=10?5000:1500); /* سطح ۱۰ های = قدرت کامل (۵ ثانیه فکر) */
-    if(nodes!=null)go+=` nodes ${nodes}`;
+    const nodes=P.nodes,mt=P.mt;
+    if(model===3&&n>=10)return{type:"uci",
+      setopt:[["Hash","128"],["Threads","1"],["UseBook","true"],["UCI_LimitStrength","false"]],
+      go:"go depth 30",goFor:uciGoDeep(30),timeout:900000,stopAt:600000};
     return{type:"uci",
       setopt:[["Hash","32"],["Threads","1"],["UseBook","true"],["UCI_LimitStrength","false"]],
-      go,timeout:20000};
+      go:veltrixGoString(null,null,mt,nodes),
+      goFor:(ctx)=>{
+        if(ctx.spectate)return "go movetime "+Math.min(10000,mt!=null?mt:1500)+(nodes!=null?(" nodes "+nodes):"");
+        return veltrixGoString(ctx.timed?ctx.cw:null,ctx.timed?ctx.cb:null,mt,nodes);
+      },timeout:20000};
   }
-  return{type:"uci",setopt:[],go:"go movetime 500"};
-}
-function uciResolve(w,fen,params,timeoutMs){
-  return new Promise(resolve=>{
-    let settled=false;
-    const t=setTimeout(()=>{ if(!settled){ settled=true; try{w.terminate();}catch(e){} resolve(null); } },timeoutMs||14000);
-    let stage=0;
-    w.onmessage=e=>{
-      const line=String(e.data).trim();
-      if(stage===0&&line==="uciok"){
-        stage=1;
-        w.postMessage("ucinewgame"); // لوزا بدون این دستور جست‌وجو نمی‌کند
-        (params.setopt||[]).forEach(o=>w.postMessage("setoption name "+o[0]+" value "+o[1]));
-        w.postMessage("isready");
-      }else if(stage===1&&line==="readyok"){
-        stage=2;
-        w.postMessage("position fen "+fen);
-        w.postMessage(params.go);
-      }else if(line.startsWith("bestmove")){
-        const mv=line.split(/\s+/)[1];
-        clearTimeout(t); settled=true;
-        try{w.terminate();}catch(err){}
-        resolve(mv||null);
-      }
-    };
-    w.onerror=()=>{ if(!settled){ clearTimeout(t); settled=true; try{w.terminate();}catch(e){} resolve(null); } };
-    w.postMessage("uci");
-  });
-}
-function garboResolve(w,fen,ms,timeoutMs){
-  return new Promise(resolve=>{
-    let settled=false, buf="";
-    const t=setTimeout(()=>{ if(!settled){ settled=true; try{w.terminate();}catch(e){} resolve(buf||null); } },timeoutMs||14000);
-    w.onmessage=e=>{
-      const s=String(e.data);
-      if(s.startsWith("message ")||s.startsWith("pv "))return; // پیام‌های میانی
-      const mv=s.trim();
-      if(/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(mv)){
-        clearTimeout(t); settled=true; buf=mv;
-        try{w.terminate();}catch(err){}
-        resolve(mv);
-      }
-    };
-    w.onerror=()=>{ if(!settled){ clearTimeout(t); settled=true; try{w.terminate();}catch(e){} resolve(null); } };
-    // توجه: گاربوچس بعد از «position » فقط FEN می‌خواهد (بدون کلمهٔ fen)
-    w.postMessage("position "+fen);
-    w.postMessage("search "+ms);
-  });
+  return{type:"uci",setopt:[],go:"go movetime 500",goFor:uciGoMovetime(500)};
 }
 /* ---------- جلسات موتور: Worker ماندگار (به‌جای ساخت/خرابی هر حرکت) ----------
    برای استاک‌فیش ۱۹ (۹۵MB) ساخت دوبارهٔ Worker در هر حرکت غیرقابل‌تحمل است؛
@@ -2646,6 +2741,9 @@ const EngPool={
 };
 function destroySession(s){
   s.alive=false;
+  /* اگر حرکتی در راه است بی‌درنگ پاسخ داده شود — وگرنه تایمرِ آن تا ۱۵ دقیقه
+     بعد (مثل استاک‌فیش ۱۹ بی‌سقف) جلسه را در حافظه نگه می‌داشت (نشت حافظه) */
+  if(s.pending){ const p=s.pending; s.pending=null; clearTimeout(p.timer); try{p.resolve(null);}catch(e){} }
   try{ if(s.urls)Object.values(s.urls).forEach(u=>URL.revokeObjectURL(u)); }catch(e){}
   try{ s.w.terminate(); }catch(e){}
 }
@@ -2708,6 +2806,10 @@ function createEngineSession(b,level,ver){
           if(sess.initKill){ clearTimeout(sess.initKill); sess.initKill=null; }
           sess.stage=2;
           if(sess.readyResolve){ sess.readyResolve(); sess.readyResolve=null; }
+        }else if(line.startsWith("info depth ")){
+          /* عمق جست‌وجوی زندهٔ موتور — در HUD نمایش داده می‌شود (v3.3.0) */
+          const dm=/^info\s+depth\s+(\d+)/.exec(line);
+          if(dm)sess.lastDepth=+dm[1];
         }else if(sess.pending&&line.startsWith("bestmove")){
           const mv=line.split(/\s+/)[1];
           const p=sess.pending; sess.pending=null;
@@ -2736,18 +2838,37 @@ function createEngineSession(b,level,ver){
         return sess.ready.then(()=>new Promise(resolve=>{
           if(!sess.alive){ resolve(null); return; }
           if(sess.pending){ resolve(null); return; }
-          const t=setTimeout(()=>{
-            // موتور پاسخ نداد → جلسه دور ریخته می‌شود؛ حرکت بعدی جلسهٔ تازه می‌سازد
+          /* v3.3.0 — دو تایمر:
+             توقف نرم (stopAt): فرمان stop → موتور همان لحظه بهترین حرکتِ پیدا‌شده را
+             می‌دهد و جلسه زنده می‌ماند؛ توقف سخت (timeout): جلسه دور ریخته می‌شود. */
+          const hardMs=Math.max(4000,timeoutMs||params.timeout||14000);
+          const stopMs=params.stopAt!=null?Math.min(params.stopAt,hardMs-4000):Math.max(4000,hardMs-4000);
+          let done=false;
+          const finish=(mv)=>{
+            if(done)return; done=true;
+            clearTimeout(tHard); clearTimeout(tStop); sess.pending=null; resolve(mv);
+          };
+          const tStop=setTimeout(()=>{
+            if(done||!sess.alive)return;
+            try{ w.postMessage("stop"); }catch(e){} /* بهترین حرکت تا این لحظه */
+          },stopMs);
+          const tHard=setTimeout(()=>{
+            if(done)return;
+            finish(null);
             destroySession(sess);
             const k=EngPool.key(b.id,effVer,level);
             if(EngPool.m[k]===sess)delete EngPool.m[k];
-            resolve(null);
-          },timeoutMs||params.timeout||14000);
-          sess.pending={resolve,timer:t};
+          },hardMs);
+          sess.pending={resolve:finish,timer:tHard};
           if(params.type==="garbo"){
-            try{w.postMessage("position "+fen); w.postMessage("search "+(params.ms||300));}catch(e){ clearTimeout(t); resolve(null); }
+            let ms=params.ms||300;
+            if(typeof params.msFor==="function"){ try{ ms=params.msFor(engineClockCtx()); }catch(e){} }
+            try{w.postMessage("position "+fen); w.postMessage("search "+ms);}catch(e){ finish(null); }
           }else{
-            try{w.postMessage("position fen "+fen); w.postMessage(params.go);}catch(e){ clearTimeout(t); resolve(null); }
+            /* دستور go در همان لحظهٔ فکر ساخته می‌شود (ساعت تازه + حالت تماشا) */
+            let cmd=params.go||"go movetime 500";
+            if(typeof params.goFor==="function"){ try{ cmd=params.goFor(engineClockCtx()); }catch(e){} }
+            try{w.postMessage("position fen "+fen); w.postMessage(cmd);}catch(e){ finish(null); }
           }
         }));
       };
@@ -2776,14 +2897,18 @@ function runBotMove(botId,state,level,ver){
     const fen=stateToFEN(state);
     return sess.think(fen).then(u=>{
       if(!u)return null;
-      try{ return uciToMove(ChessGame.deserialize(state),u); }
-      catch(e){ return null; }
+      const mv=(()=>{ try{ return uciToMove(ChessGame.deserialize(state),u); }catch(e){ return null; } })();
+      /* عمق جست‌وجوی زندهٔ موتور برای نمایش در HUD (v3.3.0) */
+      return{move:mv,depth:sess.lastDepth||0};
     });
   });
 }
 function requestBotMove(state){
   if(R.botId&&R.botId!=="matin"){
-    return runBotMove(R.botId,state,R.level,R.botVer).then(m=>({move:m,info:null}));
+    return runBotMove(R.botId,state,R.level,R.botVer).then(r=>({
+      move:r?r.move:null,
+      info:r?{depth:r.depth||0,nodes:0,qnodes:0,time:0,score:0}:null
+    }));
   }
   return runAI(state,R.level,null);
 }
@@ -2917,6 +3042,7 @@ function spectateStart(wId,wVer,wLv,bId,bVer,bLv,delay){
   R.gameOver=false; R.gameGen++; R.aiAttempt++; R.aiRetries=0; R.aiThinking=false;
   if(R.aiPending)R.aiPending.clear();
   R.spectate=true; R.trainingMode=false; R.trainingTarget=null;
+  R.specFails=0;
   R.specW={botId:wId,ver:wVer||null,level:wLv}; R.specB={botId:bId,ver:bVer||null,level:bLv}; R.specDelay=delay||700;
   R.level=wLv; R.player="w"; R.twoPlayer=false;
   R.botId="matin"; R.botVer=null; // HUD از مسیر سفارشی تماشا استفاده می‌کند
@@ -2947,7 +3073,7 @@ function spectateLoop(){
   const t0=Date.now();
   const req=(cfg.botId==="matin")
     ?runAI(state,cfg.level,null).then(res=>res?res.move:null)
-    :runBotMove(cfg.botId,state,cfg.level,cfg.ver);
+    :runBotMove(cfg.botId,state,cfg.level,cfg.ver).then(r=>r?r.move:null);
   req.then(mv=>{
     if(R.gameGen!==gen||R.gameOver||!R.spectate||!R.g)return;
     const wait=Math.max(200,(R.specDelay||700)-(Date.now()-t0));
@@ -3123,8 +3249,11 @@ function buildThemes(){
     pcRow.appendChild(p);
   });
   const uiRow=$("uiThemeRow"); uiRow.innerHTML="";
-  Object.keys(THEMES).forEach(name=>{
-    const p=el("button","pill"+(name===S.theme?" sel":""),name);
+  Object.entries(THEMES).forEach(([name,t])=>{
+    /* هر قرص: سه نقطهٔ رنگ (پس‌زمینه / دکمه / تاکید) + نام تم */
+    const p=el("button","pill"+(name===S.theme?" sel":""));
+    p.innerHTML=`<span class="pill-dots"><i style="background:${t.bg}"></i><i style="background:${t.btnBg}"></i><i style="background:${t.accent}"></i></span>${name}${t.light?' <small class="pill-light">روشن</small>':''}`;
+    p.title=(t.light?"تم روشن — پس‌زمینهٔ روشن با متن تیره":"تم تیره")+" • کلیک برای اعمال";
     p.onclick=()=>{ S.theme=name; applyUiTheme(); saveState(); buildThemes(); syncSettingsUi(); AudioEng.play("button"); };
     uiRow.appendChild(p);
   });
@@ -3592,6 +3721,19 @@ function animateMove(start,end,cap,special,moverGlyph,promotedGlyph,moverEl,byAI
 }
 
 // ---------- AI ----------
+/* زمان مورد انتظار فکر کردن هوش مصنوعی در وضعیت فعلی — ضامن امانت aiMove
+   باید از این بزرگ‌تر باشد، وگرنه دوباره درخواست حرکت می‌فرستد و بازی قفل می‌شود */
+function expectedThinkMs(){
+  try{
+    if(R.botId&&R.botId!=="matin"){
+      const p=botLevelParams(R.botId,R.level,R.botVer);
+      if(p&&p.timeout)return Math.min(p.timeout,960000);
+      return 20000;
+    }
+    const conf=ChessAI.LEVELS[Math.max(1,Math.min(20,R.level))]||[1,.3,0];
+    return Math.max(15000,((conf[1]||.3)*2000)+8000);
+  }catch(e){ return 20000; }
+}
 function aiMove(){
   if(R.aiThinking||R.gameOver||!R.g)return;
   if(!$("scr-game").classList.contains("active"))return; // خارج از صفحهٔ بازی، هوش مصنوعی هیچ حرکتی نمی‌کند
@@ -3603,15 +3745,25 @@ function aiMove(){
   setRailStatus("🧠 هوش مصنوعی در حال فکر کردن...");
   const state=R.g.serialize();
   const t0=Date.now();
+  /* نشانگر زندهٔ فکر طولانی (جست‌وجوی بی‌سقف ممکن است دقیقه‌ها طول بکشد):
+     هر ثانیه زمانِ گذشته در نوار وضعیت به‌روز می‌شود */
+  const thinkTick=setInterval(()=>{
+    if(R.aiAttempt!==attempt||R.gameGen!==gen||R.gameOver){ clearInterval(thinkTick); return; }
+    const s=Math.floor((Date.now()-t0)/1000);
+    if(s>=3)setRailStatus("🧠 هوش مصنوعی در حال فکر کردن… "+faNum(s)+" ثانیه");
+  },1000);
   // ضامن امانت: اگر به هر دلیلی پاسخ هوش مصنوعی گم شد، بازی قفل نمی‌شود
+  // (متناسب با زمان فکر موتور — قبلاً ۱۵ ثانیهٔ ثابت بود و جست‌وجوی بی‌سقف را می‌کشت)
   const failsafe=setTimeout(()=>{
     if(R.aiAttempt!==attempt||R.gameGen!==gen||R.gameOver)return;
     if(!$("scr-game").classList.contains("active"))return;
+    clearInterval(thinkTick);
     R.aiThinking=false;
     const s2=R.g?R.g.gameState():null;
     if(s2==="play"||s2==="check")setTimeout(aiMove,300);
-  },15000);
+  },expectedThinkMs());
   requestBotMove(state).then(res=>{
+    clearInterval(thinkTick);
     if(R.aiAttempt!==attempt||R.gameGen!==gen||R.gameOver)return;
     if(res.info){
       R.aiNodes=res.info.nodes||0; R.aiQnodes=res.info.qnodes||0;
@@ -3637,7 +3789,7 @@ function hintMove(){
   if(!R.twoPlayer&&R.g.turn!==R.player)return;
   if(!S.hints){ toast("راهنمای حرکت در تنظیمات خاموش است"); return; }
   const conf=ChessAI.LEVELS[Math.max(1,Math.min(20,R.level))]||[1,.3,0];
-  const budget=Math.max(.12,conf[1]*.45);
+  const budget=Math.min(4,Math.max(.12,conf[1]*.45)); /* راهنما هرگز بیشتر از ۴ ثانیه فکر نمی‌کند */
   setRailStatus("💡 در حال محاسبهٔ حرکت پیشنهادی...");
   runAI(R.g.serialize(),Math.max(8,Math.min(20,R.level)),budget).then(res=>{
     if(res.move){
@@ -3677,7 +3829,7 @@ function renderClock(){
   if(R.timeMode==="∞"||R.clock.w==null){ box.textContent="⏱ زمان: نامحدود"; return; }
   const wOn=R.g&&R.g.turn==="w"?" on":"", bOn=R.g&&R.g.turn==="b"?" on":"";
   box.innerHTML=`<span class="turn-w${wOn}">⏱ سفید ${fmtClock(R.clock.w)}</span>`+
-    ` <span style="color:#5c6a76">|</span> `+
+    ` <span style="color:var(--dim)">|</span> `+
     `<span class="turn-b${bOn}">سیاه ${fmtClock(R.clock.b)}</span>`;
 }
 
@@ -3968,8 +4120,8 @@ function finish(winner){
       openModal(
         `<div class="trophy-big">🏆</div>
          <h2 class="flash-title">جام قهرمانی</h2>
-         <div class="msg" style="font-weight:800;color:#fff3cf">جام قهرمانی برای شما!</div>
-         <div class="sub" style="color:#d9c68a">سازندگان: ${CREATORS}</div>
+         <div class="msg" style="font-weight:800;color:var(--gold)">جام قهرمانی برای شما!</div>
+         <div class="sub" style="color:var(--dim2)">سازندگان: ${CREATORS}</div>
          <div class="row2"><button class="btn big" id="vicOk">ادامه</button></div>`,
         {lock:true});
       $("vicOk").onclick=()=>{
@@ -4050,10 +4202,10 @@ function showChampionship(){
   const box=openModal(
     `<div class="trophy-big">🏆</div>
      <h2>MATIN CHESS CHAMPIONSHIP</h2>
-     <div class="msg" style="color:#fff4d6">Rank: <b>${rank}</b></div>
-     <div class="sub" style="color:#d9c68a">Points: ${T.points} • Win Streak: ${T.streak}</div>
-     <div class="sub" style="color:#fff4d6">Trophies: ${T.trophies.length?T.trophies.join("، "):"—"}</div>
-     <div class="sub" style="color:#d9c68a">سازندگان: ${CREATORS}</div>
+     <div class="msg" style="color:var(--gold)">Rank: <b>${rank}</b></div>
+     <div class="sub" style="color:var(--dim2)">Points: ${T.points} • Win Streak: ${T.streak}</div>
+     <div class="sub" style="color:var(--dim3)">Trophies: ${T.trophies.length?T.trophies.join("، "):"—"}</div>
+     <div class="sub" style="color:var(--dim2)">سازندگان: ${CREATORS}</div>
      <div class="row2"><button class="btn big" id="chOk">بستن</button></div>`);
   $("chOk").onclick=closeModal;
 }
@@ -4262,7 +4414,10 @@ function pickFile(accept){
     const inp=$("fileInput");
     inp.accept=accept||".json,.mcgx";
     inp.value="";
-    inp.onchange=()=>{ resolve(inp.files&&inp.files[0]?inp.files[0]:null); };
+    let settled=false;
+    const done=(f)=>{ if(settled)return; settled=true; resolve(f); };
+    inp.onchange=()=>done(inp.files&&inp.files[0]?inp.files[0]:null);
+    inp.oncancel=()=>done(null); /* لغو دیالوگ هم پرومس را می‌بندد */
     inp.click();
   });
 }

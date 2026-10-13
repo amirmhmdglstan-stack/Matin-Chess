@@ -1,7 +1,7 @@
 {
   "name": "matin-chess",
   "productName": "MATIN CHESS",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "MATIN CHESS — Windows Desktop Edition (Tauri: same look & engines as the Android app, tiny exe)",
   "author": "AmirMohammad Golestan & Matin Katooei-zadeh",
   "license": "MIT",

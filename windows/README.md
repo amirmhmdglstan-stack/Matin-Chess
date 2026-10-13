@@ -60,3 +60,12 @@ creators' official sources and stored in IndexedDB, exactly like the Android app
 v3.2.0 adds **file transfer**: export all installed engines into a single
 `.mceng` package and import it on another computer (Bot Hub -> 📥/📤 buttons),
 fully offline.
+
+v3.3.0 — **max level of every engine = truly unlimited thinking**:
+`go depth 30` with no movetime in untimed games (soft stop after 10 min returns
+the best move found so far, so the game never locks), self-managed clock in
+timed games (`go wtime/btime`), 256MB hash, Matin-bot depth 12 / 90s. Also:
+**17 full app themes** (15 dark + 2 light: Daylight, Paper) that restyle
+background, panels and buttons together, live think-time/depth indicators, and
+several bug fixes (background spectate loop, stale veltrix clock, file-dialog
+cancel, session memory release on exit).

@@ -1,6 +1,6 @@
 [package]
 name = "matin-chess"
-version = "3.2.0"
+version = "3.3.0"
 description = "MATIN CHESS — Windows Desktop Edition (same look & engines as the Android app)"
 authors = ["AmirMohammad Golestan & Matin Katooei-zadeh"]
 license = "MIT"
