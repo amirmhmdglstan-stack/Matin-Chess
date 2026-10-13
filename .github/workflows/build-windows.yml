@@ -58,7 +58,9 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path ..\dist-out | Out-Null
-          $ver = (Get-Content package.json | ConvertFrom-Json).version
+          # نام فایل همیشه از خودِ تگ می‌آید (v3.4.0 → 3.4.0) تا هرگز با نسخهٔ فایل‌ها ناهماهنگ نشود
+          $ver = "$env:GITHUB_REF_NAME" -replace '^v',''
+          if (-not $ver) { $ver = (Get-Content package.json | ConvertFrom-Json).version }
           Write-Host "version = $ver"
           # --- portable: standalone native exe (needs WebView2, standard on Windows 10/11) ---
           $portable = "src-tauri\target\release\matin-chess.exe"
